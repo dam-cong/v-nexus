@@ -1,6 +1,7 @@
 """SQLAlchemy ORM Models representing the database schema."""
 from datetime import datetime
 from typing import Optional
+import uuid
 from sqlalchemy import DateTime, Integer, String, Text, ForeignKey, JSON, UniqueConstraint, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -48,16 +49,18 @@ class Teacher(Base):
 class Student(Base):
     __tablename__ = "students"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    id: Mapped[str] = mapped_column(String(50), primary_key=True, default=lambda: str(uuid.uuid4()))
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    email: Mapped[Optional[str]] = mapped_column(String(100), unique=True, nullable=True)
+    hashed_password: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     role_id: Mapped[int] = mapped_column(Integer, ForeignKey("roles.id"), default=1)
     grade: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    class_id: Mapped[Optional[str]] = mapped_column(String(50), ForeignKey("classes.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     # Relationships
     role: Mapped["Role"] = relationship("Role", back_populates="students")
+    class_: Mapped[Optional["Class"]] = relationship("Class", back_populates="students")
     ranking: Mapped[Optional["Ranking"]] = relationship("Ranking", back_populates="student", cascade="all, delete-orphan")
     test_results: Mapped[list["StudentTestResult"]] = relationship("StudentTestResult", back_populates="student", cascade="all, delete-orphan")
 
@@ -66,7 +69,7 @@ class Ranking(Base):
     __tablename__ = "rankings"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    student_id: Mapped[int] = mapped_column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+    student_id: Mapped[str] = mapped_column(String(50), ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
     score: Mapped[int] = mapped_column(Integer, default=0)
     level: Mapped[str] = mapped_column(String(50), default="Beginner")
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
@@ -131,7 +134,7 @@ class StudentTestResult(Base):
     __tablename__ = "student_test_results"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    student_id: Mapped[int] = mapped_column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+    student_id: Mapped[str] = mapped_column(String(50), ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
     test_id: Mapped[int] = mapped_column(Integer, ForeignKey("placement_tests.id"), nullable=False)
     answers: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     score: Mapped[int] = mapped_column(Integer, default=0)
@@ -149,3 +152,67 @@ class StudentTestResult(Base):
     # Relationships
     student: Mapped["Student"] = relationship("Student", back_populates="test_results")
     test: Mapped["PlacementTest"] = relationship("PlacementTest", back_populates="test_results")
+
+
+class Skill(Base):
+    __tablename__ = "skills"
+
+    id: Mapped[str] = mapped_column(String(50), primary_key=True)
+    code_gdpt: Mapped[str] = mapped_column(String(50), nullable=False)
+    name_vi: Mapped[str] = mapped_column(String(200), nullable=False)
+    name_en: Mapped[str] = mapped_column(String(200), nullable=False)
+    grade: Mapped[int] = mapped_column(Integer, nullable=False)
+    unit: Mapped[str] = mapped_column(String(100), nullable=False)
+    skill_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    p_init: Mapped[float] = mapped_column(nullable=False)
+    p_transit: Mapped[float] = mapped_column(nullable=False)
+    p_slip: Mapped[float] = mapped_column(nullable=False)
+    p_guess: Mapped[float] = mapped_column(nullable=False)
+    prerequisites: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+
+class Class(Base):
+    __tablename__ = "classes"
+
+    id: Mapped[str] = mapped_column(String(50), primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    grade: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    students: Mapped[list["Student"]] = relationship("Student", back_populates="class_")
+
+
+class Parent(Base):
+    __tablename__ = "parents"
+
+    id: Mapped[str] = mapped_column(String(50), primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    phone: Mapped[str] = mapped_column(String(20), nullable=False)
+
+
+class ParentStudent(Base):
+    __tablename__ = "parent_students"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    parent_id: Mapped[str] = mapped_column(String(50), ForeignKey("parents.id", ondelete="CASCADE"), nullable=False)
+    student_id: Mapped[str] = mapped_column(String(50), ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+
+
+class StudentSkillMastery(Base):
+    __tablename__ = "student_skill_mastery"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    student_id: Mapped[str] = mapped_column(String(50), ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+    skill_id: Mapped[str] = mapped_column(String(50), ForeignKey("skills.id", ondelete="CASCADE"), nullable=False)
+    mastery_prob: Mapped[float] = mapped_column(nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
+
+
+class Answer(Base):
+    __tablename__ = "answers"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    student_id: Mapped[str] = mapped_column(String(50), ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+    question_id: Mapped[str] = mapped_column(String(50), ForeignKey("questions.question_id", ondelete="CASCADE"), nullable=False)
+    selected_option_id: Mapped[str] = mapped_column(String(10), nullable=False)
+    correct: Mapped[bool] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

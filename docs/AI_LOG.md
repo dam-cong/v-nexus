@@ -15,6 +15,7 @@ Mỗi dòng = một phiên trao đổi có kết quả cụ thể (không ghi ti
 | 2026-07-17 11:37 | Hiến | Claude Code | Đọc & phân tích đề bài Vbee Đề 8 (slide/giáo án → video bài giảng) từ PDF BTC cung cấp | Tạo `docs/PHAN_TICH_DE_8.md` (<5000 ký tự theo yêu cầu) — commit `e9f867b` | Hiến |
 | 2026-07-17 13:24 | Hiến | Claude Code | Đổi hướng sang đề bài Gia sư thích ứng thu hẹp khoảng cách năng lực (thay Đề 8) — phân tích yêu cầu, đổi tên dự án thành V-Nexus Tutor, phân bổ công việc theo 5 vai trò (PM/BA/Dev/AI/Cố vấn) | Tạo `docs/PHAN_TICH_DE_ADAPTIVE_TUTORING.md`, cập nhật README/PROJECT_DESCRIPTION/timeline, xóa tài liệu Đề 8 không còn dùng — commit `d94396f` | Hiến |
 | 2026-07-17 14:28 | Hiến | Claude Code | Mở rộng phạm vi (môn Tiếng Anh, CV học viên, chương trình cấp 1-2-3), yêu cầu thiết kế cơ chế AI khác biệt (không chỉ "gọi LLM"), thêm dashboard phụ huynh và bot hỏi-đáp | Thiết kế Bayesian Knowledge Tracing + adaptive testing (CAT) + Bayesian prior/posterior fusion làm lõi chẩn đoán; LLM giới hạn ở vai trò trích xuất/chấm chủ quan/diễn giải; bot tái dùng khung Planner Agent + Tool Registry đã dựng sẵn — commit `f62b8e9` | Hiến |
+| 2026-07-17 21:50 | Antigravity | Antigravity AI | Đọc plan.md và code lại phần AI theo dữ liệu Tiếng Anh Academy Stars 3 & 4 trong docs/data; sửa .env dùng API_KEY ban tổ chức | Cập nhật KnowledgeGraph, QuestionBank, thêm các model Skill, Class, Parent vào db/models.py, sửa seed_data.py, seed.py và connector.py để tránh lỗi datatype/transaction. 155 test pass 100%. | Hiếu |
 
 ## Quy tắc
 

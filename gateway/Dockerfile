@@ -6,6 +6,7 @@ COPY agent/ ./agent/
 COPY tools/ ./tools/
 COPY domain/ ./domain/
 COPY db/ ./db/
+COPY ai/ ./ai/
 COPY docs/data/ ./docs/data/
 COPY gateway/app/ ./app/
 ENV PYTHONPATH=/app

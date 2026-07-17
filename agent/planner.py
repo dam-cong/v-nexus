@@ -1,16 +1,17 @@
 """Planner Agent — MỘT agent duy nhất của hệ thống.
 
-Nhận tin nhắn, gọi LLM, thực thi tool qua Tool Registry khi model yêu cầu, lặp tới khi
-có câu trả lời cuối. Không thêm agent thứ hai ở đây — logic domain-specific (prompt +
-tool nào được dùng) nằm trong DomainAdapter (xem domain/adapter.py).
+Gọi LLM (FPT AI / OpenAI-compatible), thực thi tool khi model yêu cầu,
+lặp tới khi có câu trả lời cuối. Logic domain-specific nằm trong DomainAdapter.
 """
-from agent.llm_client import create_message
+from __future__ import annotations
+
+from agent.llm_client import create_message, TextBlock, ToolCall
 from domain.adapter import DomainAdapter
 from tools.registry import ToolRegistry
 
 
 class PlannerAgent:
-    def __init__(self, domain: DomainAdapter, model: str = "claude-sonnet-5") -> None:
+    def __init__(self, domain: DomainAdapter, model: str = "GLM-5.2") -> None:
         self.domain = domain
         self.model = model
         self.registry = ToolRegistry()
@@ -28,20 +29,22 @@ class PlannerAgent:
             tools=tool_specs,
         )
 
-        while response.stop_reason == "tool_use":
-            messages.append({"role": "assistant", "content": response.content})
-            tool_results = []
-            for block in response.content:
-                if block.type == "tool_use":
-                    result = await self.registry.call(block.name, block.input)
-                    tool_results.append(
-                        {
-                            "type": "tool_result",
-                            "tool_use_id": block.id,
-                            "content": str(result),
-                        }
-                    )
-            messages.append({"role": "user", "content": tool_results})
+        while response.stop_reason == "tool_calls":
+            raw_msg = response.raw_message
+            messages.append({
+                "role": "assistant",
+                "content": raw_msg.content if raw_msg.content else "",
+                "tool_calls": [
+                    {"id": tc.id, "type": "function", "function": {"name": tc.name, "arguments": tc.input}}
+                    for tc in response.content if isinstance(tc, ToolCall)
+                ],
+            })
+
+            for tc in response.content:
+                if isinstance(tc, ToolCall):
+                    result = await self.registry.call(tc.name, tc.input)
+                    messages.append({"role": "tool", "tool_call_id": tc.id, "content": str(result)})
+
             response = create_message(
                 model=self.model,
                 system=self.domain.system_prompt(),
@@ -49,6 +52,6 @@ class PlannerAgent:
                 tools=tool_specs,
             )
 
-        reply = "".join(block.text for block in response.content if block.type == "text")
+        reply = "".join(block.text for block in response.content if isinstance(block, TextBlock))
         messages.append({"role": "assistant", "content": reply})
         return reply, messages

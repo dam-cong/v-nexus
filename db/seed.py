@@ -24,11 +24,11 @@ DEMO_ADMINS = [
 ]
 
 DEMO_STUDENTS = [
-    {"name": "Le Van An", "email": "hs01@vnexus.vn", "grade": "Lop 3"},
-    {"name": "Pham Thi Bich", "email": "hs02@vnexus.vn", "grade": "Lop 3"},
-    {"name": "Hoang Van Cuong", "email": "hs03@vnexus.vn", "grade": "Lop 4"},
-    {"name": "Nguyen Thi Dao", "email": "hs04@vnexus.vn", "grade": "Lop 4"},
-    {"name": "Vo Van Em", "email": "hs05@vnexus.vn", "grade": "Lop 3"},
+    {"id": "STU01", "name": "Le Van An", "email": "hs01@vnexus.vn", "grade": "Lop 3"},
+    {"id": "STU02", "name": "Pham Thi Bich", "email": "hs02@vnexus.vn", "grade": "Lop 3"},
+    {"id": "STU03", "name": "Hoang Van Cuong", "email": "hs03@vnexus.vn", "grade": "Lop 4"},
+    {"id": "STU04", "name": "Nguyen Thi Dao", "email": "hs04@vnexus.vn", "grade": "Lop 4"},
+    {"id": "STU05", "name": "Vo Van Em", "email": "hs05@vnexus.vn", "grade": "Lop 3"},
 ]
 
 
@@ -62,6 +62,7 @@ async def seed_data(session: AsyncSession) -> None:
     # Seed students
     for s in DEMO_STUDENTS:
         student = Student(
+            id=s["id"],
             name=s["name"],
             email=s["email"],
             hashed_password=default_password,
