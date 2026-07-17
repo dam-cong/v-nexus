@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy import select
 
 from db.models import Base, Role
+from db.seed import seed_data
 
 DATABASE_URL = os.environ.get(
     "DATABASE_URL", "postgresql+asyncpg://vnexus:vnexus@localhost:5432/vnexus"
@@ -38,4 +39,8 @@ async def init_db() -> None:
                     Role(id=3, name="admin", description="Quản trị viên hệ thống"),
                 ]
                 session.add_all(roles)
-                # Dùng session.begin() block nên nó sẽ tự động commit hoặc rollback
+
+    # 3. Seed demo data
+    async with SessionLocal() as session:
+        async with session.begin():
+            await seed_data(session)

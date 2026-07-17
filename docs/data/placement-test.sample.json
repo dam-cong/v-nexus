@@ -1,0 +1,88 @@
+{
+  "test_id": "placement-test-en-2026",
+  "title": "Bài kiểm tra trình độ",
+  "mascot": {
+    "name": "Medi Bee",
+    "icon": "bee"
+  },
+  "steps": [
+    { "order": 1, "key": "choose_level", "label": "Chọn cấp độ" },
+    { "order": 2, "key": "take_test", "label": "Làm bài" },
+    { "order": 3, "key": "get_result", "label": "Nhận kết quả" }
+  ],
+  "levels": [
+    { "level_id": "starter", "label": "Mới bắt đầu", "cefr_equivalent": "Pre-A1" },
+    { "level_id": "beginner", "label": "Cơ bản", "cefr_equivalent": "A1" },
+    { "level_id": "elementary", "label": "Sơ cấp", "cefr_equivalent": "A2" }
+  ],
+  "questions": [
+    {
+      "question_id": "q_001",
+      "order": 1,
+      "type": "read_choice",
+      "instruction_label": "ĐỌC & CHỌN",
+      "skill_id": "grammar.past_simple_irregular",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Yesterday I ___ to the zoo.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "going", "icon": null, "error_tag": "confuses_gerund_with_past_tense" },
+        { "option_id": "b", "label": "go", "icon": null, "error_tag": "uses_present_instead_of_past" },
+        { "option_id": "c", "label": "went", "icon": null, "error_tag": null }
+      ],
+      "correct_option_id": "c",
+      "explanation": "'Yesterday' báo hiệu thì quá khứ đơn; 'go' là động từ bất quy tắc → 'went'."
+    },
+    {
+      "question_id": "q_003",
+      "order": 3,
+      "type": "listen_choice",
+      "instruction_label": "NGHE & CHỌN",
+      "skill_id": "vocab.places",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Where are they?",
+        "audio_url": "audio/q_003.mp3",
+        "audio_transcript": "Where are they?"
+      },
+      "options": [
+        { "option_id": "a", "label": "schoo", "icon": null, "error_tag": "incomplete_spelling" },
+        { "option_id": "b", "label": "lpark", "icon": null, "error_tag": "incomplete_spelling" },
+        { "option_id": "c", "label": "home", "icon": null, "error_tag": null }
+      ],
+      "correct_option_id": "c",
+      "explanation": "Đáp án đúng là địa điểm hợp lý trả lời cho câu hỏi 'Where are they?'."
+    },
+    {
+      "question_id": "q_011",
+      "order": 11,
+      "type": "listen_choice",
+      "instruction_label": "NGHE & CHỌN",
+      "skill_id": "listening.imperatives",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "What should you do?",
+        "audio_url": "audio/q_011.mp3",
+        "audio_transcript": "It's cold in here. What should you do?"
+      },
+      "options": [
+        { "option_id": "a", "label": "close the door", "icon": "door", "error_tag": "confuses_action_target" },
+        { "option_id": "b", "label": "open the window", "icon": "window", "error_tag": "confuses_action_target" },
+        { "option_id": "c", "label": "sit down", "icon": "chair", "error_tag": "unrelated_action" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Phòng lạnh → hành động hợp lý là đóng cửa để giữ ấm."
+    }
+  ],
+  "_meta": {
+    "note": "Bài mẫu này chỉ tái hiện 3/14 câu hỏi (Câu 1, 3, 11) đã thấy trong docs/Screenshot (5/6/7).png để minh hoạ đầy đủ 2 loại câu hỏi (read_choice, listen_choice). Cần bổ sung đủ 14 câu và gắn đúng skill_id theo Knowledge Graph thật trước khi dùng cho demo.",
+    "total_questions": 14,
+    "questions_included": 3
+  }
+}

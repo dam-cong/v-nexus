@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://v-nexus.local/schemas/placement-test.schema.json",
+  "title": "PlacementTest",
+  "description": "Cấu trúc dữ liệu cho bài kiểm tra trình độ (placement test) Tiếng Anh — 'Medi Bee'. Mỗi câu hỏi gắn nhãn skill_id để BKT dùng làm evidence tính mastery probability ban đầu (prior từ CV, posterior từ kết quả bài làm).",
+  "type": "object",
+  "required": ["test_id", "title", "mascot", "steps", "levels", "questions"],
+  "properties": {
+    "test_id": {
+      "type": "string",
+      "description": "Định danh duy nhất của bài kiểm tra, vd 'placement-test-en-2026'."
+    },
+    "title": {
+      "type": "string",
+      "description": "Tên hiển thị, vd 'Bài kiểm tra trình độ'."
+    },
+    "mascot": {
+      "type": "object",
+      "description": "Linh vật hiển thị trong lúc làm bài (thanh tiến trình).",
+      "required": ["name", "icon"],
+      "properties": {
+        "name": { "type": "string", "description": "vd 'Medi Bee'." },
+        "icon": { "type": "string", "description": "Emoji hoặc đường dẫn ảnh, vd 'bee'." }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "description": "Các bước của luồng làm bài, hiển thị trên thanh stepper phía trên.",
+      "items": {
+        "type": "object",
+        "required": ["order", "key", "label"],
+        "properties": {
+          "order": { "type": "integer", "minimum": 1 },
+          "key": {
+            "type": "string",
+            "enum": ["choose_level", "take_test", "get_result"]
+          },
+          "label": {
+            "type": "string",
+            "description": "vd 'Chọn cấp độ', 'Làm bài', 'Nhận kết quả'."
+          }
+        }
+      },
+      "minItems": 3
+    },
+    "levels": {
+      "type": "array",
+      "description": "Danh sách cấp độ học viên có thể chọn ở bước 'Chọn cấp độ' (vd quy đổi CEFR / khung 6 bậc VN).",
+      "items": {
+        "type": "object",
+        "required": ["level_id", "label"],
+        "properties": {
+          "level_id": { "type": "string", "description": "vd 'beginner', 'A1', 'grade_1'." },
+          "label": { "type": "string" },
+          "cefr_equivalent": {
+            "type": ["string", "null"],
+            "description": "Quy đổi CEFR nếu có, vd 'A1'."
+          }
+        }
+      }
+    },
+    "questions": {
+      "type": "array",
+      "description": "Ngân hàng câu hỏi của bài kiểm tra, đã lọc theo cấp độ đã chọn. Thứ tự hiển thị theo 'order' (adaptive testing có thể chọn lại thứ tự lúc runtime dựa trên entropy cao nhất, xem PHAN_TICH_DE_ADAPTIVE_TUTORING.md).",
+      "items": { "$ref": "#/$defs/Question" },
+      "minItems": 1
+    }
+  },
+  "$defs": {
+    "Question": {
+      "type": "object",
+      "required": [
+        "question_id",
+        "order",
+        "type",
+        "instruction_label",
+        "skill_id",
+        "difficulty",
+        "prompt",
+        "options",
+        "correct_option_id"
+      ],
+      "properties": {
+        "question_id": {
+          "type": "string",
+          "description": "Định danh duy nhất, vd 'q_001'."
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Số thứ tự câu hỏi trong bài (hiển thị 'Câu X/14')."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["read_choice", "listen_choice"],
+          "description": "read_choice = 'ĐỌC & CHỌN' (đọc câu, chọn đáp án điền vào chỗ trống hoặc trả lời). listen_choice = 'NGHE & CHỌN' (nghe audio, chọn đáp án đúng, có thể kèm ảnh minh hoạ)."
+        },
+        "instruction_label": {
+          "type": "string",
+          "description": "Nhãn badge hiển thị phía trên câu hỏi, vd 'ĐỌC & CHỌN', 'NGHE & CHỌN'."
+        },
+        "skill_id": {
+          "type": "string",
+          "description": "Kỹ năng được đo trong sơ đồ tri thức (Knowledge Graph), dùng làm evidence cho BKT. vd 'grammar.past_simple', 'vocab.places', 'listening.imperatives'."
+        },
+        "difficulty": {
+          "type": "string",
+          "enum": ["easy", "medium", "hard"],
+          "description": "Độ khó câu hỏi, dùng để chọn câu tiếp theo trong adaptive testing."
+        },
+        "purpose": {
+          "type": "string",
+          "enum": ["probe", "diagnostic", "practice", "retest"],
+          "default": "diagnostic",
+          "description": "Mục đích câu hỏi theo mục 5.2 PROJECT_DESCRIPTION.md: thăm dò, chẩn đoán, luyện tập hoặc kiểm tra lại."
+        },
+        "prompt": {
+          "type": "object",
+          "description": "Nội dung đề bài.",
+          "properties": {
+            "text": {
+              "type": "string",
+              "description": "Câu hỏi/câu có chỗ trống, vd 'Yesterday I ___ to the zoo.' hoặc 'Where are they?'."
+            },
+            "audio_url": {
+              "type": ["string", "null"],
+              "description": "Đường dẫn file audio cần phát, bắt buộc khi type = listen_choice."
+            },
+            "audio_transcript": {
+              "type": ["string", "null"],
+              "description": "Transcript của audio, dùng để chấm/giải thích, không hiển thị cho học sinh lúc làm bài."
+            }
+          },
+          "required": ["text"]
+        },
+        "options": {
+          "type": "array",
+          "description": "Danh sách phương án trả lời (thường 3 phương án theo UI hiện tại).",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/Option" }
+        },
+        "correct_option_id": {
+          "type": "string",
+          "description": "option_id của đáp án đúng."
+        },
+        "explanation": {
+          "type": ["string", "null"],
+          "description": "Giải thích ngắn hiển thị sau khi trả lời, dùng làm nguồn cho LLM diễn giải kết quả."
+        }
+      }
+    },
+    "Option": {
+      "type": "object",
+      "required": ["option_id", "label"],
+      "properties": {
+        "option_id": { "type": "string", "description": "vd 'a', 'b', 'c'." },
+        "label": {
+          "type": "string",
+          "description": "Nội dung phương án, vd 'went', 'close the door'."
+        },
+        "icon": {
+          "type": ["string", "null"],
+          "description": "Emoji hoặc đường dẫn ảnh minh hoạ hiển thị phía trên label (vd icon cửa, cửa sổ, ghế ở câu hỏi nghe)."
+        },
+        "error_tag": {
+          "type": ["string", "null"],
+          "description": "Dạng lỗi phổ biến nếu học sinh chọn phương án sai này, vd 'confuses_go_went_present_past'. Dùng cho chẩn đoán nguyên nhân gốc."
+        }
+      }
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { 
   GraduationCap, 
   Users, 
@@ -18,14 +19,28 @@ import {
   LayoutDashboard,
   Calendar,
   Settings,
-  Bell
+  Bell,
+  LogOut
 } from 'lucide-react';
+import { useAuth } from './context/AuthContext';
+import { apiFetch } from './api';
+import Login from './pages/Login';
 import './App.css';
 
 // Base API URL
 const API_BASE = "http://localhost:8000";
 
 function App() {
+  const { user, logout, isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Login />;
+  }
+
+  return <DashboardApp user={user} logout={logout} />;
+}
+
+function DashboardApp({ user, logout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
@@ -68,7 +83,7 @@ function App() {
   // Fetch all data
   const fetchStudents = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/students`);
+      const res = await apiFetch('/api/students');
       if (res.ok) {
         const data = await res.json();
         setStudents(data);
@@ -80,7 +95,7 @@ function App() {
 
   const fetchTeachers = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/teachers`);
+      const res = await apiFetch('/api/teachers');
       if (res.ok) {
         const data = await res.json();
         setTeachers(data);
@@ -92,7 +107,7 @@ function App() {
 
   const fetchRankings = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/rankings`);
+      const res = await apiFetch('/api/rankings');
       if (res.ok) {
         const data = await res.json();
         setRankings(data);
@@ -126,9 +141,8 @@ function App() {
 
     try {
       // 1. Create Student
-      const studentRes = await fetch(`${API_BASE}/api/students`, {
+      const studentRes = await apiFetch('/api/students', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: surveyForm.name,
           email: surveyForm.email,
@@ -145,9 +159,8 @@ function App() {
       const newStudent = await studentRes.json();
 
       // 2. Create Survey record linked to student ID
-      const surveyRes = await fetch(`${API_BASE}/api/surveys`, {
+      const surveyRes = await apiFetch('/api/surveys', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           student_id: newStudent.id,
           years_studying_english: parseInt(surveyForm.years_studying_english) || 0,
@@ -191,13 +204,12 @@ function App() {
     setLoading(true);
     try {
       const url = studentModal.mode === 'create' 
-        ? `${API_BASE}/api/students` 
-        : `${API_BASE}/api/students/${studentModal.data.id}`;
+        ? '/api/students'
+        : `/api/students/${studentModal.data.id}`;
       const method = studentModal.mode === 'create' ? 'POST' : 'PUT';
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(studentForm)
       });
 
@@ -222,7 +234,7 @@ function App() {
   const deleteStudent = async (id) => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa học sinh này không? Mọi thông tin xếp hạng và khảo sát liên quan sẽ bị xóa.")) return;
     try {
-      const res = await fetch(`${API_BASE}/api/students/${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/students/${id}`, { method: 'DELETE' });
       if (res.ok) {
         triggerNotification("Đã xóa học sinh thành công.");
         fetchStudents();
@@ -239,13 +251,12 @@ function App() {
     setLoading(true);
     try {
       const url = teacherModal.mode === 'create' 
-        ? `${API_BASE}/api/teachers` 
-        : `${API_BASE}/api/teachers/${teacherModal.data.id}`;
+        ? '/api/teachers'
+        : `/api/teachers/${teacherModal.data.id}`;
       const method = teacherModal.mode === 'create' ? 'POST' : 'PUT';
 
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(teacherForm)
       });
 
@@ -269,7 +280,7 @@ function App() {
   const deleteTeacher = async (id) => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa giáo viên này không?")) return;
     try {
-      const res = await fetch(`${API_BASE}/api/teachers/${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/teachers/${id}`, { method: 'DELETE' });
       if (res.ok) {
         triggerNotification("Đã xóa giáo viên thành công.");
         fetchTeachers();
@@ -288,9 +299,8 @@ function App() {
       else if (newScore >= 50) newLevel = "Intermediate";
       else if (newScore >= 20) newLevel = "Elementary";
 
-      const res = await fetch(`${API_BASE}/api/rankings/${ranking.id}`, {
+      const res = await apiFetch(`/api/rankings/${ranking.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ score: newScore, level: newLevel })
       });
 
@@ -359,8 +369,8 @@ function App() {
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <div className="sidebar-logo-icon">A</div>
-          <span>Akademi</span>
+          <div className="sidebar-logo-icon">V</div>
+          <span>V-Nexus Tutor</span>
         </div>
         
         <div className="sidebar-menu">
@@ -371,20 +381,29 @@ function App() {
             <LayoutDashboard size={20} />
             <span>Dashboard</span>
           </button>
-          <button 
-            className={`menu-item ${activeTab === 'students' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('students'); fetchStudents(); }}
-          >
-            <GraduationCap size={20} />
-            <span>Học sinh</span>
-          </button>
-          <button 
-            className={`menu-item ${activeTab === 'teachers' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('teachers'); fetchTeachers(); }}
-          >
-            <Users size={20} />
-            <span>Giáo viên</span>
-          </button>
+
+          {/* Students tab: visible to admin and teacher */}
+          {(user?.role === 'admin' || user?.role === 'giao_vien') && (
+            <button 
+              className={`menu-item ${activeTab === 'students' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('students'); fetchStudents(); }}
+            >
+              <GraduationCap size={20} />
+              <span>Học sinh</span>
+            </button>
+          )}
+
+          {/* Teachers tab: admin only */}
+          {user?.role === 'admin' && (
+            <button 
+              className={`menu-item ${activeTab === 'teachers' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('teachers'); fetchTeachers(); }}
+            >
+              <Users size={20} />
+              <span>Giáo viên</span>
+            </button>
+          )}
+
           <button 
             className={`menu-item ${activeTab === 'leaderboard' ? 'active' : ''}`}
             onClick={() => { setActiveTab('leaderboard'); fetchRankings(); fetchStudents(); }}
@@ -392,13 +411,17 @@ function App() {
             <Trophy size={20} />
             <span>Bảng xếp hạng</span>
           </button>
-          <button 
-            className={`menu-item ${activeTab === 'survey' ? 'active' : ''}`}
-            onClick={() => setActiveTab('survey')}
-          >
-            <BookOpen size={20} />
-            <span>Khảo sát đầu vào</span>
-          </button>
+
+          {/* Survey tab: visible to admin and teacher */}
+          {(user?.role === 'admin' || user?.role === 'giao_vien') && (
+            <button 
+              className={`menu-item ${activeTab === 'survey' ? 'active' : ''}`}
+              onClick={() => setActiveTab('survey')}
+            >
+              <BookOpen size={20} />
+              <span>Khảo sát đầu vào</span>
+            </button>
+          )}
         </div>
 
         <div className="sidebar-footer">
@@ -413,11 +436,11 @@ function App() {
         <header className="top-header">
           <div className="header-title">
             <h1>
-              {activeTab === 'dashboard' && 'Dashboard Overview'}
-              {activeTab === 'students' && 'Students Directory'}
-              {activeTab === 'teachers' && 'Teachers Directory'}
-              {activeTab === 'leaderboard' && 'Academic Leaderboard'}
-              {activeTab === 'survey' && 'Diagnostic Assessment'}
+              {activeTab === 'dashboard' && 'Tổng quan'}
+              {activeTab === 'students' && 'Danh sách Học sinh'}
+              {activeTab === 'teachers' && 'Danh sách Giáo viên'}
+              {activeTab === 'leaderboard' && 'Bảng xếp hạng'}
+              {activeTab === 'survey' && 'Khảo sát đầu vào'}
             </h1>
           </div>
           
@@ -453,13 +476,16 @@ function App() {
             
             <div className="user-profile">
               <div className="user-info">
-                <p className="user-name">Admin V-Nexus</p>
-                <p className="user-role">Administrator</p>
+                <p className="user-name">{user?.name || 'Người dùng'}</p>
+                <p className="user-role">
+                  {user?.role === 'admin' ? 'Quản trị viên' : 
+                   user?.role === 'giao_vien' ? 'Giáo viên' : 'Học sinh'}
+                </p>
               </div>
               <div 
                 className="user-avatar" 
                 style={{ 
-                  background: '#fb7d5b', 
+                  background: user?.role === 'admin' ? '#fb7d5b' : user?.role === 'giao_vien' ? '#4d44b5' : '#27c26c',
                   color: 'white', 
                   display: 'flex', 
                   alignItems: 'center', 
@@ -467,8 +493,16 @@ function App() {
                   fontWeight: '700' 
                 }}
               >
-                AV
+                {user?.name?.charAt(0)?.toUpperCase() || '?'}
               </div>
+              <button
+                onClick={logout}
+                className="icon-btn"
+                title="Đăng xuất"
+                style={{ marginLeft: '8px' }}
+              >
+                <LogOut size={18} />
+              </button>
             </div>
           </div>
         </header>
@@ -496,7 +530,7 @@ function App() {
                     <GraduationCap />
                   </div>
                   <div className="stat-info">
-                    <span className="stat-label">Students</span>
+                    <span className="stat-label">Học sinh</span>
                     <span className="stat-val">{students.length}</span>
                   </div>
                 </div>
@@ -505,7 +539,7 @@ function App() {
                     <Users />
                   </div>
                   <div className="stat-info">
-                    <span className="stat-label">Teachers</span>
+                    <span className="stat-label">Giáo viên</span>
                     <span className="stat-val">{teachers.length}</span>
                   </div>
                 </div>
@@ -514,7 +548,7 @@ function App() {
                     <BookOpen />
                   </div>
                   <div className="stat-info">
-                    <span className="stat-label">Surveys Taken</span>
+                    <span className="stat-label">Khảo sát</span>
                     <span className="stat-val">{totalSurveys}</span>
                   </div>
                 </div>
@@ -523,7 +557,7 @@ function App() {
                     <Award />
                   </div>
                   <div className="stat-info">
-                    <span className="stat-label">Avg Skill Score</span>
+                    <span className="stat-label">Điểm trung bình</span>
                     <span className="stat-val">{avgScore} pts</span>
                   </div>
                 </div>
@@ -532,7 +566,7 @@ function App() {
               {/* Charts grid */}
               <div className="charts-grid">
                 <div className="panel">
-                  <h3 className="card-title">School Performance (Live Skill Levels)</h3>
+                    <h3 className="card-title">Biểu đồ điểm theo tuần</h3>
                   <div className="chart-placeholder">
                     {/* SVG Line Chart for premium looks */}
                     <svg viewBox="0 0 500 150" style={{ width: '100%', height: '180px' }}>
@@ -567,7 +601,7 @@ function App() {
                 </div>
 
                 <div className="panel">
-                  <h3 className="card-title">School Overview (Class Stats)</h3>
+                    <h3 className="card-title">Thống kê theo lớp</h3>
                   <div className="chart-placeholder">
                     <div className="bar-chart-visual">
                       <div className="bar-column">
@@ -604,16 +638,16 @@ function App() {
                 {/* Recent Students */}
                 <div className="panel table-panel">
                   <div className="table-header-bar">
-                    <h3 className="table-title">Recent Enrolled Students</h3>
-                    <button className="btn btn-primary btn-small" onClick={() => setActiveTab('students')}>View All</button>
+                    <h3 className="table-title">Học sinh gần đây</h3>
+                    <button className="btn btn-primary btn-small" onClick={() => setActiveTab('students')}>Xem tất cả</button>
                   </div>
                   <div className="table-container">
                     <table className="custom-table">
                       <thead>
                         <tr>
-                          <th>Student Info</th>
-                          <th>Grade</th>
-                          <th>Skill Level</th>
+                          <th>Thông tin học sinh</th>
+                          <th>Khối</th>
+                          <th>Trình độ</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -655,8 +689,8 @@ function App() {
                 {/* Calendar Card */}
                 <div className="panel">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h3 className="card-title" style={{ margin: 0 }}>School Calendar</h3>
-                    <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--primary)' }}>May 2026</span>
+                    <h3 className="card-title" style={{ margin: 0 }}>Lịch học</h3>
+                    <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--primary)' }}>Tháng 7, 2026</span>
                   </div>
                   <div className="calendar-visual">
                     <div className="cal-header">Su</div>
@@ -702,7 +736,7 @@ function App() {
           {activeTab === 'students' && (
             <div className="animate-fade-in panel table-panel">
               <div className="table-header-bar">
-                <h3 className="table-title">Student Details</h3>
+                <h3 className="table-title">Chi tiết Học sinh</h3>
                 <button 
                   className="btn btn-primary"
                   onClick={() => {
@@ -727,12 +761,12 @@ function App() {
                   <table className="custom-table">
                     <thead>
                       <tr>
-                        <th>Name</th>
+                        <th>Tên</th>
                         <th>Email</th>
-                        <th>Grade</th>
-                        <th>Status / Level</th>
-                        <th>Score</th>
-                        <th style={{ width: '150px', textAlign: 'center' }}>Actions</th>
+                        <th>Khối</th>
+                        <th>Trình độ</th>
+                        <th>Điểm</th>
+                        <th style={{ width: '150px', textAlign: 'center' }}>Thao tác</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -798,7 +832,7 @@ function App() {
           {activeTab === 'teachers' && (
             <div className="animate-fade-in panel table-panel">
               <div className="table-header-bar">
-                <h3 className="table-title">Teacher Details</h3>
+                <h3 className="table-title">Chi tiết Giáo viên</h3>
                 <button 
                   className="btn btn-primary"
                   onClick={() => {
@@ -823,11 +857,11 @@ function App() {
                   <table className="custom-table">
                     <thead>
                       <tr>
-                        <th>Teacher Info</th>
-                        <th>Subject</th>
-                        <th>Qualification / Email</th>
-                        <th>Date Joined</th>
-                        <th style={{ width: '150px', textAlign: 'center' }}>Actions</th>
+                        <th>Thông tin giáo viên</th>
+                        <th>Môn học</th>
+                        <th>Bằng cấp / Email</th>
+                        <th>Ngày tham gia</th>
+                        <th style={{ width: '150px', textAlign: 'center' }}>Thao tác</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -891,8 +925,8 @@ function App() {
           {activeTab === 'leaderboard' && (
             <div className="animate-fade-in panel">
               <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                <h3 className="card-title">Academic Honor Roll</h3>
-                <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Top students in the Adaptive Tutoring system</p>
+                <h3 className="card-title">Bảng vinh danh</h3>
+                <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Top học sinh xuất sắc nhất hệ thống</p>
               </div>
 
               {/* Top 3 Podium */}
@@ -944,12 +978,12 @@ function App() {
                 <table className="custom-table">
                   <thead>
                     <tr>
-                      <th style={{ width: '80px', textAlign: 'center' }}>Rank</th>
-                      <th>Student Info</th>
-                      <th>Grade</th>
-                      <th>Level</th>
-                      <th style={{ width: '120px' }}>Score</th>
-                      <th style={{ width: '180px', textAlign: 'center' }}>Actions</th>
+                      <th style={{ width: '80px', textAlign: 'center' }}>Hạng</th>
+                      <th>Thông tin học sinh</th>
+                      <th>Khối</th>
+                      <th>Trình độ</th>
+                      <th style={{ width: '120px' }}>Điểm</th>
+                      <th style={{ width: '180px', textAlign: 'center' }}>Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
