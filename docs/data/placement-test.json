@@ -1,0 +1,371 @@
+{
+  "test_id": "placement-test-en-2026",
+  "title": "Bai kiem tra trinh do Tieng Anh",
+  "mascot": {
+    "name": "Medi Bee",
+    "icon": "bee"
+  },
+  "steps": [
+    { "order": 1, "key": "choose_level", "label": "Chon cap do" },
+    { "order": 2, "key": "take_test", "label": "Lam bai" },
+    { "order": 3, "key": "get_result", "label": "Nhan ket qua" }
+  ],
+  "levels": [
+    { "level_id": "starter", "label": "Moi bat dau", "cefr_equivalent": "Pre-A1", "description": "Hoc sinh moi tiep xuc Tieng Anh, biet so dem, chu cai, cau don gian." },
+    { "level_id": "beginner", "label": "Co ban", "cefr_equivalent": "A1", "description": "Hoc sinh hieu cau don gian, tu vung hang ngay, nghe hieu y chinh." },
+    { "level_id": "elementary", "label": "So cap", "cefr_equivalent": "A2", "description": "Hoc sinh su dung ngu phap co ban, giao tiep hang ngay, doc hieu doan ngan." }
+  ],
+  "adaptive_config": {
+    "strategy": "level_sequential",
+    "description": "Hoc sinh chon cap do, lam tu cau 1 den cau 14. Co the tuyen tinh hoac chon theo entropy (CAT) cho phien ban sau.",
+    "questions_per_level": {
+      "starter": 5,
+      "beginner": 5,
+      "elementary": 4
+    }
+  },
+  "questions": [
+    {
+      "question_id": "q_001",
+      "order": 1,
+      "level_id": "starter",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u1.l3",
+      "skill_name": "Present Simple vs Present Continuous",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "I ___ to school every day.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "go", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "goes", "icon": null, "error_tag": "wrong_subject_verb_agreement" },
+        { "option_id": "c", "label": "going", "icon": null, "error_tag": "uses_gerund_instead_of_base_form" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Every day' chi hanh dong lap lai -> Present Simple. Chu 'I' dong tu 'go'."
+    },
+    {
+      "question_id": "q_002",
+      "order": 2,
+      "level_id": "starter",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u2.l3",
+      "skill_name": "Adverbs of Frequency",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "I ___ brush my teeth before bed.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "always", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "never", "icon": null, "error_tag": "opposite_meaning" },
+        { "option_id": "c", "label": "yesterday", "icon": null, "error_tag": "uses_time_word_not_frequency" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Thoi quen tot -> 'always' (luon luon)."
+    },
+    {
+      "question_id": "q_003",
+      "order": 3,
+      "level_id": "starter",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u3.l3",
+      "skill_name": "To Be (Present and Past)",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "They ___ happy yesterday.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "are", "icon": null, "error_tag": "uses_present_instead_of_past" },
+        { "option_id": "b", "label": "was", "icon": null, "error_tag": "wrong_singular_plural" },
+        { "option_id": "c", "label": "were", "icon": null, "error_tag": null }
+      ],
+      "correct_option_id": "c",
+      "explanation": "'Yesterday' -> qua khu. 'They' so nhieu -> 'were'."
+    },
+    {
+      "question_id": "q_004",
+      "order": 4,
+      "level_id": "starter",
+      "type": "listen_choice",
+      "instruction_label": "NGHE & CHON",
+      "skill_id": "as3.u1.l1",
+      "skill_name": "School Vocabulary",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "What subject do you study with numbers?",
+        "audio_url": "audio/q_004.mp3",
+        "audio_transcript": "What subject do you study with numbers?"
+      },
+      "options": [
+        { "option_id": "a", "label": "music", "icon": null, "error_tag": "wrong_school_subject" },
+        { "option_id": "b", "label": "maths", "icon": null, "error_tag": null },
+        { "option_id": "c", "label": "art", "icon": null, "error_tag": "wrong_school_subject" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "Mon hoc dung voi so la 'maths'."
+    },
+    {
+      "question_id": "q_005",
+      "order": 5,
+      "level_id": "starter",
+      "type": "listen_choice",
+      "instruction_label": "NGHE & CHON",
+      "skill_id": "as3.u3.l1",
+      "skill_name": "Places Around Town",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Where do you go to borrow books?",
+        "audio_url": "audio/q_005.mp3",
+        "audio_transcript": "Where do you go to borrow books?"
+      },
+      "options": [
+        { "option_id": "a", "label": "hospital", "icon": null, "error_tag": "wrong_place" },
+        { "option_id": "b", "label": "cinema", "icon": null, "error_tag": "wrong_place" },
+        { "option_id": "c", "label": "library", "icon": null, "error_tag": null }
+      ],
+      "correct_option_id": "c",
+      "explanation": "Noi muon sach la 'library' (thu vien)."
+    },
+    {
+      "question_id": "q_006",
+      "order": 6,
+      "level_id": "beginner",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u4.l3",
+      "skill_name": "Some/Any with Countable/Uncountable Nouns",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Would you like ___ water? - No, thank you.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "some", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "any", "icon": null, "error_tag": "uses_any_in_offer" },
+        { "option_id": "c", "label": "a", "icon": null, "error_tag": "uses_article_with_uncountable" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Cau offer dung 'some' vi khong phai cau phu dinh."
+    },
+    {
+      "question_id": "q_007",
+      "order": 7,
+      "level_id": "beginner",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u5.l3",
+      "skill_name": "Past Simple Regular Verbs",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "She ___ (play) piano at the concert yesterday.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "plays", "icon": null, "error_tag": "uses_present_for_past" },
+        { "option_id": "b", "label": "played", "icon": null, "error_tag": null },
+        { "option_id": "c", "label": "play", "icon": null, "error_tag": "no_tense_marker" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "'Yesterday' -> qua khu. 'Play' them -ed -> 'played'."
+    },
+    {
+      "question_id": "q_008",
+      "order": 8,
+      "level_id": "beginner",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u6.l3",
+      "skill_name": "Comparatives",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "An elephant is ___ than a mouse.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "bigger", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "biggest", "icon": null, "error_tag": "uses_superlative" },
+        { "option_id": "c", "label": "more big", "icon": null, "error_tag": "wrong_comparative_form" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "So sanh 2 doi tuong -> 'bigger'."
+    },
+    {
+      "question_id": "q_009",
+      "order": 9,
+      "level_id": "beginner",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u8.l3",
+      "skill_name": "There Was / There Were",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "There ___ many students in the classroom yesterday.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "was", "icon": null, "error_tag": "wrong_singular_plural" },
+        { "option_id": "b", "label": "were", "icon": null, "error_tag": null },
+        { "option_id": "c", "label": "are", "icon": null, "error_tag": "uses_present_for_past" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "'Many students' so nhieu -> 'were'."
+    },
+    {
+      "question_id": "q_010",
+      "order": 10,
+      "level_id": "beginner",
+      "type": "listen_choice",
+      "instruction_label": "NGHE & CHON",
+      "skill_id": "as3.u4.l1",
+      "skill_name": "Food and Tableware",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Which one is a vegetable?",
+        "audio_url": "audio/q_010.mp3",
+        "audio_transcript": "Which one is a vegetable?"
+      },
+      "options": [
+        { "option_id": "a", "label": "spinach", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "biscuit", "icon": null, "error_tag": "not_vegetable" },
+        { "option_id": "c", "label": "cheese", "icon": null, "error_tag": "not_vegetable" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Spinach' la rau. 'Biscuit' la banh, 'cheese' la pho mai."
+    },
+    {
+      "question_id": "q_011",
+      "order": 11,
+      "level_id": "elementary",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u7.l3",
+      "skill_name": "Past Simple Irregular Verbs",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Yesterday I ___ to the zoo.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "going", "icon": null, "error_tag": "confuses_gerund_with_past" },
+        { "option_id": "b", "label": "go", "icon": null, "error_tag": "uses_present_for_past" },
+        { "option_id": "c", "label": "went", "icon": null, "error_tag": null }
+      ],
+      "correct_option_id": "c",
+      "explanation": "'Go' bat quy tac -> 'went'."
+    },
+    {
+      "question_id": "q_012",
+      "order": 12,
+      "level_id": "elementary",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u1.l3",
+      "skill_name": "Past Simple Question Forms",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Where ___ she ___ (live) before she moved here?",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "did ... live", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "does ... live", "icon": null, "error_tag": "uses_present_for_past" },
+        { "option_id": "c", "label": "did ... lived", "icon": null, "error_tag": "double_past_tense" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Cau hoi qua khu: 'Where did + S + dong tu goc?'"
+    },
+    {
+      "question_id": "q_013",
+      "order": 13,
+      "level_id": "elementary",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u2.l3",
+      "skill_name": "Verbs with To + Infinitive",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "She needs ___ (finish) her homework before dinner.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "to finish", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "finishing", "icon": null, "error_tag": "uses_gerund_after_need" },
+        { "option_id": "c", "label": "finish", "icon": null, "error_tag": "missing_to_infinitive" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Needs' + 'to + V' -> 'needs to finish'."
+    },
+    {
+      "question_id": "q_014",
+      "order": 14,
+      "level_id": "elementary",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u3.l3",
+      "skill_name": "Must / Mustn't",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "You ___ touch the wet paint, and you ___ wear shoes in the gym.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "mustn't ... must", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "must ... mustn't", "icon": null, "error_tag": "swaps_prohibition_and_obligation" },
+        { "option_id": "c", "label": "mustn't ... mustn't", "icon": null, "error_tag": "double_prohibition" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Cam cham son (mustn't); bat buoc mang giay (must)."
+    }
+  ],
+  "scoring": {
+    "total_questions": 14,
+    "points_per_correct": 1,
+    "max_score": 14,
+    "level_thresholds": {
+      "starter": { "min": 0, "max": 5, "result_level": "starter", "cefr": "Pre-A1" },
+      "beginner": { "min": 6, "max": 10, "result_level": "beginner", "cefr": "A1" },
+      "elementary": { "min": 11, "max": 14, "result_level": "elementary", "cefr": "A2" }
+    },
+    "skill_mastery_update": {
+      "correct": "mastery += 0.3 * (1 - mastery)",
+      "incorrect": "mastery += -0.2 * mastery",
+      "description": "Cap nhat mastery probability theo BKT: dung thi tang, sai thi giam."
+    }
+  },
+  "_meta": {
+    "note": "Day la de mau day du 14 cau (5 starter + 5 beginner + 4 elementary). Thuc te co the ap dung adaptive testing (CAT) de chon cau theo entropy cao nhat.",
+    "source_skills": "knowledge-graph.json (en-academy-stars-3-4-kg)",
+    "version": "1.0.0"
+  }
+}
