@@ -1,0 +1,308 @@
+{
+  "survey_id": "survey-2026-001",
+  "test_id": "placement-test-en-2026",
+  "description": "Ket qua bai kiem tra trinh do cho 5 hoc sinh mau. Bao gom diem so, mastery probability theo tung skill, phan tich lo hong, va loi de xuat hoc tap.",
+  "total_students": 5,
+  "results": [
+    {
+      "student_id": 1,
+      "student_name": "Le Van An",
+      "email": "hs01@vnexus.vn",
+      "grade": "Lop 3",
+      "test_date": "2026-07-15T09:00:00Z",
+      "answers": [
+        { "question_id": "q_001", "selected": "a", "correct": true, "skill_id": "as3.u1.l3", "time_spent_sec": 8 },
+        { "question_id": "q_002", "selected": "a", "correct": true, "skill_id": "as3.u2.l3", "time_spent_sec": 5 },
+        { "question_id": "q_003", "selected": "c", "correct": true, "skill_id": "as3.u3.l3", "time_spent_sec": 7 },
+        { "question_id": "q_004", "selected": "b", "correct": true, "skill_id": "as3.u1.l1", "time_spent_sec": 4 },
+        { "question_id": "q_005", "selected": "c", "correct": true, "skill_id": "as3.u3.l1", "time_spent_sec": 6 },
+        { "question_id": "q_006", "selected": "a", "correct": true, "skill_id": "as3.u4.l3", "time_spent_sec": 9 },
+        { "question_id": "q_007", "selected": "b", "correct": true, "skill_id": "as3.u5.l3", "time_spent_sec": 10 },
+        { "question_id": "q_008", "selected": "a", "correct": true, "skill_id": "as3.u6.l3", "time_spent_sec": 12 },
+        { "question_id": "q_009", "selected": "b", "correct": true, "skill_id": "as3.u8.l3", "time_spent_sec": 8 },
+        { "question_id": "q_010", "selected": "a", "correct": true, "skill_id": "as3.u4.l1", "time_spent_sec": 5 },
+        { "question_id": "q_011", "selected": "c", "correct": true, "skill_id": "as3.u7.l3", "time_spent_sec": 11 },
+        { "question_id": "q_012", "selected": "a", "correct": true, "skill_id": "as4.u1.l3", "time_spent_sec": 14 },
+        { "question_id": "q_013", "selected": "a", "correct": true, "skill_id": "as4.u2.l3", "time_spent_sec": 13 },
+        { "question_id": "q_014", "selected": "a", "correct": true, "skill_id": "as4.u3.l3", "time_spent_sec": 15 }
+      ],
+      "score": 14,
+      "max_score": 14,
+      "percentage": 100,
+      "result_level": "elementary",
+      "cefr": "A2",
+      "time_total_sec": 127,
+      "mastery": {
+        "as3.u1.l3": { "probability": 0.95, "skill_name": "Present Simple vs Present Continuous", "status": "mastered" },
+        "as3.u2.l3": { "probability": 0.92, "skill_name": "Adverbs of Frequency", "status": "mastered" },
+        "as3.u3.l3": { "probability": 0.93, "skill_name": "To Be (Present and Past)", "status": "mastered" },
+        "as3.u4.l3": { "probability": 0.90, "skill_name": "Some/Any with Countable/Uncountable Nouns", "status": "mastered" },
+        "as3.u5.l3": { "probability": 0.88, "skill_name": "Past Simple Regular Verbs", "status": "mastered" },
+        "as3.u6.l3": { "probability": 0.85, "skill_name": "Comparatives", "status": "mastered" },
+        "as3.u7.l3": { "probability": 0.82, "skill_name": "Past Simple Irregular Verbs", "status": "mastered" },
+        "as3.u8.l3": { "probability": 0.87, "skill_name": "There Was / There Were", "status": "mastered" },
+        "as4.u1.l3": { "probability": 0.78, "skill_name": "Past Simple Question Forms", "status": "developing" },
+        "as4.u2.l3": { "probability": 0.75, "skill_name": "Verbs with To + Infinitive", "status": "developing" },
+        "as4.u3.l3": { "probability": 0.72, "skill_name": "Must / Mustn't", "status": "developing" }
+      },
+      "gaps": [],
+      "recommendations": [
+        { "skill_id": "as4.u1.l3", "action": "Luyen tap cau hoi qua khu", "priority": "low" },
+        { "skill_id": "as4.u2.l3", "action": "On tap to-infinitive", "priority": "low" },
+        { "skill_id": "as4.u3.l3", "action": "Phan biet must vs mustn't", "priority": "low" }
+      ]
+    },
+    {
+      "student_id": 2,
+      "student_name": "Pham Thi Bich",
+      "email": "hs02@vnexus.vn",
+      "grade": "Lop 3",
+      "test_date": "2026-07-15T09:15:00Z",
+      "answers": [
+        { "question_id": "q_001", "selected": "a", "correct": true, "skill_id": "as3.u1.l3", "time_spent_sec": 10 },
+        { "question_id": "q_002", "selected": "a", "correct": true, "skill_id": "as3.u2.l3", "time_spent_sec": 7 },
+        { "question_id": "q_003", "selected": "b", "correct": false, "skill_id": "as3.u3.l3", "time_spent_sec": 15, "error_tag": "wrong_singular_plural" },
+        { "question_id": "q_004", "selected": "b", "correct": true, "skill_id": "as3.u1.l1", "time_spent_sec": 6 },
+        { "question_id": "q_005", "selected": "c", "correct": true, "skill_id": "as3.u3.l1", "time_spent_sec": 8 },
+        { "question_id": "q_006", "selected": "a", "correct": true, "skill_id": "as3.u4.l3", "time_spent_sec": 12 },
+        { "question_id": "q_007", "selected": "a", "correct": false, "skill_id": "as3.u5.l3", "time_spent_sec": 18, "error_tag": "uses_present_for_past" },
+        { "question_id": "q_008", "selected": "b", "correct": false, "skill_id": "as3.u6.l3", "time_spent_sec": 20, "error_tag": "uses_superlative" },
+        { "question_id": "q_009", "selected": "b", "correct": true, "skill_id": "as3.u8.l3", "time_spent_sec": 10 },
+        { "question_id": "q_010", "selected": "a", "correct": true, "skill_id": "as3.u4.l1", "time_spent_sec": 7 },
+        { "question_id": "q_011", "selected": "b", "correct": false, "skill_id": "as3.u7.l3", "time_spent_sec": 22, "error_tag": "uses_present_for_past" },
+        { "question_id": "q_012", "selected": "b", "correct": false, "skill_id": "as4.u1.l3", "time_spent_sec": 25, "error_tag": "uses_present_for_past" },
+        { "question_id": "q_013", "selected": "b", "correct": false, "skill_id": "as4.u2.l3", "time_spent_sec": 19, "error_tag": "uses_gerund_after_need" },
+        { "question_id": "q_014", "selected": "b", "correct": false, "skill_id": "as4.u3.l3", "time_spent_sec": 20, "error_tag": "swaps_prohibition_and_obligation" }
+      ],
+      "score": 7,
+      "max_score": 14,
+      "percentage": 50,
+      "result_level": "beginner",
+      "cefr": "A1",
+      "time_total_sec": 219,
+      "mastery": {
+        "as3.u1.l3": { "probability": 0.85, "skill_name": "Present Simple vs Present Continuous", "status": "mastered" },
+        "as3.u2.l3": { "probability": 0.80, "skill_name": "Adverbs of Frequency", "status": "developing" },
+        "as3.u3.l3": { "probability": 0.45, "skill_name": "To Be (Present and Past)", "status": "weak" },
+        "as3.u4.l3": { "probability": 0.78, "skill_name": "Some/Any with Countable/Uncountable Nouns", "status": "developing" },
+        "as3.u5.l3": { "probability": 0.35, "skill_name": "Past Simple Regular Verbs", "status": "weak" },
+        "as3.u6.l3": { "probability": 0.30, "skill_name": "Comparatives", "status": "weak" },
+        "as3.u7.l3": { "probability": 0.25, "skill_name": "Past Simple Irregular Verbs", "status": "weak" },
+        "as3.u8.l3": { "probability": 0.75, "skill_name": "There Was / There Were", "status": "developing" },
+        "as4.u1.l3": { "probability": 0.20, "skill_name": "Past Simple Question Forms", "status": "weak" },
+        "as4.u2.l3": { "probability": 0.15, "skill_name": "Verbs with To + Infinitive", "status": "weak" },
+        "as4.u3.l3": { "probability": 0.15, "skill_name": "Must / Mustn't", "status": "weak" }
+      },
+      "gaps": [
+        { "skill_id": "as3.u7.l3", "severity": "high", "reason": "Sai cau hoi irregular verb co ban (go->went)" },
+        { "skill_id": "as3.u5.l3", "severity": "high", "reason": "Khong nhan dien duoc qua khu don vien" },
+        { "skill_id": "as3.u6.l3", "severity": "high", "reason": "Nham lan superlative voi comparative" },
+        { "skill_id": "as4.u1.l3", "severity": "high", "reason": "Chua lam duoc cau hoi qua khu voi 'did'" },
+        { "skill_id": "as3.u3.l3", "severity": "medium", "reason": "Sai so it/so nhieu voi was/were" },
+        { "skill_id": "as4.u2.l3", "severity": "medium", "reason": "Dung gerund thay vi to-infinitive" },
+        { "skill_id": "as4.u3.l3", "severity": "medium", "reason": "Nham lan must/mustn't" }
+      ],
+      "recommendations": [
+        { "skill_id": "as3.u7.l3", "action": "Hoc bang dong tu bat quy tac (go-went, eat-ate, see-saw)", "priority": "high" },
+        { "skill_id": "as3.u5.l3", "action": "Luyen them -ed cho dong tu quy tac", "priority": "high" },
+        { "skill_id": "as3.u6.l3", "action": "On lai comparative (more + adj, adj-er)", "priority": "high" },
+        { "skill_id": "as4.u1.l3", "action": "Luyen cau hoi voi 'Did + S + V?'", "priority": "high" },
+        { "skill_id": "as3.u3.l3", "action": "Phan biet was/were theo so luong", "priority": "medium" },
+        { "skill_id": "as4.u2.l3", "action": "Ghi nho want/need + to + V", "priority": "medium" },
+        { "skill_id": "as4.u3.l3", "action": "Phan biet must (bat buoc) vs mustn't (cam)", "priority": "medium" }
+      ]
+    },
+    {
+      "student_id": 3,
+      "student_name": "Hoang Van Cuong",
+      "email": "hs03@vnexus.vn",
+      "grade": "Lop 4",
+      "test_date": "2026-07-15T09:30:00Z",
+      "answers": [
+        { "question_id": "q_001", "selected": "a", "correct": true, "skill_id": "as3.u1.l3", "time_spent_sec": 6 },
+        { "question_id": "q_002", "selected": "a", "correct": true, "skill_id": "as3.u2.l3", "time_spent_sec": 4 },
+        { "question_id": "q_003", "selected": "c", "correct": true, "skill_id": "as3.u3.l3", "time_spent_sec": 5 },
+        { "question_id": "q_004", "selected": "b", "correct": true, "skill_id": "as3.u1.l1", "time_spent_sec": 3 },
+        { "question_id": "q_005", "selected": "c", "correct": true, "skill_id": "as3.u3.l1", "time_spent_sec": 4 },
+        { "question_id": "q_006", "selected": "a", "correct": true, "skill_id": "as3.u4.l3", "time_spent_sec": 7 },
+        { "question_id": "q_007", "selected": "b", "correct": true, "skill_id": "as3.u5.l3", "time_spent_sec": 6 },
+        { "question_id": "q_008", "selected": "a", "correct": true, "skill_id": "as3.u6.l3", "time_spent_sec": 8 },
+        { "question_id": "q_009", "selected": "b", "correct": true, "skill_id": "as3.u8.l3", "time_spent_sec": 5 },
+        { "question_id": "q_010", "selected": "a", "correct": true, "skill_id": "as3.u4.l1", "time_spent_sec": 4 },
+        { "question_id": "q_011", "selected": "c", "correct": true, "skill_id": "as3.u7.l3", "time_spent_sec": 7 },
+        { "question_id": "q_012", "selected": "a", "correct": true, "skill_id": "as4.u1.l3", "time_spent_sec": 9 },
+        { "question_id": "q_013", "selected": "a", "correct": true, "skill_id": "as4.u2.l3", "time_spent_sec": 8 },
+        { "question_id": "q_014", "selected": "b", "correct": false, "skill_id": "as4.u3.l3", "time_spent_sec": 18, "error_tag": "swaps_prohibition_and_obligation" }
+      ],
+      "score": 13,
+      "max_score": 14,
+      "percentage": 93,
+      "result_level": "elementary",
+      "cefr": "A2",
+      "time_total_sec": 94,
+      "mastery": {
+        "as3.u1.l3": { "probability": 0.93, "skill_name": "Present Simple vs Present Continuous", "status": "mastered" },
+        "as3.u2.l3": { "probability": 0.95, "skill_name": "Adverbs of Frequency", "status": "mastered" },
+        "as3.u3.l3": { "probability": 0.94, "skill_name": "To Be (Present and Past)", "status": "mastered" },
+        "as3.u4.l3": { "probability": 0.91, "skill_name": "Some/Any with Countable/Uncountable Nouns", "status": "mastered" },
+        "as3.u5.l3": { "probability": 0.90, "skill_name": "Past Simple Regular Verbs", "status": "mastered" },
+        "as3.u6.l3": { "probability": 0.88, "skill_name": "Comparatives", "status": "mastered" },
+        "as3.u7.l3": { "probability": 0.92, "skill_name": "Past Simple Irregular Verbs", "status": "mastered" },
+        "as3.u8.l3": { "probability": 0.93, "skill_name": "There Was / There Were", "status": "mastered" },
+        "as4.u1.l3": { "probability": 0.85, "skill_name": "Past Simple Question Forms", "status": "developing" },
+        "as4.u2.l3": { "probability": 0.82, "skill_name": "Verbs with To + Infinitive", "status": "developing" },
+        "as4.u3.l3": { "probability": 0.40, "skill_name": "Must / Mustn't", "status": "weak" }
+      },
+      "gaps": [
+        { "skill_id": "as4.u3.l3", "severity": "medium", "reason": "Nham lan must/mustn't trong cau ket hop" }
+      ],
+      "recommendations": [
+        { "skill_id": "as4.u3.l3", "action": "Luyen phan biet must vs mustn't voi vi du thuc te", "priority": "medium" }
+      ]
+    },
+    {
+      "student_id": 4,
+      "student_name": "Nguyen Thi Dao",
+      "email": "hs04@vnexus.vn",
+      "grade": "Lop 4",
+      "test_date": "2026-07-15T09:45:00Z",
+      "answers": [
+        { "question_id": "q_001", "selected": "a", "correct": true, "skill_id": "as3.u1.l3", "time_spent_sec": 5 },
+        { "question_id": "q_002", "selected": "b", "correct": false, "skill_id": "as3.u2.l3", "time_spent_sec": 12, "error_tag": "opposite_meaning" },
+        { "question_id": "q_003", "selected": "c", "correct": true, "skill_id": "as3.u3.l3", "time_spent_sec": 6 },
+        { "question_id": "q_004", "selected": "b", "correct": true, "skill_id": "as3.u1.l1", "time_spent_sec": 4 },
+        { "question_id": "q_005", "selected": "a", "correct": false, "skill_id": "as3.u3.l1", "time_spent_sec": 14, "error_tag": "wrong_place" },
+        { "question_id": "q_006", "selected": "a", "correct": true, "skill_id": "as3.u4.l3", "time_spent_sec": 8 },
+        { "question_id": "q_007", "selected": "b", "correct": true, "skill_id": "as3.u5.l3", "time_spent_sec": 7 },
+        { "question_id": "q_008", "selected": "b", "correct": false, "skill_id": "as3.u6.l3", "time_spent_sec": 16, "error_tag": "uses_superlative" },
+        { "question_id": "q_009", "selected": "a", "correct": false, "skill_id": "as3.u8.l3", "time_spent_sec": 13, "error_tag": "wrong_singular_plural" },
+        { "question_id": "q_010", "selected": "c", "correct": false, "skill_id": "as3.u4.l1", "time_spent_sec": 15, "error_tag": "not_vegetable" },
+        { "question_id": "q_011", "selected": "c", "correct": true, "skill_id": "as3.u7.l3", "time_spent_sec": 9 },
+        { "question_id": "q_012", "selected": "a", "correct": true, "skill_id": "as4.u1.l3", "time_spent_sec": 10 },
+        { "question_id": "q_013", "selected": "a", "correct": true, "skill_id": "as4.u2.l3", "time_spent_sec": 8 },
+        { "question_id": "q_014", "selected": "a", "correct": true, "skill_id": "as4.u3.l3", "time_spent_sec": 11 }
+      ],
+      "score": 9,
+      "max_score": 14,
+      "percentage": 64,
+      "result_level": "beginner",
+      "cefr": "A1",
+      "time_total_sec": 148,
+      "mastery": {
+        "as3.u1.l3": { "probability": 0.88, "skill_name": "Present Simple vs Present Continuous", "status": "mastered" },
+        "as3.u2.l3": { "probability": 0.40, "skill_name": "Adverbs of Frequency", "status": "weak" },
+        "as3.u3.l3": { "probability": 0.82, "skill_name": "To Be (Present and Past)", "status": "developing" },
+        "as3.u4.l3": { "probability": 0.78, "skill_name": "Some/Any with Countable/Uncountable Nouns", "status": "developing" },
+        "as3.u5.l3": { "probability": 0.85, "skill_name": "Past Simple Regular Verbs", "status": "developing" },
+        "as3.u6.l3": { "probability": 0.32, "skill_name": "Comparatives", "status": "weak" },
+        "as3.u7.l3": { "probability": 0.80, "skill_name": "Past Simple Irregular Verbs", "status": "developing" },
+        "as3.u8.l3": { "probability": 0.38, "skill_name": "There Was / There Were", "status": "weak" },
+        "as4.u1.l3": { "probability": 0.75, "skill_name": "Past Simple Question Forms", "status": "developing" },
+        "as4.u2.l3": { "probability": 0.72, "skill_name": "Verbs with To + Infinitive", "status": "developing" },
+        "as4.u3.l3": { "probability": 0.70, "skill_name": "Must / Mustn't", "status": "developing" }
+      },
+      "gaps": [
+        { "skill_id": "as3.u2.l3", "severity": "high", "reason": "Hieu sai ngu nghia adverbs of frequency" },
+        { "skill_id": "as3.u6.l3", "severity": "high", "reason": "Nham superlative voi comparative" },
+        { "skill_id": "as3.u8.l3", "severity": "high", "reason": "Sai was/were theo so luong" },
+        { "skill_id": "as3.u4.l1", "severity": "medium", "reason": "Nham loai thuc pham" }
+      ],
+      "recommendations": [
+        { "skill_id": "as3.u2.l3", "action": "On lai bang tan suat: always-usually-sometimes-hardly ever-never", "priority": "high" },
+        { "skill_id": "as3.u6.l3", "action": "Luyen comparative vs superlative voi bang so sanh", "priority": "high" },
+        { "skill_id": "as3.u8.l3", "action": "Luyen there was/were voi cac vi du so it/so nhieu", "priority": "high" },
+        { "skill_id": "as3.u4.l1", "action": "On lai tu vung thuc pham va loai", "priority": "medium" }
+      ]
+    },
+    {
+      "student_id": 5,
+      "student_name": "Vo Van Em",
+      "email": "hs05@vnexus.vn",
+      "grade": "Lop 3",
+      "test_date": "2026-07-15T10:00:00Z",
+      "answers": [
+        { "question_id": "q_001", "selected": "b", "correct": false, "skill_id": "as3.u1.l3", "time_spent_sec": 20, "error_tag": "wrong_subject_verb_agreement" },
+        { "question_id": "q_002", "selected": "b", "correct": false, "skill_id": "as3.u2.l3", "time_spent_sec": 22, "error_tag": "opposite_meaning" },
+        { "question_id": "q_003", "selected": "a", "correct": false, "skill_id": "as3.u3.l3", "time_spent_sec": 25, "error_tag": "uses_present_instead_of_past" },
+        { "question_id": "q_004", "selected": "a", "correct": true, "skill_id": "as3.u1.l1", "time_spent_sec": 8 },
+        { "question_id": "q_005", "selected": "a", "correct": false, "skill_id": "as3.u3.l1", "time_spent_sec": 18, "error_tag": "wrong_place" },
+        { "question_id": "q_006", "selected": "b", "correct": false, "skill_id": "as3.u4.l3", "time_spent_sec": 20, "error_tag": "uses_any_in_offer" },
+        { "question_id": "q_007", "selected": "a", "correct": false, "skill_id": "as3.u5.l3", "time_spent_sec": 22, "error_tag": "uses_present_for_past" },
+        { "question_id": "q_008", "selected": "c", "correct": false, "skill_id": "as3.u6.l3", "time_spent_sec": 25, "error_tag": "wrong_comparative_form" },
+        { "question_id": "q_009", "selected": "a", "correct": false, "skill_id": "as3.u8.l3", "time_spent_sec": 19, "error_tag": "wrong_singular_plural" },
+        { "question_id": "q_010", "selected": "c", "correct": false, "skill_id": "as3.u4.l1", "time_spent_sec": 16, "error_tag": "not_vegetable" },
+        { "question_id": "q_011", "selected": "a", "correct": false, "skill_id": "as3.u7.l3", "time_spent_sec": 28, "error_tag": "confuses_gerund_with_past" },
+        { "question_id": "q_012", "selected": "c", "correct": false, "skill_id": "as4.u1.l3", "time_spent_sec": 30, "error_tag": "double_past_tense" },
+        { "question_id": "q_013", "selected": "c", "correct": false, "skill_id": "as4.u2.l3", "time_spent_sec": 24, "error_tag": "missing_to_infinitive" },
+        { "question_id": "q_014", "selected": "c", "correct": false, "skill_id": "as4.u3.l3", "time_spent_sec": 20, "error_tag": "double_prohibition" }
+      ],
+      "score": 1,
+      "max_score": 14,
+      "percentage": 7,
+      "result_level": "starter",
+      "cefr": "Pre-A1",
+      "time_total_sec": 297,
+      "mastery": {
+        "as3.u1.l3": { "probability": 0.10, "skill_name": "Present Simple vs Present Continuous", "status": "weak" },
+        "as3.u2.l3": { "probability": 0.08, "skill_name": "Adverbs of Frequency", "status": "weak" },
+        "as3.u3.l3": { "probability": 0.08, "skill_name": "To Be (Present and Past)", "status": "weak" },
+        "as3.u4.l3": { "probability": 0.10, "skill_name": "Some/Any with Countable/Uncountable Nouns", "status": "weak" },
+        "as3.u5.l3": { "probability": 0.05, "skill_name": "Past Simple Regular Verbs", "status": "weak" },
+        "as3.u6.l3": { "probability": 0.05, "skill_name": "Comparatives", "status": "weak" },
+        "as3.u7.l3": { "probability": 0.05, "skill_name": "Past Simple Irregular Verbs", "status": "weak" },
+        "as3.u8.l3": { "probability": 0.08, "skill_name": "There Was / There Were", "status": "weak" },
+        "as4.u1.l3": { "probability": 0.03, "skill_name": "Past Simple Question Forms", "status": "weak" },
+        "as4.u2.l3": { "probability": 0.03, "skill_name": "Verbs with To + Infinitive", "status": "weak" },
+        "as4.u3.l3": { "probability": 0.03, "skill_name": "Must / Mustn't", "status": "weak" }
+      },
+      "gaps": [
+        { "skill_id": "as3.u1.l3", "severity": "high", "reason": "Chua hieu cach su dung Present Simple vs Continuous" },
+        { "skill_id": "as3.u2.l3", "severity": "high", "reason": "Khong phan biet duoc tan suat" },
+        { "skill_id": "as3.u3.l3", "severity": "high", "reason": "Chua nam vung to be hien tai va qua khu" },
+        { "skill_id": "as3.u4.l3", "severity": "high", "reason": "Nham lan some/any" },
+        { "skill_id": "as3.u5.l3", "severity": "high", "reason": "Chua hieu qua khu don vien" },
+        { "skill_id": "as3.u6.l3", "severity": "high", "reason": "Chua lam duoc comparative" },
+        { "skill_id": "as3.u7.l3", "severity": "high", "reason": "Chua biet dong tu bat quy tac" },
+        { "skill_id": "as3.u8.l3", "severity": "high", "reason": "Chua hieu there was/were" },
+        { "skill_id": "as4.u1.l3", "severity": "high", "reason": "Chua lam duoc cau hoi qua khu" },
+        { "skill_id": "as4.u2.l3", "severity": "high", "reason": "Chua hieu to-infinitive" },
+        { "skill_id": "as4.u3.l3", "severity": "high", "reason": "Chua phan biet must/mustn't" }
+      ],
+      "recommendations": [
+        { "skill_id": "as3.u1.l3", "action": "Bat dau tu Present Simple: I am / You are / He is", "priority": "high" },
+        { "skill_id": "as3.u3.l3", "action": "Hoc to be truoc: I am, you are, he/she is; I was, you were", "priority": "high" },
+        { "skill_id": "as3.u2.l3", "action": "Hoc 5 tan suat co ban voi vi du minh hoa", "priority": "high" },
+        { "skill_id": "as3.u5.l3", "action": "Bat dau tu dong tu quy tac don gian: play->played, watch->watched", "priority": "high" },
+        { "skill_id": "as3.u7.l3", "action": "Hoc bang dong tu bat quy tac co ban: go->went, eat->ate", "priority": "high" }
+      ]
+    }
+  ],
+  "class_summary": {
+    "class_name": "Lop 3-4 Tieng Anh",
+    "teacher": "Nguyen Thi Lan",
+    "test_date": "2026-07-15",
+    "statistics": {
+      "total_students": 5,
+      "average_score": 8.8,
+      "average_percentage": 63,
+      "level_distribution": {
+        "starter": 1,
+        "beginner": 2,
+        "elementary": 2
+      }
+    },
+    "common_gaps": [
+      { "skill_id": "as4.u3.l3", "skill_name": "Must / Mustn't", "students_affected": 4, "percentage": 80, "severity": "high" },
+      { "skill_id": "as3.u6.l3", "skill_name": "Comparatives", "students_affected": 3, "percentage": 60, "severity": "high" },
+      { "skill_id": "as3.u5.l3", "skill_name": "Past Simple Regular Verbs", "students_affected": 3, "percentage": 60, "severity": "medium" },
+      { "skill_id": "as3.u7.l3", "skill_name": "Past Simple Irregular Verbs", "students_affected": 2, "percentage": 40, "severity": "medium" },
+      { "skill_id": "as3.u8.l3", "skill_name": "There Was / There Were", "students_affected": 2, "percentage": 40, "severity": "medium" }
+    ],
+    "teacher_actions": [
+      { "action": "Day lai Comparative vs Superlative cho 3 hoc sinh", "priority": "high" },
+      { "action": "On tap Must/Mustn't cho 4 hoc sinh", "priority": "high" },
+      { "action": "Goi y Vo Van Em hoc lai tu co ban (Pre-A1)", "priority": "high" },
+      { "action": "Phan lop nang cao cho Le Van An va Hoang Van Cuong", "priority": "medium" }
+    ]
+  }
+}
