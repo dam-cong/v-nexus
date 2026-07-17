@@ -10,7 +10,11 @@ Mỗi dòng = một phiên trao đổi có kết quả cụ thể (không ghi ti
 
 | Thời gian | Người | Công cụ AI | Yêu cầu gửi AI (tóm tắt) | Kết quả / Quyết định | Review bởi |
 |---|---|---|---|---|---|
-| 2026-07-17 14:41 | _tên_ | Claude Code | Dựng khung kiến trúc V-Nexus (Gateway + Planner Agent + Tool Registry + MCP Server mẫu + Domain Adapter) | Tạo scaffold ban đầu, xem chi tiết commit `<hash>` | _tên_ |
+| 2026-07-16 15:09 | Hiến | Claude Code | Dựng khung kiến trúc V-Nexus (Gateway + Planner Agent + Tool Registry + MCP Server mẫu + PostgreSQL Connector + frontend chat + docs nộp bài khung) | Scaffold ban đầu, đã build/chạy thử `docker compose up` xác nhận healthy — commit `adf636c` | Hiến |
+| 2026-07-16 15:36 | Hiến | Claude Code | Tổng hợp quy định BTC thành checklist tuân thủ (quy mô đội, deadline, cam kết AI-native, tiêu chí chấm điểm) | Tạo `docs/RULES.md` — commit `1adae23` | Hiến |
+| 2026-07-17 11:37 | Hiến | Claude Code | Đọc & phân tích đề bài Vbee Đề 8 (slide/giáo án → video bài giảng) từ PDF BTC cung cấp | Tạo `docs/PHAN_TICH_DE_8.md` (<5000 ký tự theo yêu cầu) — commit `e9f867b` | Hiến |
+| 2026-07-17 13:24 | Hiến | Claude Code | Đổi hướng sang đề bài Gia sư thích ứng thu hẹp khoảng cách năng lực (thay Đề 8) — phân tích yêu cầu, đổi tên dự án thành V-Nexus Tutor, phân bổ công việc theo 5 vai trò (PM/BA/Dev/AI/Cố vấn) | Tạo `docs/PHAN_TICH_DE_ADAPTIVE_TUTORING.md`, cập nhật README/PROJECT_DESCRIPTION/timeline, xóa tài liệu Đề 8 không còn dùng — commit `d94396f` | Hiến |
+| 2026-07-17 14:28 | Hiến | Claude Code | Mở rộng phạm vi (môn Tiếng Anh, CV học viên, chương trình cấp 1-2-3), yêu cầu thiết kế cơ chế AI khác biệt (không chỉ "gọi LLM"), thêm dashboard phụ huynh và bot hỏi-đáp | Thiết kế Bayesian Knowledge Tracing + adaptive testing (CAT) + Bayesian prior/posterior fusion làm lõi chẩn đoán; LLM giới hạn ở vai trò trích xuất/chấm chủ quan/diễn giải; bot tái dùng khung Planner Agent + Tool Registry đã dựng sẵn — commit `f62b8e9` | Hiến |
 
 ## Quy tắc
 
