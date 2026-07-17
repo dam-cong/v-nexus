@@ -12,7 +12,7 @@ checklist nội bộ đối chiếu theo thể lệ mục 2 (100 điểm).
 ## Kiến trúc AI-Native & Đổi mới sáng tạo — 20đ
 
 - [ ] Sản phẩm AI-first ngay từ luồng chính, không phải AI gắn thêm vào flow CRUD thường
-- [ ] `docs/AI_LOG.md` đầy đủ, phản ánh đúng quá trình cộng tác với AI
+- [ ] `docs/ai_log.md` đầy đủ, phản ánh đúng quá trình cộng tác với AI
 - [ ] Domain Adapter thể hiện rõ điểm sáng tạo của giải pháp (không chỉ là wrapper gọi LLM)
 
 ## Tính khả thi kinh doanh & Lộ trình Pilot — 20đ

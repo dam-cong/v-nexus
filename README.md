@@ -50,7 +50,7 @@ v-nexus/
 ├── domain/         Domain Adapter — PHẦN CẦN THAY khi có đề bài
 ├── db/             PostgreSQL connector + model mẫu (SQLAlchemy async)
 ├── frontend/       Dashboard UI (React + Vite)
-├── docs/           AI_LOG, PROJECT_DESCRIPTION, timeline, scoring-checklist
+├── docs/           ai_log, PROJECT_DESCRIPTION, timeline, scoring-checklist
 ├── tests/          Test tối thiểu cho Tool Registry & Gateway health
 ├── docker-compose.yml
 └── .env.example
@@ -136,11 +136,11 @@ pytest
 
 ## Tài liệu bắt buộc nộp bài
 
-Xem [docs/](docs/) — đặc biệt `docs/AI_LOG.md` (Nhật ký cộng tác với AI, bắt buộc) và
+Xem [docs/](docs/) — đặc biệt `docs/ai_log.md` (Nhật ký cộng tác với AI, bắt buộc) và
 `docs/PROJECT_DESCRIPTION.md`. Xem tiến độ 48h ở `docs/timeline.md` và tự chấm trước khi
 nộp ở `docs/scoring-checklist.md`.
 
 ## Cam kết AI-native
 
 Toàn bộ mã nguồn trong khung này được tạo bởi AI (Claude Code). Mọi thay đổi/bổ sung
-tiếp theo cần được ghi lại trong `docs/AI_LOG.md`.
+tiếp theo cần được ghi lại trong `docs/ai_log.md`.

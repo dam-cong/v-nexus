@@ -28,11 +28,11 @@ hoặc credit — coi như gian lận thành phần đội.
   thêm vào một app CRUD thông thường.
 - Tính AI-native được chấm qua **2 kênh bắt buộc**:
   1. Hệ thống chấm điểm AI (Vòng 1 — AI sơ loại)
-  2. **Nhật ký cộng tác với AI** (`docs/AI_LOG.md`) — do người chấm đọc trực tiếp
+  2. **Nhật ký cộng tác với AI** (`docs/ai_log.md`) — do người chấm đọc trực tiếp
 
 ⚠️ Vi phạm thường gặp:
 - Tự tay viết code rồi mới nhờ AI "gia công" câu chữ — không tính là AI-native thật.
-- Không ghi `docs/AI_LOG.md` đều đặn, dồn lại viết bù cuối giờ — log không khớp với
+- Không ghi `docs/ai_log.md` đều đặn, dồn lại viết bù cuối giờ — log không khớp với
   `git log` thực tế sẽ bị nghi ngờ.
 - Gắn AI vào như một tính năng phụ (vd. chatbot hỏi-đáp cạnh 1 app CRUD bình thường)
   thay vì để AI dẫn dắt luồng chính của sản phẩm.
@@ -89,7 +89,7 @@ An toàn AI, Grounding & Độ tin cậy (15) · Trình bày & Bảo vệ giải
 ## Checklist nhanh trước khi nộp
 
 - [ ] Đội đủ 2–6 thành viên, tất cả đã xác nhận, chốt trước 11:00 17/7
-- [ ] `docs/AI_LOG.md` được cập nhật liên tục suốt 48 giờ, khớp `git log`
+- [ ] `docs/ai_log.md` được cập nhật liên tục suốt 48 giờ, khớp `git log`
 - [ ] Chỉ 1 Planner Agent trong kiến trúc
 - [ ] Repo GitHub đã chuyển **public**
 - [ ] Live URL còn chạy tại thời điểm nộp (kiểm tra lại ngay trước hạn chót)

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Khảo sát đầu vào - Kiểm tra lại</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#53e389",
+                        "surface-dim": "#d4d7ff",
+                        "inverse-surface": "#222b64",
+                        "secondary-fixed": "#ffdbd1",
+                        "on-primary-fixed": "#130068",
+                        "surface-container-highest": "#dee0ff",
+                        "surface-tint": "#574ebf",
+                        "on-primary-container": "#c8c4ff",
+                        "primary": "#35299d",
+                        "tertiary-fixed-dim": "#4fe086",
+                        "inverse-on-surface": "#f0efff",
+                        "on-tertiary-fixed": "#00210d",
+                        "surface-container": "#edecff",
+                        "primary-fixed-dim": "#c5c0ff",
+                        "surface-container-low": "#f4f2ff",
+                        "error": "#ba1a1a",
+                        "on-surface-variant": "#474553",
+                        "tertiary-container": "#006231",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#4d44b5",
+                        "on-error-container": "#93000a",
+                        "on-background": "#0a144e",
+                        "on-secondary-fixed-variant": "#83250a",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#701800",
+                        "surface-container-high": "#e6e6ff",
+                        "primary-fixed": "#e3dfff",
+                        "secondary-fixed-dim": "#ffb5a1",
+                        "inverse-primary": "#c5c0ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#dee0ff",
+                        "tertiary": "#004822",
+                        "on-surface": "#0a144e",
+                        "surface": "#fbf8ff",
+                        "background": "#fbf8ff",
+                        "on-secondary-fixed": "#3c0800",
+                        "outline-variant": "#c8c4d5",
+                        "on-tertiary-fixed-variant": "#005228",
+                        "on-tertiary": "#ffffff",
+                        "secondary-container": "#fd7e5c",
+                        "secondary": "#a43c20",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#6ffda0",
+                        "outline": "#787584",
+                        "surface-bright": "#fbf8ff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#3e34a6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "32px",
+                        "lg": "24px",
+                        "container-margin": "24px",
+                        "gutter": "20px",
+                        "md": "16px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "base": "8px",
+                        "xxl": "48px"
+                    },
+                    "fontFamily": {
+                        "question-display": ["Outfit"],
+                        "card-title-sm": ["Outfit"],
+                        "body": ["Outfit"],
+                        "page-title-mobile": ["Outfit"],
+                        "card-title-lg": ["Outfit"],
+                        "label": ["Outfit"],
+                        "caption": ["Outfit"],
+                        "question-display-mobile": ["Outfit"],
+                        "page-title": ["Outfit"]
+                    },
+                    "fontSize": {
+                        "question-display": ["28px", { "lineHeight": "1.4", "fontWeight": "700" }],
+                        "card-title-sm": ["22px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "body": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "page-title-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "card-title-lg": ["26px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "label": ["14px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "caption": ["13px", { "lineHeight": "1.4", "fontWeight": "400" }],
+                        "question-display-mobile": ["22px", { "lineHeight": "1.4", "fontWeight": "700" }],
+                        "page-title": ["32px", { "lineHeight": "1.2", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .custom-shadow { box-shadow: 0px 4px 20px rgba(77, 68, 181, 0.05); }
+        .custom-shadow-hover:hover { box-shadow: 0px 8px 24px rgba(77, 68, 181, 0.12); transform: translateY(-2px); transition: all 0.2s ease; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body font-body antialiased min-h-screen">
+<!-- TopAppBar (Transactional Context - Suppressed SideNav/BottomNav per rules, just showing header for context) -->
+<header class="docked full-width top-0 w-full bg-surface border-b border-outline-variant flat no shadows flex justify-between items-center h-20 px-xl fixed z-40">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary cursor-pointer hover:text-primary-fixed transition-all" onclick="window.history.back()">arrow_back</span>
+<div class="font-page-title text-page-title text-primary hidden md:block">Khảo sát đầu vào</div>
+<div class="font-page-title-mobile text-page-title-mobile text-primary md:hidden">Khảo sát đầu vào</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="w-10 h-10 rounded-full hover:bg-surface-variant flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">settings</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-primary-container overflow-hidden border-2 border-surface flex-shrink-0">
+<img alt="Student Profile Avatar" class="w-full h-full object-cover" data-alt="A small circular avatar placeholder for a student profile showing a stylized, friendly illustration of a child in modern edtech style with vibrant purple tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuKYAbB2jb2STBtAh6XpRSW0ho0rCe_fR8BjNtdHMTRNrD2NNzy8y5emVV5UpPD7AVSzlTzxYrBi_iZm9FH3BIp0SEarFKKjWPSNh5UHPa2YvVqm519U_WN9WzqEUFQkwYj7r_rUIde3UuOocHtYa9MAqesV_ol7C9yRLP2qABh6VzVhyyOcAGTSPrUnKa1uTbUN6AwdhxN2nFfiQutB8JazI0kY6jv610p9RvDGxXrcfuwtaq9fkfbw"/>
+</div>
+</div>
+</header>
+<main class="pt-[104px] pb-xxl px-container-margin md:px-xl max-w-4xl mx-auto flex flex-col gap-xl">
+<!-- Header Section -->
+<div class="text-center md:text-left flex flex-col gap-sm">
+<h1 class="font-page-title-mobile text-page-title-mobile md:font-page-title md:text-page-title text-primary">Kiểm tra lại bài làm</h1>
+<p class="font-body text-body text-on-surface-variant">Hãy dành một chút thời gian để soát lại các câu trả lời của em nhé.</p>
+</div>
+<!-- Warning Banner -->
+<div class="bg-error-container rounded-xl p-md flex items-start gap-md border border-error/20">
+<span class="material-symbols-outlined text-error flex-shrink-0" style="font-variation-settings: 'FILL' 1;">error</span>
+<div class="flex-1">
+<p class="font-body text-body text-on-error-container"><strong>Em vẫn còn 1 câu chưa trả lời.</strong> Em có thể quay lại hoàn thành trước khi nộp bài.</p>
+</div>
+</div>
+<!-- Summary Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- Answered -->
+<div class="bg-surface-container-lowest rounded-[20px] p-lg custom-shadow flex flex-col items-center justify-center gap-sm border border-outline-variant/30">
+<span class="material-symbols-outlined text-tertiary-container text-[32px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<div class="font-card-title-lg text-card-title-lg text-tertiary-container">12</div>
+<div class="font-label text-label text-on-surface-variant">Đã trả lời</div>
+</div>
+<!-- Unanswered -->
+<div class="bg-surface-container-lowest rounded-[20px] p-lg custom-shadow flex flex-col items-center justify-center gap-sm border border-error/30">
+<span class="material-symbols-outlined text-error text-[32px]">help_outline</span>
+<div class="font-card-title-lg text-card-title-lg text-error">1</div>
+<div class="font-label text-label text-on-surface-variant">Chưa trả lời</div>
+</div>
+<!-- Marked for Review -->
+<div class="bg-surface-container-lowest rounded-[20px] p-lg custom-shadow flex flex-col items-center justify-center gap-sm border border-secondary/30">
+<span class="material-symbols-outlined text-secondary text-[32px]" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+<div class="font-card-title-lg text-card-title-lg text-secondary">1</div>
+<div class="font-label text-label text-on-surface-variant">Xem lại</div>
+</div>
+</div>
+<!-- Question Navigator Map -->
+<div class="bg-surface-container-lowest rounded-[20px] p-lg custom-shadow flex flex-col gap-md border border-outline-variant/30">
+<h3 class="font-card-title-sm text-card-title-sm text-primary border-b border-outline-variant/30 pb-md">Danh sách câu hỏi</h3>
+<div class="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-10 gap-sm pt-sm">
+<!-- Answered (1-7) -->
+<button class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container font-label text-label flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors">1</button>
+<button class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container font-label text-label flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors">2</button>
+<button class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container font-label text-label flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors">3</button>
+<button class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container font-label text-label flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors">4</button>
+<button class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container font-label text-label flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors">5</button>
+<button class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container font-label text-label flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors">6</button>
+<!-- Unanswered (7) -->
+<button class="w-10 h-10 rounded-full bg-error-container text-on-error-container border border-error/50 font-label text-label flex items-center justify-center hover:bg-error hover:text-on-error transition-colors relative">
+                    7
+                </button>
+<!-- Answered (8-11) -->
+<button class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container font-label text-label flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors">8</button>
+<button class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container font-label text-label flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors">9</button>
+<button class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container font-label text-label flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors">10</button>
+<button class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container font-label text-label flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors">11</button>
+<button class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container font-label text-label flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors">12</button>
+<button class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container font-label text-label flex items-center justify-center hover:bg-primary hover:text-on-primary transition-colors">13</button>
+<!-- Marked for review (14) -->
+<button class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container font-label text-label flex items-center justify-center hover:bg-secondary hover:text-on-secondary transition-colors relative">
+                    14
+                    <span class="absolute -top-1 -right-1 material-symbols-outlined text-[14px] text-secondary bg-surface rounded-full" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+</button>
+</div>
+<div class="flex gap-md pt-sm flex-wrap text-caption font-caption text-on-surface-variant">
+<div class="flex items-center gap-xs"><span class="w-3 h-3 rounded-full bg-primary-container inline-block"></span> Đã trả lời</div>
+<div class="flex items-center gap-xs"><span class="w-3 h-3 rounded-full bg-error-container border border-error/50 inline-block"></span> Chưa trả lời</div>
+<div class="flex items-center gap-xs"><span class="w-3 h-3 rounded-full bg-secondary-container inline-block"></span> Xem lại</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col sm:flex-row gap-md justify-end pt-lg">
+<button class="min-h-[48px] px-lg rounded-full bg-primary-fixed text-on-primary-fixed font-label text-label text-center flex-1 sm:flex-none custom-shadow-hover">
+                Quay lại làm bài
+            </button>
+<button class="min-h-[48px] px-xl rounded-full bg-primary text-on-primary font-label text-label text-center flex-1 sm:flex-none custom-shadow-hover flex items-center justify-center gap-sm" id="submitBtn">
+                Nộp bài <span class="material-symbols-outlined text-[20px]">send</span>
+</button>
+</div>
+</main>
+<!-- Confirmation Dialog Overlay -->
+<div class="fixed inset-0 z-50 hidden items-center justify-center" id="confirmDialog">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-on-surface/40 backdrop-blur-sm transition-opacity"></div>
+<!-- Dialog Card -->
+<div class="relative bg-surface rounded-[24px] p-xl max-w-md w-[90%] mx-auto custom-shadow flex flex-col gap-lg z-10 transform transition-transform scale-95 opacity-0" id="dialogContent">
+<div class="flex flex-col items-center text-center gap-md">
+<div class="w-16 h-16 rounded-full bg-primary-container flex items-center justify-center mb-sm">
+<span class="material-symbols-outlined text-primary text-[32px]">task_alt</span>
+</div>
+<h2 class="font-card-title-lg text-card-title-lg text-primary">Nộp bài ngay?</h2>
+<p class="font-body text-body text-on-surface-variant">
+                    Em muốn nộp bài ngay? Sau khi nộp, Medi Bee sẽ phân tích kết quả và xây dựng lộ trình học tập riêng cho em.
+                </p>
+<!-- Reminder in dialog if unanswered -->
+<div class="bg-error-container/50 rounded-lg p-sm mt-sm text-on-error-container font-caption text-caption w-full text-left flex items-start gap-sm">
+<span class="material-symbols-outlined text-[16px] flex-shrink-0 mt-0.5">info</span>
+<span>Lưu ý: Vẫn còn 1 câu hỏi chưa được trả lời.</span>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row gap-md w-full pt-sm">
+<button class="min-h-[48px] px-lg rounded-full border-2 border-primary text-primary font-label text-label flex-1 hover:bg-primary-fixed/30 transition-colors" id="closeDialogBtn">
+                    Kiểm tra lại
+                </button>
+<button class="min-h-[48px] px-lg rounded-full bg-primary text-on-primary font-label text-label flex-1 custom-shadow-hover">
+                    Nộp bài
+                </button>
+</div>
+</div>
+</div>
+<script>
+        // Simple dialog interactions
+        const submitBtn = document.getElementById('submitBtn');
+        const confirmDialog = document.getElementById('confirmDialog');
+        const dialogContent = document.getElementById('dialogContent');
+        const closeDialogBtn = document.getElementById('closeDialogBtn');
+
+        submitBtn.addEventListener('click', () => {
+            confirmDialog.classList.remove('hidden');
+            confirmDialog.classList.add('flex');
+            // Small delay to allow display:flex to apply before animating opacity/transform
+            setTimeout(() => {
+                dialogContent.classList.remove('scale-95', 'opacity-0');
+                dialogContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        });
+
+        const closeDialog = () => {
+            dialogContent.classList.remove('scale-100', 'opacity-100');
+            dialogContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                confirmDialog.classList.add('hidden');
+                confirmDialog.classList.remove('flex');
+            }, 200);
+        };
+
+        closeDialogBtn.addEventListener('click', closeDialog);
+        
+        // Close on backdrop click
+        confirmDialog.addEventListener('click', (e) => {
+            if(e.target === confirmDialog) closeDialog();
+        });
+    </script>
+</body></html>

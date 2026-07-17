@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Khảo sát đầu vào - V-Nexus Tutor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-container": "#53e389",
+                      "surface-dim": "#d4d7ff",
+                      "inverse-surface": "#222b64",
+                      "secondary-fixed": "#ffdbd1",
+                      "on-primary-fixed": "#130068",
+                      "surface-container-highest": "#dee0ff",
+                      "surface-tint": "#574ebf",
+                      "on-primary-container": "#c8c4ff",
+                      "primary": "#35299d",
+                      "tertiary-fixed-dim": "#4fe086",
+                      "inverse-on-surface": "#f0efff",
+                      "on-tertiary-fixed": "#00210d",
+                      "surface-container": "#edecff",
+                      "primary-fixed-dim": "#c5c0ff",
+                      "surface-container-low": "#f4f2ff",
+                      "error": "#ba1a1a",
+                      "on-surface-variant": "#474553",
+                      "tertiary-container": "#006231",
+                      "on-primary": "#ffffff",
+                      "primary-container": "#4d44b5",
+                      "on-error-container": "#93000a",
+                      "on-background": "#0a144e",
+                      "on-secondary-fixed-variant": "#83250a",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-container": "#701800",
+                      "surface-container-high": "#e6e6ff",
+                      "primary-fixed": "#e3dfff",
+                      "secondary-fixed-dim": "#ffb5a1",
+                      "inverse-primary": "#c5c0ff",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-variant": "#dee0ff",
+                      "tertiary": "#004822",
+                      "on-surface": "#0a144e",
+                      "surface": "#fbf8ff",
+                      "background": "#fbf8ff",
+                      "on-secondary-fixed": "#3c0800",
+                      "outline-variant": "#c8c4d5",
+                      "on-tertiary-fixed-variant": "#005228",
+                      "on-tertiary": "#ffffff",
+                      "secondary-container": "#fd7e5c",
+                      "secondary": "#a43c20",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed": "#6ffda0",
+                      "outline": "#787584",
+                      "surface-bright": "#fbf8ff",
+                      "on-error": "#ffffff",
+                      "on-primary-fixed-variant": "#3e34a6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xl": "32px",
+                      "lg": "24px",
+                      "container-margin": "24px",
+                      "gutter": "20px",
+                      "md": "16px",
+                      "xs": "4px",
+                      "sm": "8px",
+                      "base": "8px",
+                      "xxl": "48px"
+              },
+              "fontFamily": {
+                      "question-display": [
+                              "Outfit"
+                      ],
+                      "card-title-sm": [
+                              "Outfit"
+                      ],
+                      "body": [
+                              "Outfit"
+                      ],
+                      "page-title-mobile": [
+                              "Outfit"
+                      ],
+                      "card-title-lg": [
+                              "Outfit"
+                      ],
+                      "label": [
+                              "Outfit"
+                      ],
+                      "caption": [
+                              "Outfit"
+                      ],
+                      "question-display-mobile": [
+                              "Outfit"
+                      ],
+                      "page-title": [
+                              "Outfit"
+                      ]
+              },
+              "fontSize": {
+                      "question-display": [
+                              "28px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "card-title-sm": [
+                              "22px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "page-title-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "card-title-lg": [
+                              "26px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "caption": [
+                              "13px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "question-display-mobile": [
+                              "22px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "page-title": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+        /* Ambient Shadow Level 1 */
+        .shadow-l1 { box-shadow: 0px 4px 20px rgba(77, 68, 181, 0.05); }
+        /* Ambient Shadow Level 2 */
+        .shadow-l2 { box-shadow: 0px 8px 24px rgba(77, 68, 181, 0.12); }
+        .shadow-l2-hover:hover { box-shadow: 0px 12px 32px rgba(77, 68, 181, 0.18); transform: translateY(-2px); }
+      </style>
+</head>
+<body class="font-body text-body min-h-screen">
+<!-- TopAppBar -->
+<header class="hidden md:flex bg-surface dark:bg-surface fixed full-width top-0 w-full z-50 border-b border-outline-variant h-20 px-xl items-center justify-between">
+<div class="flex items-center gap-md">
+<h1 class="font-page-title text-page-title text-primary">Khảo sát đầu vào</h1>
+</div>
+<div class="flex items-center gap-lg">
+<span class="material-symbols-outlined text-primary text-[24px] cursor-pointer hover:text-primary transition-all opacity-70 hover:opacity-100">notifications</span>
+<span class="material-symbols-outlined text-primary text-[24px] cursor-pointer hover:text-primary transition-all opacity-70 hover:opacity-100">settings</span>
+<div class="w-10 h-10 rounded-full bg-primary-container overflow-hidden border-2 border-surface-variant shadow-sm ml-2">
+<img alt="Student Profile Avatar" class="w-full h-full object-cover" data-alt="A small, stylized avatar illustration of a primary school student. The student has a bright, eager expression, wearing a simple colorful shirt. Soft vector art style, flat colors with slight shading, friendly and approachable mood, set against a solid light purple background to match the educational app aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQOosFpMR9jq1xpkrQvrjjkUJkr4eYdIMvIuYVTJk0le2Ux6EZbzpU2gCDMxpBwgRevw_-vFAIFnXxmxFe8Yh5CsYQpS8Ib1Mn1GakYa_lNA9-A0FIOtin5YMgj5dCyEr2wKUheA8bAIPkuV6W1Wbd0oIprcNK6tfQK0zV6EismqsqS05AFkWudrhezvovhzsFhU41sVqKJ8gnv88yWw56D6u0bSukDTAEdpIHGx7gVBk2AYzhbBGmYA"/>
+</div>
+</div>
+</header>
+<!-- Main Layout -->
+<div class="flex pt-20 h-screen">
+<!-- Main Content Area (No SideNav for transactional page intent) -->
+<main class="flex-1 overflow-y-auto w-full flex justify-center">
+<div class="w-full max-w-5xl p-lg md:p-xl flex flex-col gap-xl">
+<!-- Header / Progress Section -->
+<section class="flex flex-col gap-md">
+<!-- Stepper -->
+<div class="flex items-center justify-center gap-sm">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-label text-label shadow-l1">1</div>
+<span class="font-label text-label text-primary">Thông tin</span>
+</div>
+<div class="w-8 h-[2px] bg-primary"></div>
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-label text-label shadow-l2">2</div>
+<span class="font-label text-label text-primary font-bold">Làm bài</span>
+</div>
+<div class="w-8 h-[2px] bg-outline-variant"></div>
+<div class="flex items-center gap-sm opacity-50">
+<div class="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center font-label text-label">3</div>
+<span class="font-label text-label text-on-surface-variant">Kết quả</span>
+</div>
+</div>
+<!-- Progress Bar & Status -->
+<div class="flex flex-col gap-sm bg-surface p-lg rounded-[20px] shadow-l1">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-sm">
+<span class="font-card-title-sm text-card-title-sm text-primary">Câu 6/14</span>
+<span class="bg-primary/10 text-primary font-label text-label px-3 py-1 rounded-full">ĐỌC &amp; CHỌN</span>
+</div>
+<div class="flex items-center gap-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">cloud_done</span>
+<span class="font-caption text-caption">Đã lưu tự động</span>
+</div>
+</div>
+<div class="h-[12px] w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container rounded-full" style="width: 42%;"></div>
+</div>
+</div>
+</section>
+<!-- Two Column Layout for Desktop -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-xl items-start">
+<!-- Left Col: Question & Answers -->
+<div class="lg:col-span-8 flex flex-col gap-xl">
+<!-- Question Card -->
+<div class="bg-surface rounded-[20px] shadow-l1 p-lg md:p-xl flex flex-col gap-lg relative">
+<!-- Medi Bee Message Floating -->
+<div class="absolute -top-6 -right-4 flex items-end gap-2 animate-bounce drop-shadow-md z-10 hidden sm:flex">
+<div class="bg-secondary text-on-secondary px-4 py-2 rounded-2xl rounded-br-sm font-label text-label max-w-[200px] shadow-l1">
+                                     Chọn đáp án em thấy phù hợp nhất nhé!
+                                 </div>
+<img alt="Medi Bee Mascot" class="w-16 h-16 object-contain" data-alt="A cute, stylized 3D rendered bee character acting as an educational mascot. The bee is smiling, wearing tiny glasses, and floating gently. Bright yellow and black stripes, soft studio lighting, friendly appealing design suitable for children, set against a transparent background but appearing over the UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuApSg0xWJK8fEyUhABSuOtXKH3uC9Ip9D0e-Tq_Kw637Z-ZtUMj_VxDk_zQaDbEfzYIjOEIgFjcmQWioNW0TYYAwqMXoGeS7hJrbQ2Cbja64k8XTo2lVJnBW-hbtwu8_MDP79M765MmEd8S7NQnvFzqWB8m50DcQgihP4Gfa-8rfCQJ-EgVPSht3q04LQ5s4RcIn-3xxzJ4LeU3amaa2IM9NMsU6v6J_iW6eYtch23xlUXW0A1vph2b6A"/>
+</div>
+<div class="font-question-display md:text-question-display text-question-display-mobile text-on-surface">
+                                "Would you like <span class="inline-block border-b-2 border-primary w-16 mx-2 border-dashed"></span> water? – No, thank you."
+                            </div>
+<div class="w-full h-px bg-outline-variant/30 my-2"></div>
+<!-- Options Grid -->
+<div class="flex flex-col gap-md">
+<!-- Option A -->
+<button class="w-full flex items-center p-md rounded-[16px] bg-surface-lowest border border-outline-variant hover:bg-surface-container transition-colors shadow-sm text-left group">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center font-card-title-sm text-primary mr-lg group-hover:bg-primary/10">A</div>
+<span class="font-card-title-lg text-card-title-lg text-on-surface">some</span>
+</button>
+<!-- Option B -->
+<button class="w-full flex items-center p-md rounded-[16px] bg-surface-lowest border border-outline-variant hover:bg-surface-container transition-colors shadow-sm text-left group">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center font-card-title-sm text-primary mr-lg group-hover:bg-primary/10">B</div>
+<span class="font-card-title-lg text-card-title-lg text-on-surface">any</span>
+</button>
+<!-- Option C -->
+<button class="w-full flex items-center p-md rounded-[16px] bg-surface-lowest border border-outline-variant hover:bg-surface-container transition-colors shadow-sm text-left group">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center font-card-title-sm text-primary mr-lg group-hover:bg-primary/10">C</div>
+<span class="font-card-title-lg text-card-title-lg text-on-surface">a</span>
+</button>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex items-center justify-between bg-surface rounded-[20px] shadow-l1 p-md">
+<button class="px-xl py-3 rounded-full bg-primary/10 text-primary font-label text-label hover:bg-primary/20 transition-colors flex items-center gap-xs">
+<span class="material-symbols-outlined text-[20px]">flag</span>
+                                 Đánh dấu xem lại
+                             </button>
+<button class="px-xl py-3 rounded-full bg-surface-variant text-outline font-label text-label min-w-[160px] cursor-not-allowed opacity-60" disabled="">
+                                 Kiểm tra đáp án
+                             </button>
+</div>
+</div>
+<!-- Right Col: Navigator -->
+<div class="lg:col-span-4">
+<div class="bg-surface rounded-[20px] shadow-l1 p-lg sticky top-[100px]">
+<h3 class="font-card-title-sm text-card-title-sm text-on-surface mb-md border-b border-outline-variant/30 pb-sm">Danh sách câu hỏi</h3>
+<div class="grid grid-cols-5 gap-sm">
+<!-- Answered -->
+<div class="aspect-square rounded-lg bg-surface-container-highest border border-outline-variant/50 flex items-center justify-center font-label text-label text-on-surface-variant relative cursor-pointer hover:bg-outline-variant/20">
+                                    1 <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-tertiary-fixed-dim rounded-full border border-surface"></div>
+</div>
+<div class="aspect-square rounded-lg bg-surface-container-highest border border-outline-variant/50 flex items-center justify-center font-label text-label text-on-surface-variant relative cursor-pointer hover:bg-outline-variant/20">
+                                    2 <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-tertiary-fixed-dim rounded-full border border-surface"></div>
+</div>
+<div class="aspect-square rounded-lg bg-surface-container-highest border border-outline-variant/50 flex items-center justify-center font-label text-label text-on-surface-variant relative cursor-pointer hover:bg-outline-variant/20">
+                                    3 <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-tertiary-fixed-dim rounded-full border border-surface"></div>
+</div>
+<div class="aspect-square rounded-lg bg-surface-container-highest border border-outline-variant/50 flex items-center justify-center font-label text-label text-on-surface-variant relative cursor-pointer hover:bg-outline-variant/20">
+                                    4 <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-tertiary-fixed-dim rounded-full border border-surface"></div>
+</div>
+<div class="aspect-square rounded-lg bg-surface-container-highest border border-outline-variant/50 flex items-center justify-center font-label text-label text-on-surface-variant relative cursor-pointer hover:bg-outline-variant/20">
+                                    5 <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-tertiary-fixed-dim rounded-full border border-surface"></div>
+</div>
+<!-- Current -->
+<div class="aspect-square rounded-lg bg-primary text-on-primary shadow-l2 border-2 border-primary flex items-center justify-center font-label text-label font-bold relative cursor-pointer transform scale-110 z-10">
+                                    6
+                                </div>
+<!-- Unanswered -->
+<div class="aspect-square rounded-lg bg-surface-lowest border border-outline-variant/50 flex items-center justify-center font-label text-label text-on-surface cursor-pointer hover:bg-surface-container">7</div>
+<div class="aspect-square rounded-lg bg-surface-lowest border border-outline-variant/50 flex items-center justify-center font-label text-label text-on-surface cursor-pointer hover:bg-surface-container">8</div>
+<div class="aspect-square rounded-lg bg-surface-lowest border border-outline-variant/50 flex items-center justify-center font-label text-label text-on-surface cursor-pointer hover:bg-surface-container">9</div>
+<div class="aspect-square rounded-lg bg-surface-lowest border border-outline-variant/50 flex items-center justify-center font-label text-label text-on-surface cursor-pointer hover:bg-surface-container">10</div>
+<div class="aspect-square rounded-lg bg-surface-lowest border border-outline-variant/50 flex items-center justify-center font-label text-label text-on-surface cursor-pointer hover:bg-surface-container">11</div>
+<div class="aspect-square rounded-lg bg-surface-lowest border border-outline-variant/50 flex items-center justify-center font-label text-label text-on-surface cursor-pointer hover:bg-surface-container">12</div>
+<div class="aspect-square rounded-lg bg-surface-lowest border border-outline-variant/50 flex items-center justify-center font-label text-label text-on-surface cursor-pointer hover:bg-surface-container">13</div>
+<div class="aspect-square rounded-lg bg-surface-lowest border border-outline-variant/50 flex items-center justify-center font-label text-label text-on-surface cursor-pointer hover:bg-surface-container">14</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -214,6 +214,46 @@
   flex: 1;
 }
 
+/* Sub-tab bar for grouped menu items (Người dùng, Đánh giá) */
+.subtab-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.subtab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: 1px solid var(--border, #e6e6f0);
+  background: white;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-muted, #7a7a9d);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.subtab-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.subtab-btn:hover {
+  border-color: var(--primary, #4d44b5);
+  color: var(--primary, #4d44b5);
+}
+
+.subtab-btn.active {
+  background: var(--primary, #4d44b5);
+  border-color: var(--primary, #4d44b5);
+  color: white;
+  box-shadow: 0 6px 18px rgba(77, 68, 181, 0.25);
+}
+
 /* Status Cards Grid */
 .stats-grid {
   display: grid;
@@ -697,4 +737,623 @@
 
 .toast-error {
   border-left: 5px solid var(--danger);
+}
+
+/* ==========================================================
+   RESPONSIVE: Mobile Hamburger Menu Toggle
+   ========================================================== */
+.mobile-menu-toggle {
+  display: none;
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 200;
+  background: var(--primary);
+  color: white;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(77, 68, 181, 0.3);
+}
+
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+}
+
+/* ==========================================================
+   RESPONSIVE BREAKPOINTS
+   ========================================================== */
+
+/* Tablet: 769px – 1024px */
+@media (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .podium-container {
+    gap: 24px;
+  }
+
+  .podium-column {
+    width: 120px;
+  }
+
+  .form-grid-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .form-span-full {
+    grid-column: span 1;
+  }
+}
+
+/* Mobile: ≤ 768px */
+@media (max-width: 768px) {
+  /* --- Sidebar: off-canvas on mobile --- */
+  .mobile-menu-toggle {
+    display: flex;
+  }
+
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 260px;
+    padding: 24px 16px;
+    z-index: 150;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .mobile-overlay.visible {
+    display: block;
+  }
+
+  .sidebar-logo {
+    font-size: 20px;
+    margin-bottom: 24px;
+    padding-left: 0;
+    gap: 10px;
+  }
+
+  .sidebar-logo-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+
+  .menu-item {
+    font-size: 13px;
+    padding: 12px 16px;
+    gap: 12px;
+    border-radius: 12px;
+  }
+
+  .sidebar-footer {
+    font-size: 11px;
+    padding-top: 12px;
+  }
+
+  /* --- Main wrapper: no left margin --- */
+  .main-wrapper {
+    margin-left: 0;
+  }
+
+  /* --- Top header: compact --- */
+  .top-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 16px;
+    padding-top: 56px;
+  }
+
+  .header-title h1 {
+    font-size: 18px;
+  }
+
+  .header-right {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .search-bar {
+    width: 100%;
+  }
+
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px 10px 40px;
+    font-size: 13px;
+  }
+
+  .icon-buttons {
+    display: none;
+  }
+
+  .user-profile {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .user-info {
+    text-align: left;
+  }
+
+  .user-name {
+    font-size: 12px;
+  }
+
+  .user-role {
+    font-size: 11px;
+  }
+
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  /* --- Header search + filter stack --- */
+  .header-search-filter {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .header-search-filter .search-bar {
+    width: 100%;
+  }
+
+  .header-search-filter select {
+    width: 100%;
+    min-width: 0 !important;
+  }
+
+  /* --- Content area --- */
+  .content-area {
+    padding: 0 12px 24px 12px;
+  }
+
+  /* --- Stats grid: 2 columns --- */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .stat-card {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .stat-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .stat-val {
+    font-size: 20px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+  }
+
+  /* --- Charts grid: stacked --- */
+  .charts-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .chart-placeholder {
+    height: 200px;
+  }
+
+  .bar-fill-container {
+    height: 120px;
+  }
+
+  /* --- Dashboard bottom grid: stacked --- */
+  .dashboard-bottom-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* --- Tables: horizontal scroll --- */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .custom-table {
+    min-width: 560px;
+  }
+
+  .custom-table th {
+    padding: 10px 12px;
+    font-size: 11px;
+  }
+
+  .custom-table td {
+    padding: 10px 12px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  /* --- Control bar: stacked --- */
+  .control-bar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .control-left,
+  .control-right {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  /* --- Table header bar --- */
+  .table-header-bar {
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    align-items: flex-start;
+  }
+
+  .table-title {
+    font-size: 15px;
+  }
+
+  /* --- Question bank header filters stack --- */
+  .question-header-filters {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .question-header-filters > * {
+    width: 100%;
+  }
+
+  .question-header-filters select {
+    min-width: 0;
+  }
+
+  /* --- Detail view: stacked summary cards --- */
+  .detail-summary-grid {
+    grid-template-columns: 1fr !important;
+    padding: 12px !important;
+    gap: 10px !important;
+  }
+
+  .detail-label {
+    font-size: 11px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .detail-score-val {
+    font-size: 22px !important;
+  }
+
+  .detail-score-val span {
+    font-size: 13px !important;
+  }
+
+  .detail-level-val {
+    font-size: 18px !important;
+  }
+
+  .detail-time-val {
+    font-size: 22px !important;
+  }
+
+  .detail-time-val span {
+    font-size: 12px !important;
+  }
+
+  .detail-date-val {
+    font-size: 15px !important;
+  }
+
+  .detail-sub-val {
+    font-size: 11px !important;
+  }
+
+  .detail-section-title {
+    font-size: 13px !important;
+    margin-bottom: 12px !important;
+  }
+
+  /* --- Detail mastery section --- */
+  .detail-mastery-section {
+    padding: 12px !important;
+  }
+
+  .detail-mastery-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* --- Detail gaps + recs: stacked --- */
+  .detail-gaps-recs-grid {
+    grid-template-columns: 1fr !important;
+    padding: 10px 12px 20px !important;
+    gap: 14px !important;
+  }
+
+  /* --- Answers detail --- */
+  .detail-answers-section {
+    padding: 0 12px 20px !important;
+  }
+
+  .detail-answers-section .custom-table {
+    min-width: 650px;
+  }
+
+  /* --- Podium --- */
+  .podium-container {
+    gap: 12px;
+    height: auto;
+    min-height: 200px;
+    margin: 16px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .podium-column {
+    width: 90px;
+  }
+
+  .podium-avatar {
+    width: 50px;
+    height: 50px;
+    font-size: 14px;
+  }
+
+  .podium-name {
+    font-size: 11px;
+  }
+
+  .podium-score {
+    font-size: 10px;
+  }
+
+  .podium-block {
+    font-size: 20px;
+  }
+
+  .podium-block-1 { height: 100px; }
+  .podium-block-2 { height: 75px; }
+  .podium-block-3 { height: 55px; }
+
+  /* --- Survey form --- */
+  .survey-card {
+    padding: 16px 14px;
+    max-width: 100%;
+  }
+
+  .survey-top svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  .survey-top h2 {
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .survey-top p {
+    font-size: 12px;
+  }
+
+  .form-grid-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .form-span-full {
+    grid-column: span 1;
+  }
+
+  /* --- Modals --- */
+  .modal-card {
+    width: 95%;
+    padding: 20px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 16px;
+  }
+
+  .modal-card h3 {
+    font-size: 18px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .modal-card[style*="maxWidth: 820px"] {
+    max-width: 95% !important;
+    max-height: 90vh;
+  }
+
+  .modal-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .modal-form-grid label {
+    font-size: 11px !important;
+  }
+
+  /* --- Placement test levels grid --- */
+  .levels-grid-mobile {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* --- Toast on mobile --- */
+  .toast {
+    bottom: 16px;
+    right: 12px;
+    left: 12px;
+    font-size: 12px;
+    padding: 12px 16px;
+  }
+
+  /* --- Student/Teacher meta: tighter --- */
+  .student-meta,
+  .teacher-meta {
+    gap: 8px;
+  }
+
+  .avatar-circle {
+    width: 34px;
+    height: 34px;
+    font-size: 12px;
+  }
+
+  .meta-name {
+    font-size: 12px;
+  }
+
+  .meta-email {
+    font-size: 10px;
+    display: none;
+  }
+
+  /* --- Badges: smaller on mobile --- */
+  .badge {
+    padding: 3px 8px;
+    font-size: 10px;
+  }
+
+  /* --- Action buttons: compact --- */
+  .action-group {
+    gap: 4px;
+  }
+
+  .action-btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  /* --- Panel padding --- */
+  .panel {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  /* --- Placement test detail header: stack --- */
+  .placement-detail-header {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start !important;
+  }
+
+  .placement-detail-header .btn {
+    align-self: flex-start;
+  }
+
+  /* --- Scoring info bar: wrap --- */
+  .scoring-info-bar {
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 14px !important;
+  }
+
+  /* --- Buttons compact --- */
+  .btn {
+    padding: 10px 18px;
+    font-size: 13px;
+  }
+
+  .btn-small {
+    padding: 7px 12px;
+    font-size: 11px;
+  }
+
+  /* --- Form inputs --- */
+  input, select, textarea {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  label {
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+}
+
+/* Extra small: ≤ 480px */
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    flex-direction: row;
+  }
+
+  .header-title h1 {
+    font-size: 16px;
+  }
+
+  .stat-val {
+    font-size: 18px;
+  }
+
+  .podium-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    height: auto;
+  }
+
+  .podium-column {
+    width: 100%;
+    max-width: 180px;
+  }
+
+  .podium-block-1 { height: 50px; }
+  .podium-block-2 { height: 40px; }
+  .podium-block-3 { height: 30px; }
+
+  .detail-score-val { font-size: 18px !important; }
+  .detail-level-val { font-size: 16px !important; }
+  .detail-time-val { font-size: 18px !important; }
+
+  .modal-card {
+    width: 98%;
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .content-area {
+    padding: 0 10px 20px 10px;
+  }
+
+  .top-header {
+    padding: 12px 10px;
+    padding-top: 52px;
+  }
 }

@@ -46,7 +46,7 @@ Quyết định này quyết định toàn bộ phần việc của Quyết và 
 - Chốt kiến trúc cùng Quyết (việc chặn đầu tiên ở trên).
 - Theo dõi 3 mốc nộp bài, không để trôi deadline — đặc biệt Checkpoint 2 (23:00 T7) vì
   không gia hạn.
-- Enforce `docs/AI_LOG.md`: nhắc cả team ghi log liên tục, không dồn cuối.
+- Enforce `docs/ai_log.md`: nhắc cả team ghi log liên tục, không dồn cuối.
 - Trước Final: chạy checklist `docs/scoring-checklist.md` + `docs/RULES.md`, đảm bảo
   repo public, URL live còn chạy tại thời điểm nộp.
 - Điều phối lịch ngủ/nghỉ luân phiên trong 48h, tránh cả team kiệt sức cùng lúc trước
@@ -101,6 +101,6 @@ Quyết định này quyết định toàn bộ phần việc của Quyết và 
 
 - Đừng tối ưu, đừng làm đẹp sớm — ưu tiên 1 mạch kiến thức chạy trọn vẹn end-to-end
   (chẩn đoán → lộ trình → dashboard) hơn là nhiều mạch dở dang.
-- Mỗi người tự ghi `docs/AI_LOG.md` khi dùng AI, ngay lúc làm — không dồn cuối giờ.
+- Mỗi người tự ghi `docs/ai_log.md` khi dùng AI, ngay lúc làm — không dồn cuối giờ.
 - Checkpoint 2 (23:00 T7, URL+repo) là mốc thực tế quan trọng nhất để né rủi ro — nếu
   trễ, không còn cơ hội sửa trước Final.

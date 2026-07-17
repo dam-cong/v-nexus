@@ -62,13 +62,14 @@ class StudentBase(BaseModel):
     role_id: Optional[int] = 1
 
 class StudentCreate(StudentBase):
-    pass
+    password: Optional[str] = None
 
 class StudentUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
     grade: Optional[str] = None
     role_id: Optional[int] = None
+    password: Optional[str] = None
 
 class StudentResponse(StudentBase):
     id: int
@@ -87,13 +88,14 @@ class TeacherBase(BaseModel):
     role_id: Optional[int] = 2
 
 class TeacherCreate(TeacherBase):
-    pass
+    password: Optional[str] = None
 
 class TeacherUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
     subject: Optional[str] = None
     role_id: Optional[int] = None
+    password: Optional[str] = None
 
 class TeacherResponse(TeacherBase):
     id: int
@@ -153,6 +155,20 @@ class TestResultResponse(BaseModel):
     created_at: datetime
     class Config:
         from_attributes = True
+
+
+class TestResultSubmit(BaseModel):
+    answers: Optional[list] = None
+    score: int
+    max_score: int
+    percentage: float
+    result_level: str
+    cefr: str
+    time_total_sec: int = 0
+    mastery: Optional[dict] = None
+    gaps: Optional[list] = None
+    recommendations: Optional[list] = None
+    test_date: Optional[str] = None
 
 
 # =====================================================================
@@ -272,7 +288,7 @@ async def create_student(
         email=student.email,
         grade=student.grade,
         role_id=student.role_id,
-        hashed_password=hash_password("default123"),
+        hashed_password=hash_password(student.password or "default123"),
     )
     db.add(db_student)
     await db.commit()
@@ -309,9 +325,13 @@ async def update_student(
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
     
+    from db.password import hash_password
     update_data = student_data.model_dump(exclude_unset=True)
+    new_password = update_data.pop("password", None)
     for key, value in update_data.items():
         setattr(student, key, value)
+    if new_password:
+        student.hashed_password = hash_password(new_password)
         
     await db.commit()
     await db.refresh(student)
@@ -346,6 +366,23 @@ async def delete_student(
     await db.delete(student)
     await db.commit()
     return None
+
+
+@router.post("/students/{student_id}/reset-password")
+async def reset_student_password(
+    student_id: int,
+    db: AsyncSession = Depends(get_session),
+    _admin: dict = Depends(require_role("admin")),
+):
+    result = await db.execute(select(Student).where(Student.id == student_id))
+    student = result.scalar_one_or_none()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student not found")
+    from db.password import hash_password
+    default_pw = "default123"
+    student.hashed_password = hash_password(default_pw)
+    await db.commit()
+    return {"message": "Đã reset mật khẩu thành công", "new_password": default_pw}
 
 
 # =====================================================================
@@ -384,7 +421,7 @@ async def create_teacher(
         email=teacher.email,
         subject=teacher.subject,
         role_id=teacher.role_id,
-        hashed_password=hash_password("default123"),
+        hashed_password=hash_password(teacher.password or "default123"),
     )
     db.add(db_teacher)
     await db.commit()
@@ -403,9 +440,13 @@ async def update_teacher(
     if not teacher:
         raise HTTPException(status_code=404, detail="Teacher not found")
     
+    from db.password import hash_password
     update_data = teacher_data.model_dump(exclude_unset=True)
+    new_password = update_data.pop("password", None)
     for key, value in update_data.items():
         setattr(teacher, key, value)
+    if new_password:
+        teacher.hashed_password = hash_password(new_password)
         
     await db.commit()
     await db.refresh(teacher)
@@ -424,6 +465,23 @@ async def delete_teacher(
     await db.delete(teacher)
     await db.commit()
     return None
+
+
+@router.post("/teachers/{teacher_id}/reset-password")
+async def reset_teacher_password(
+    teacher_id: int,
+    db: AsyncSession = Depends(get_session),
+    _admin: dict = Depends(require_role("admin")),
+):
+    result = await db.execute(select(Teacher).where(Teacher.id == teacher_id))
+    teacher = result.scalar_one_or_none()
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+    from db.password import hash_password
+    default_pw = "default123"
+    teacher.hashed_password = hash_password(default_pw)
+    await db.commit()
+    return {"message": "Đã reset mật khẩu thành công", "new_password": default_pw}
 
 
 # =====================================================================
@@ -778,3 +836,66 @@ async def get_student_test_results(
         .order_by(StudentTestResult.test_date.desc())
     )
     return list(result.scalars().all())
+
+
+@router.post("/placement-tests/{test_id}/submit", response_model=TestResultResponse, status_code=status.HTTP_201_CREATED)
+async def submit_placement_test(
+    test_id: int,
+    body: TestResultSubmit,
+    db: AsyncSession = Depends(get_session),
+    user: dict = Depends(get_current_user),
+):
+    result = await db.execute(select(PlacementTest).where(PlacementTest.id == test_id))
+    test = result.scalar_one_or_none()
+    if not test:
+        raise HTTPException(status_code=404, detail="Placement test not found")
+
+    student_id = user["id"]
+    if user.get("type") == "student":
+        student_id = int(user["sub"])
+
+    test_date = datetime.utcnow()
+    if body.test_date:
+        try:
+            dt = datetime.fromisoformat(body.test_date.replace("Z", "+00:00"))
+            test_date = dt.replace(tzinfo=None)
+        except Exception:
+            pass
+
+    test_result = StudentTestResult(
+        student_id=student_id,
+        test_id=test_id,
+        answers=body.answers,
+        score=body.score,
+        max_score=body.max_score,
+        percentage=body.percentage,
+        result_level=body.result_level,
+        cefr=body.cefr,
+        time_total_sec=body.time_total_sec,
+        mastery=body.mastery,
+        gaps=body.gaps,
+        recommendations=body.recommendations,
+        test_date=test_date,
+    )
+    db.add(test_result)
+
+    level_map = {
+        "starter": "Starter",
+        "beginner": "Beginner",
+        "elementary": "Intermediate",
+    }
+    ranking_level = level_map.get(body.result_level, body.result_level)
+    ranking_score = body.score
+
+    ranking_result = await db.execute(select(Ranking).where(Ranking.student_id == student_id))
+    ranking = ranking_result.scalar_one_or_none()
+    if ranking:
+        ranking.score = ranking_score
+        ranking.level = ranking_level
+    else:
+        ranking = Ranking(student_id=student_id, score=ranking_score, level=ranking_level)
+        db.add(ranking)
+
+    await db.commit()
+    await db.refresh(test_result)
+    return test_result

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Khảo sát đầu vào - Trả lời đúng</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-container": "#53e389",
+                      "surface-dim": "#d4d7ff",
+                      "inverse-surface": "#222b64",
+                      "secondary-fixed": "#ffdbd1",
+                      "on-primary-fixed": "#130068",
+                      "surface-container-highest": "#dee0ff",
+                      "surface-tint": "#574ebf",
+                      "on-primary-container": "#c8c4ff",
+                      "primary": "#35299d",
+                      "tertiary-fixed-dim": "#4fe086",
+                      "inverse-on-surface": "#f0efff",
+                      "on-tertiary-fixed": "#00210d",
+                      "surface-container": "#edecff",
+                      "primary-fixed-dim": "#c5c0ff",
+                      "surface-container-low": "#f4f2ff",
+                      "error": "#ba1a1a",
+                      "on-surface-variant": "#474553",
+                      "tertiary-container": "#006231",
+                      "on-primary": "#ffffff",
+                      "primary-container": "#4d44b5",
+                      "on-error-container": "#93000a",
+                      "on-background": "#0a144e",
+                      "on-secondary-fixed-variant": "#83250a",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-container": "#701800",
+                      "surface-container-high": "#e6e6ff",
+                      "primary-fixed": "#e3dfff",
+                      "secondary-fixed-dim": "#ffb5a1",
+                      "inverse-primary": "#c5c0ff",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-variant": "#dee0ff",
+                      "tertiary": "#004822",
+                      "on-surface": "#0a144e",
+                      "surface": "#fbf8ff",
+                      "background": "#fbf8ff",
+                      "on-secondary-fixed": "#3c0800",
+                      "outline-variant": "#c8c4d5",
+                      "on-tertiary-fixed-variant": "#005228",
+                      "on-tertiary": "#ffffff",
+                      "secondary-container": "#fd7e5c",
+                      "secondary": "#a43c20",
+                      "error-container": "#ffdad6",
+                      "tertiary-fixed": "#6ffda0",
+                      "outline": "#787584",
+                      "surface-bright": "#fbf8ff",
+                      "on-error": "#ffffff",
+                      "on-primary-fixed-variant": "#3e34a6"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xl": "32px",
+                      "lg": "24px",
+                      "container-margin": "24px",
+                      "gutter": "20px",
+                      "md": "16px",
+                      "xs": "4px",
+                      "sm": "8px",
+                      "base": "8px",
+                      "xxl": "48px"
+              },
+              "fontFamily": {
+                      "question-display": [
+                              "Outfit"
+                      ],
+                      "card-title-sm": [
+                              "Outfit"
+                      ],
+                      "body": [
+                              "Outfit"
+                      ],
+                      "page-title-mobile": [
+                              "Outfit"
+                      ],
+                      "card-title-lg": [
+                              "Outfit"
+                      ],
+                      "label": [
+                              "Outfit"
+                      ],
+                      "caption": [
+                              "Outfit"
+                      ],
+                      "question-display-mobile": [
+                              "Outfit"
+                      ],
+                      "page-title": [
+                              "Outfit"
+                      ]
+              },
+              "fontSize": {
+                      "question-display": [
+                              "28px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "card-title-sm": [
+                              "22px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "page-title-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "card-title-lg": [
+                              "26px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "caption": [
+                              "13px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "question-display-mobile": [
+                              "22px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "page-title": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .shadow-soft {
+            box-shadow: 0px 4px 20px rgba(77, 68, 181, 0.05);
+        }
+        .shadow-hover {
+            box-shadow: 0px 8px 24px rgba(77, 68, 181, 0.12);
+        }
+        .success-bg {
+            background-color: #d1fae5; /* Using a subtle green, similar to tertiary-fixed but softer for bg */
+            border-color: #006231; /* tertiary-container */
+        }
+        .success-text {
+            color: #006231; /* tertiary-container */
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body text-body min-h-screen flex">
+<!-- SideNavBar (Desktop) -->
+<nav class="hidden md:flex bg-primary-container dark:bg-primary-container text-on-primary-container dark:text-on-primary-container font-body text-body fixed left-0 top-0 h-full w-[280px] shadow-md flex-col p-lg gap-md z-50">
+<div class="mb-xl flex flex-col items-center gap-sm">
+<div class="w-24 h-24 rounded-full bg-surface-container flex items-center justify-center overflow-hidden">
+<img class="w-16 h-16 object-contain" data-alt="A stylized, modern geometric logo for an educational platform called V-Nexus, featuring vibrant purple and soft orange elements in a clean, minimalist design suitable for primary students." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCM3uOokYS7a43t67qK1PGBMjmepDfsAiPWQ7knuCK2Egcft_g3L5b2iNdz4l0wHwkQlKEDQVwbySEZ2Tpw-BuCeYqNKP7X7u5kICINw-DG9qygZnr2inOe2AXfK8dPAmtJzxq2SaTziHljMYINYjuRLchuZ55iwrYSc0vNb4uawx1imVZa2k7dMrd3-MAzv7wOnJ8I9s3fnd5_nMvD7N-kHt4MMNBbhQmgidyTq8tHlRBgj8jUlUrLKQ"/>
+</div>
+<div class="text-center">
+<h1 class="font-question-display text-question-display text-secondary-container">V-Nexus Tutor</h1>
+<p class="font-caption text-caption opacity-80">Grade 3-4 Learning</p>
+</div>
+</div>
+<div class="flex flex-col gap-sm flex-1">
+<a class="flex items-center gap-md p-md rounded-xl text-on-primary-container opacity-80 hover:opacity-100 hover:bg-primary/20 transition-colors Active: scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label text-label">Tổng quan</span>
+</a>
+<a class="flex items-center gap-md p-md bg-secondary-container text-on-secondary-container rounded-xl font-bold hover:bg-primary/20 transition-colors Active: scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">assignment</span>
+<span class="font-label text-label">Khảo sát đầu vào</span>
+</a>
+<a class="flex items-center gap-md p-md rounded-xl text-on-primary-container opacity-80 hover:opacity-100 hover:bg-primary/20 transition-colors Active: scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-label text-label">Lộ trình của em</span>
+</a>
+<a class="flex items-center gap-md p-md rounded-xl text-on-primary-container opacity-80 hover:opacity-100 hover:bg-primary/20 transition-colors Active: scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">trending_up</span>
+<span class="font-label text-label">Tiến bộ</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col w-full md:ml-[280px]">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface text-primary dark:text-primary-fixed font-page-title text-page-title docked full-width top-0 border-b border-outline-variant flat no shadows flex justify-between items-center h-20 px-xl w-full z-40 sticky">
+<div class="flex items-center">
+<h1 class="font-page-title text-page-title text-primary font-extrabold tracking-tight hidden md:block">Khảo sát đầu vào</h1>
+<!-- Mobile Menu Button (Placeholder) -->
+<button class="md:hidden p-sm text-primary">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-page-title-mobile text-page-title-mobile text-primary font-extrabold md:hidden ml-md">Khảo sát đầu vào</h1>
+</div>
+<div class="flex items-center gap-md">
+<button class="text-on-surface-variant hover:text-primary transition-all p-sm rounded-full hover:bg-surface-container Active: opacity-70">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-all p-sm rounded-full hover:bg-surface-container Active: opacity-70">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden border-2 border-primary ml-sm cursor-pointer">
+<img class="w-full h-full object-cover" data-alt="A cheerful, illustrative avatar of a young primary school student, vibrant colors, modern edtech style, soft lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHcqlNfFNqwPcd5TnP9ZXy7eY7YNJuxje9_Dfd0JFlNo05Hkbjz3u5WECYhbbYQvfz6CWHCBw-BgpguohO6EOWyiG1uQuone4RFYhB3T20xpWbkTmHYWcWZASMrMlJyAuW1sqSAwaLwD-2Lph7ak0nTDyLfy37uFnVPIhJeYTkl85Qn3iskrYgJpznets39tmxabxLJJ-Ihp7SCJA2IkL4J6Fw0zzHPfrjFpYUwGTzjkuBkfgS6kiaZg"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="p-lg md:p-xl flex-1 flex justify-center bg-surface-container-low">
+<div class="w-full max-w-4xl flex flex-col gap-xl">
+<!-- Progress Bar -->
+<div class="w-full bg-surface rounded-xl p-md shadow-soft">
+<div class="flex justify-between items-center mb-sm">
+<span class="font-label text-label text-on-surface-variant">Câu hỏi 4/15</span>
+<span class="font-label text-label text-secondary">25%</span>
+</div>
+<div class="h-3 w-full bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container rounded-full" style="width: 25%"></div>
+</div>
+</div>
+<!-- Question Block -->
+<div class="bg-surface rounded-[20px] shadow-soft p-lg md:p-xl">
+<div class="flex gap-sm mb-md">
+<span class="px-sm py-xs bg-primary/10 text-primary rounded-full font-label text-label text-xs uppercase tracking-wider">Ngữ pháp</span>
+<span class="px-sm py-xs bg-secondary/10 text-secondary rounded-full font-label text-label text-xs uppercase tracking-wider">Dễ</span>
+</div>
+<h2 class="font-question-display-mobile md:font-question-display text-question-display-mobile md:text-question-display text-on-surface mb-lg">
+                        Would you like <span class="inline-block border-b-2 border-on-surface-variant w-16 mx-2 text-center text-primary">some</span> orange juice?
+                    </h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Option A (Correct/Selected) -->
+<div class="relative bg-[#d1fae5] border-2 border-[#006231] rounded-[16px] p-md flex items-center justify-between cursor-default transition-all duration-200">
+<div class="flex items-center gap-md">
+<div class="w-8 h-8 rounded-full bg-[#006231] text-white flex items-center justify-center font-label text-label">A</div>
+<span class="font-body text-body text-[#006231] font-semibold">some</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="material-symbols-outlined text-[#006231]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-xs font-label text-label text-[#006231] mt-1 absolute -top-3 right-4 bg-[#d1fae5] px-2 rounded-full border border-[#006231]">Đáp án của em</span>
+</div>
+</div>
+<!-- Option B -->
+<div class="bg-surface border border-outline-variant rounded-[16px] p-md flex items-center gap-md opacity-60 cursor-default">
+<div class="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center font-label text-label">B</div>
+<span class="font-body text-body text-on-surface">any</span>
+</div>
+<!-- Option C -->
+<div class="bg-surface border border-outline-variant rounded-[16px] p-md flex items-center gap-md opacity-60 cursor-default">
+<div class="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center font-label text-label">C</div>
+<span class="font-body text-body text-on-surface">a</span>
+</div>
+<!-- Option D -->
+<div class="bg-surface border border-outline-variant rounded-[16px] p-md flex items-center gap-md opacity-60 cursor-default">
+<div class="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center font-label text-label">D</div>
+<span class="font-body text-body text-on-surface">an</span>
+</div>
+</div>
+</div>
+<!-- Feedback Panel -->
+<div class="bg-surface-container rounded-[20px] shadow-soft p-lg md:p-xl flex flex-col md:flex-row gap-lg items-start border-l-4 border-tertiary-container animate-[slideInUp_0.3s_ease-out]">
+<div class="w-24 h-24 shrink-0 rounded-full bg-surface overflow-hidden border-2 border-tertiary-container shadow-sm">
+<img class="w-full h-full object-cover" data-alt="A cute, friendly 3D rendered bee character wearing small glasses and holding a pointer stick, smiling encouragingly. Soft lighting, modern edtech style, vibrant colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAImpoL1yKyLlVX6GpJ8qlLh74MBN1PiH86djP-R2SNZ2j6zRmr6SwirRIhTx0f0_8gkeYE3pPWqAVvQqg7YlQKOKml6iRkeHNaX1A9HoZwOE5eOftehG64cTRgtEdIf4PGwpEKcfxmE2q4dZ3V8e5h3zMY8mQ9UpDw7WvgjWoFX8aHzuEdHTa0j0mJJIypHHUz_obRLAEYAWBCQPugOP5G02sooG9j7l5kkrpCUagIDWav1Q73ue1oag"/>
+</div>
+<div class="flex-1">
+<h3 class="font-card-title-sm text-card-title-sm text-tertiary-container mb-xs flex items-center gap-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+                            Chính xác!
+                        </h3>
+<p class="font-body text-body text-on-surface-variant mb-md">Trong lời mời ‘Would you like…?’, ta thường dùng ‘some’.</p>
+<div class="bg-surface p-md rounded-xl border border-outline-variant/30 mb-lg">
+<p class="font-body text-body text-primary italic font-medium">"Tuyệt lắm! Em đã nhận ra cách dùng ‘some’ trong lời mời."</p>
+<p class="font-caption text-caption text-on-surface-variant mt-xs text-right">- Medi Bee</p>
+</div>
+<div class="flex justify-end">
+<button class="bg-primary hover:bg-primary-fixed-variant text-on-primary rounded-full px-xl py-3 min-h-[48px] font-label text-label flex items-center gap-sm shadow-hover transition-all active:translate-y-[2px]">
+                                Câu tiếp theo
+                                <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
