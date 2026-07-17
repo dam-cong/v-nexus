@@ -8,8 +8,10 @@ viên**.
 
 Phạm vi MVP được khóa ở môn Tiếng Anh cho học sinh chủ yếu lớp 3–4, với quan hệ kiến
 thức tiên quyết xuyên hai khối và mạch minh họa **Từ vựng theo chủ đề → Mẫu câu cơ bản
-→ Đọc hiểu đoạn ngắn**. Sản phẩm cần có dashboard học sinh, dashboard giáo viên và khả
-năng thực hiện các hoạt động cốt lõi trong điều kiện offline hoặc mạng yếu.
+→ Đọc hiểu đoạn ngắn**. Sản phẩm cần có dashboard học sinh, dashboard giáo viên, dashboard
+nhà trường, chấm phát âm, động lực học (coin – XP – huy hiệu), và khả năng thực hiện các
+hoạt động cốt lõi trong điều kiện offline hoặc mạng yếu (chấm phát âm là ngoại lệ bắt
+buộc online).
 
 Trạng thái source hiện tại mới là khung chạy thử và model `chat_log` mẫu. Vì vậy mọi
 chức năng dưới đây là **kế hoạch triển khai/nghiệm thu**, trừ khi có bằng chứng riêng cho
@@ -1037,6 +1039,175 @@ Toàn bộ dữ liệu nghiệp vụ cốt lõi, phân quyền và audit phải 
 Chỉ xem xét nghiệm thu sau MVP; câu trả lời phải truy được nguồn và vượt kiểm thử quyền
 truy cập/thiếu dữ liệu.
 
+### 3.25. Chấm phát âm
+
+#### Mục tiêu
+
+Cho học sinh phản hồi tức thì ở mức từng từ khi luyện đọc, thay vì chỉ đúng/sai cả câu.
+
+#### Tác nhân
+
+Học sinh; giáo viên xem qua hồ sơ tiến bộ.
+
+#### Dữ liệu cần chuẩn bị
+
+Câu mẫu đã có audio TTS sinh sẵn, dịch vụ nhận diện giọng nói (STT), ngưỡng điểm đạt để
+cộng coin.
+
+#### Luồng xử lý đề xuất
+
+1. Học sinh nghe câu mẫu rồi thu âm giọng đọc.
+2. Gửi bản ghi âm qua STT (Web Speech API; dự phòng Whisper API nếu độ chính xác với
+   giọng trẻ em không đạt).
+3. Thuật toán tự build căn chỉnh transcript với câu gốc theo từng từ, có dung sai cho
+   giọng trẻ em (chấp nhận biến thể gần đúng, chỉ tô đỏ từ sai hẳn hoặc bị bỏ sót).
+4. Trả điểm phần trăm, tô màu từ cần sửa, cho nghe lại giọng mẫu và đọc lại.
+5. Đạt ngưỡng thì cộng coin qua module động lực học (3.26).
+
+#### Kết quả đầu ra
+
+Điểm phát âm theo lượt đọc, danh sách từ đúng/sai, coin nếu đạt ngưỡng.
+
+#### Điều kiện và trường hợp đặc biệt
+
+- Chỉ chạy khi có mạng — khi offline phải ẩn nút phát âm, không giả lập kết quả.
+- Câu chờ luyện được xếp hàng đợi và nhắc lại khi có mạng.
+- Lời khen/động viên sau mỗi lượt lấy từ kho có sẵn theo mức điểm, không gọi LLM
+  runtime.
+
+#### Phụ thuộc
+
+Ngân hàng câu hỏi/audio TTS đã duyệt; module động lực học để cộng coin.
+
+#### Tiêu chí hoàn thành
+
+Một học sinh đọc một câu mẫu, nhận điểm + tô màu từ sai + nghe lại mẫu; kết quả đạt
+ngưỡng cộng đúng coin; tắt mạng thì ẩn tính năng thay vì báo lỗi khó hiểu.
+
+### 3.26. Động lực học: coin – XP – huy hiệu
+
+#### Mục tiêu
+
+Duy trì động lực luyện tập đều đặn bằng ghi nhận nỗ lực có thể nhìn thấy, không xếp
+hạng theo năng lực.
+
+#### Tác nhân
+
+Học sinh; nhà trường dùng dữ liệu XP để vinh danh.
+
+#### Dữ liệu cần chuẩn bị
+
+Luật sinh coin/XP (làm đúng, phát âm đạt ngưỡng, chăm luyện tập), mốc XP mở huy hiệu, kỳ
+xếp hạng (tuần/tháng/học kỳ).
+
+#### Luồng xử lý đề xuất
+
+1. Ghi nhận sự kiện sinh coin/XP từ các luồng chẩn đoán, luyện tập và phát âm.
+2. Cộng dồn coin và XP vào hồ sơ học sinh.
+3. Khi XP đạt mốc, mở huy hiệu tương ứng.
+4. Tổng hợp XP theo lớp/trường theo kỳ để xếp hạng.
+5. Nhà trường dùng bảng xếp hạng để vinh danh; coin dùng để đổi quà (3.28).
+
+#### Kết quả đầu ra
+
+Số dư coin, XP tích lũy, danh sách huy hiệu đã mở, vị trí xếp hạng theo kỳ.
+
+#### Điều kiện và trường hợp đặc biệt
+
+- Luật coin/XP/huy hiệu là thuần thuật toán, phải chạy được 100% offline.
+- Xếp hạng công khai chỉ dựa trên XP (nỗ lực); tuyệt đối không công khai mức thành thạo
+  hay lỗ hổng qua bảng xếp hạng.
+- Không dùng xếp hạng để gắn nhãn học sinh "yếu/kém".
+
+#### Phụ thuộc
+
+Kết quả từ luyện tập, đánh giá lại và chấm phát âm.
+
+#### Tiêu chí hoàn thành
+
+Một học sinh làm đúng/luyện tập/phát âm đạt thì coin và XP cập nhật đúng luật; đạt mốc
+XP thì huy hiệu mới xuất hiện; bảng xếp hạng chỉ hiện XP, không hiện dữ liệu năng lực.
+
+### 3.27. Dashboard nhà trường & xếp hạng
+
+#### Mục tiêu
+
+Cho nhà trường một màn hình tổng quan để phát hiện sớm lớp cần hỗ trợ và tổ chức vinh
+danh, tách biệt với dữ liệu chi tiết của giáo viên.
+
+#### Tác nhân
+
+Nhà trường (Ban giám hiệu).
+
+#### Dữ liệu cần chuẩn bị
+
+Mức thành thạo tổng hợp theo khối/lớp, XP theo học sinh/lớp, tỷ lệ chưa đạt theo kỹ
+năng.
+
+#### Luồng xử lý đề xuất
+
+1. Tổng hợp mức thành thạo theo khối/lớp từ dữ liệu chẩn đoán.
+2. Hiển thị bảng vinh danh XP theo tuần/tháng/học kỳ.
+3. Cảnh báo lớp có tỷ lệ chưa đạt cao ở một kỹ năng.
+4. Không hiển thị lỗ hổng/mức thành thạo chi tiết của từng học sinh ở vai trò này.
+
+#### Kết quả đầu ra
+
+Một màn hình tổng quan khối/lớp, bảng vinh danh XP và cảnh báo lớp cần chú ý.
+
+#### Điều kiện và trường hợp đặc biệt
+
+- Chỉ hiển thị số liệu tổng hợp; dữ liệu chưa đồng bộ phải được đánh dấu.
+- Không mở rộng quyền xem của nhà trường sang hồ sơ chi tiết từng học sinh.
+
+#### Phụ thuộc
+
+Chẩn đoán, quản lý lớp, module động lực học, phân quyền.
+
+#### Tiêu chí hoàn thành
+
+Nhà trường xem được tổng quan khối/lớp và bảng vinh danh trong một màn hình; không truy
+cập được lỗ hổng chi tiết của học sinh cụ thể.
+
+### 3.28. Gian hàng đổi quà (P2)
+
+#### Mục tiêu
+
+Biến coin tích lũy thành phần thưởng thật do nhà trường tổ chức, phục vụ kể chuyện
+trong pitch.
+
+#### Tác nhân
+
+Học sinh đổi quà; nhà trường quản lý danh mục.
+
+#### Dữ liệu cần chuẩn bị
+
+Danh mục quà (dữ liệu seed/mock), số dư coin của học sinh.
+
+#### Luồng xử lý đề xuất
+
+1. Học sinh xem danh mục quà và số coin cần để đổi.
+2. Chọn quà; nếu đủ coin thì trừ số dư.
+3. Nhà trường xem lịch sử đổi quà.
+
+#### Kết quả đầu ra
+
+Lịch sử đổi quà, số dư coin cập nhật.
+
+#### Điều kiện và trường hợp đặc biệt
+
+- P2 — không chặn MVP; dùng mock 1 màn hình với dữ liệu seed.
+- Không cần build logic quản lý tồn kho hay import CSV thật trong 48h.
+
+#### Phụ thuộc
+
+Module động lực học (số dư coin).
+
+#### Tiêu chí hoàn thành
+
+Chỉ cần chạy được kịch bản demo: học sinh đổi quà, số coin giảm đúng, nhà trường thấy
+lịch sử — không yêu cầu quản lý tồn kho thật.
+
 ## 4. Implementation Phases
 
 ### Giai đoạn 1 – Chuẩn bị dữ liệu nền
@@ -1068,12 +1239,14 @@ target/root cause.
 - Học sinh xem nội dung và luyện tập.
 - Kiểm tra lại sau từng kỹ năng.
 - Cập nhật mức thành thạo và điều chỉnh lộ trình.
+- Chấm phát âm (online) và cộng coin khi đạt ngưỡng.
+- Động lực học: coin – XP – huy hiệu.
 - Hoàn thiện dashboard học sinh.
 
 **Điều kiện kết thúc:** Học sinh đi được từ từ vựng theo chủ đề tới target skill mà
-không học lại phần đã đạt.
+không học lại phần đã đạt; luyện phát âm và coin/XP/huy hiệu hoạt động đúng luật.
 
-### Giai đoạn 4 – Hỗ trợ giáo viên
+### Giai đoạn 4 – Hỗ trợ giáo viên & nhà trường
 
 - Dashboard giáo viên.
 - Tự động chia nhóm.
@@ -1081,9 +1254,10 @@ không học lại phần đã đạt.
 - Phát hiện gap chung.
 - Giáo viên điều chỉnh khuyến nghị và ghi nhận can thiệp.
 - Theo dõi kết quả trước/sau.
+- Dashboard nhà trường & xếp hạng XP.
 
 **Điều kiện kết thúc:** Giáo viên trả lời được “ai, vì sao, hỗ trợ gì, kết quả ra sao” và
-có quyền quyết định.
+có quyền quyết định; nhà trường xem được tổng quan khối/lớp và bảng vinh danh.
 
 ### Giai đoạn 5 – Offline và hoàn thiện
 
@@ -1096,6 +1270,14 @@ có quyền quyết định.
 **Điều kiện kết thúc:** Kịch bản nghiệm thu chạy được khi ngắt/kết nối lại mạng, không
 mất dữ liệu và không lộ dữ liệu ngoài phạm vi.
 
+### Giai đoạn 6 – Mở rộng nếu còn thời gian (P1/P2)
+
+- Gian hàng đổi quà bằng coin (mock 1 màn hình, dữ liệu seed).
+- Hội thoại đóng vai với AI theo tình huống Unit.
+
+**Điều kiện kết thúc:** Không bắt buộc cho nghiệm thu MVP — chỉ làm sau khi Giai đoạn
+1–5 đã đạt điều kiện kết thúc.
+
 ## 5. Functional Dependencies
 
 ```mermaid
@@ -1107,16 +1289,22 @@ flowchart TD
     D --> E["Chẩn đoán lỗ hổng gốc"]
     E --> F["Lộ trình cá nhân"]
     F --> G["Luyện tập và đánh giá lại"]
+    G --> K["Chấm phát âm"]
+    G --> L["Coin – XP – huy hiệu"]
+    K --> L
     E --> H["Dashboard giáo viên"]
     G --> H
     H --> I["Nhóm và can thiệp"]
+    L --> M["Dashboard nhà trường & xếp hạng"]
+    L --> N["Gian hàng đổi quà (P2)"]
     J["Offline và đồng bộ"] --> D
     J --> F
     J --> G
 ```
 
 Phân quyền và kiểm duyệt nội dung là điều kiện ngang: chúng phải được áp dụng ở mọi
-giai đoạn, không chờ tới cuối mới bổ sung.
+giai đoạn, không chờ tới cuối mới bổ sung. Chấm phát âm là tính năng duy nhất trong sơ
+đồ trên bắt buộc online — không có fallback offline.
 
 ## 6. MVP Priority
 
@@ -1128,13 +1316,15 @@ giai đoạn, không chờ tới cuối mới bổ sung.
 - Xác định target skill và root-cause gap.
 - Lộ trình cá nhân.
 - Học sinh luyện tập và đánh giá lại.
+- Chấm phát âm (online).
+- Coin – XP – huy hiệu.
 - Dashboard học sinh.
 - Dashboard giáo viên.
 - Chia nhóm học sinh.
 - Ưu tiên hỗ trợ.
 - Phát hiện gap chung của lớp.
 - Offline cơ bản: tải trước, lưu cục bộ và thử đồng bộ.
-- Phân quyền tối thiểu cho học sinh/giáo viên/quản trị nội dung.
+- Phân quyền tối thiểu cho học sinh/giáo viên/nhà trường/quản trị nội dung.
 
 ### P1 – Nên có
 
@@ -1144,6 +1334,8 @@ giai đoạn, không chờ tới cuối mới bổ sung.
 - Giải thích đầy đủ bằng chứng chẩn đoán.
 - Quy trình kiểm duyệt và thu hồi nội dung.
 - Đồng bộ đầy đủ, xử lý lỗi/xung đột rõ ràng.
+- Dashboard nhà trường & xếp hạng XP theo tuần/tháng/học kỳ.
+- Hội thoại đóng vai với AI theo tình huống Unit (chỉ nếu P0 xong sớm).
 
 ### P2 – Mở rộng
 
@@ -1153,7 +1345,8 @@ giai đoạn, không chờ tới cuối mới bổ sung.
 - Mở rộng sang các môn học khác.
 - Sinh câu hỏi bằng AI có kiểm duyệt.
 - Placement test bốn kỹ năng ở giai đoạn phù hợp.
-- ASR hỗ trợ luyện phát âm và đánh giá kỹ năng nói có kiểm duyệt.
+- Đánh giá kỹ năng nói toàn diện (hội thoại tự do, ngữ điệu) ngoài chấm phát âm P0.
+- Gian hàng đổi quà bằng coin (mock demo; quản lý tồn kho/import CSV thật để sau MVP).
 
 ## 7. End-to-End Acceptance Scenario
 

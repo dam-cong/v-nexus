@@ -53,9 +53,11 @@ Quyết định này quyết định toàn bộ phần việc của Quyết và 
   Demo Day.
 
 ### Ngọc — BA
-- Chốt phạm vi demo cụ thể: liệt kê chi tiết danh sách kỹ năng trong mạch **Phân số →
-  Phương trình, Toán lớp 6–7** theo mã bài học GDPT 2018 chính thức — đây là input bắt
-  buộc để Hiếu dựng đồ thị tri thức.
+- Chốt phạm vi demo cụ thể: rà soát/bổ sung danh sách kỹ năng theo từng Unit trong mạch
+  **Từ vựng theo chủ đề → Mẫu câu cơ bản → Đọc hiểu đoạn ngắn, Tiếng Anh lớp 3–4 (GDPT
+  2018, bám cấu trúc SGK Global Success)** — đối chiếu với đồ thị kỹ năng đã có
+  (`skill_graph_seed.json`) để đảm bảo đủ quan hệ tiên quyết xuyên khối lớp 3–4 cho
+  Hiếu dựng thuật toán truy gốc.
 - Soạn 5–10 câu hỏi mẫu cho mỗi kỹ năng (dữ liệu mock, không dùng dữ liệu học sinh thật
   — đúng ràng buộc `docs/RULES.md` mục dữ liệu).
 - Viết/hoàn thiện mục 6 (Business case & Pilot) trong `PROJECT_DESCRIPTION.md` — khai

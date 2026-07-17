@@ -28,6 +28,9 @@ ngữ cảnh, điều chỉnh khuyến nghị và quyết định hình thức c
   Anh lớn và điều kiện mạng không ổn định.
 - Giáo viên Tiếng Anh cần theo dõi lớp đông, phát hiện nhu cầu cá nhân/nhóm và ưu tiên
   hỗ trợ.
+- Nhà trường (Ban giám hiệu) cần tổng quan theo khối/lớp để phát hiện sớm lớp/học sinh
+  cần hỗ trợ và dữ liệu phục vụ vinh danh, khen thưởng — đối tượng ra quyết định
+  mua/triển khai, khác với giáo viên/học sinh là người dùng hàng ngày.
 - Quản trị viên hoặc người quản lý nội dung chịu trách nhiệm chương trình, kỹ năng,
   câu hỏi và kiểm duyệt học liệu.
 
@@ -39,7 +42,12 @@ ngữ cảnh, điều chỉnh khuyến nghị và quyết định hình thức c
 - Knowledge Graph rút gọn nhưng thể hiện được quan hệ kiến thức xuyên khối lớp.
 - Bài kiểm tra chẩn đoán và chẩn đoán lỗ hổng nguyên nhân.
 - Lộ trình luyện tập cá nhân và dashboard học sinh.
+- Chấm phát âm: thu âm → nhận diện giọng đọc → so khớp từng từ → điểm % + tô màu từ
+  cần sửa + nghe lại mẫu (chỉ chạy khi có mạng).
+- Động lực học: coin – XP – huy hiệu sinh từ làm đúng/phát âm đạt/chăm luyện tập; xếp
+  hạng theo XP ở phạm vi lớp/trường theo tuần/tháng/học kỳ.
 - Dashboard giáo viên, nhóm học sinh, ưu tiên hỗ trợ và phát hiện lỗ hổng chung.
+- Dashboard nhà trường: tổng quan khối/lớp một màn hình + bảng vinh danh theo XP.
 - Hoạt động cốt lõi trong điều kiện offline hoặc băng thông thấp; đồng bộ khi có mạng.
 - Nội dung được mapping với yêu cầu cần đạt của Chương trình GDPT 2018.
 
@@ -134,6 +142,13 @@ ghi nhận can thiệp, đánh dấu khuyến nghị chưa chính xác và theo 
 Nhóm này quản lý môn học, khối lớp, chủ đề, kỹ năng, yêu cầu cần đạt, quan hệ tiên
 quyết, câu hỏi và học liệu. Họ chịu trách nhiệm kiểm duyệt chất lượng trước khi nội dung
 được dùng để chẩn đoán hoặc luyện tập.
+
+### 4.4. Nhà trường (Ban giám hiệu)
+
+Nhà trường là khách hàng tổ chức, cấp tài khoản cho giáo viên/học sinh và cần một màn
+hình tổng quan theo khối/lớp để phát hiện sớm lớp hoặc học sinh cần hỗ trợ, cùng bảng
+vinh danh theo XP để tổ chức khen thưởng. Nhà trường không xem lỗ hổng/mức thành thạo
+chi tiết của từng học sinh — chỉ số liệu tổng hợp và XP công khai.
 
 Dashboard phụ huynh không thuộc MVP và chỉ được xem xét trong Future Scope.
 
@@ -445,6 +460,95 @@ nhất để dashboard sử dụng.
 liệu cần được phát hiện và xử lý theo quy tắc đã thống nhất. Không mô tả toàn hệ thống
 là offline hoàn toàn nếu kiểm duyệt, phân tích nâng cao hoặc đồng bộ vẫn cần Internet.
 
+### 5.13. Chấm phát âm
+
+**Mục tiêu:** Cho học sinh phản hồi tức thì về phát âm ở mức từng từ, không chỉ đúng/sai
+cả câu.
+
+**Tác nhân:** Học sinh; giáo viên xem qua hồ sơ tiến bộ.
+
+**Dữ liệu đầu vào:** Câu mẫu đã có audio TTS, bản ghi âm giọng đọc của học sinh.
+
+**Luồng xử lý chính:**
+
+1. Học sinh nghe câu mẫu, thu âm giọng đọc của mình.
+2. Hệ thống nhận diện lời đọc (STT) và so khớp từng từ với câu gốc, có dung sai cho
+   giọng trẻ em.
+3. Trả về điểm phần trăm, tô màu từ cần sửa, cho nghe lại giọng mẫu và đọc lại.
+4. Đạt ngưỡng thì cộng coin; kết quả góp vào hồ sơ tiến bộ của học sinh.
+
+**Kết quả đầu ra:** Điểm phát âm, danh sách từ sai/đúng theo lượt đọc, coin nếu đạt
+ngưỡng.
+
+**Trường hợp đặc biệt hoặc điều kiện xử lý:** Chỉ chạy khi có mạng (phụ thuộc dịch vụ
+STT) — khi offline, ẩn nút phát âm và xếp câu vào hàng đợi luyện lại khi có mạng. Không
+tô đỏ biến thể phát âm gần đúng, chỉ tô từ sai hẳn hoặc bị bỏ sót.
+
+### 5.14. Động lực học: coin – XP – huy hiệu
+
+**Mục tiêu:** Duy trì động lực luyện tập đều đặn bằng ghi nhận có thể nhìn thấy, không
+so sánh năng lực.
+
+**Tác nhân:** Học sinh; nhà trường dùng để vinh danh.
+
+**Dữ liệu đầu vào:** Kết quả làm đúng, điểm phát âm đạt ngưỡng, tần suất luyện tập.
+
+**Luồng xử lý chính:**
+
+1. Sinh coin khi làm đúng câu hỏi, đạt ngưỡng phát âm hoặc chăm luyện tập đều.
+2. Tích lũy XP song song với coin; mở huy hiệu khi đạt mốc XP.
+3. Xếp hạng theo XP ở phạm vi lớp/trường theo tuần/tháng/học kỳ.
+4. Nhà trường dùng bảng xếp hạng để vinh danh; coin dùng để đổi quà tại gian hàng
+   (xem 5.16).
+
+**Kết quả đầu ra:** Số dư coin, XP tích lũy, danh sách huy hiệu đã mở, vị trí xếp hạng.
+
+**Trường hợp đặc biệt hoặc điều kiện xử lý:** Luật coin/XP/huy hiệu chạy offline 100%
+(thuần thuật toán). Xếp hạng công khai chỉ phản ánh XP (nỗ lực) — tuyệt đối không xếp
+hạng công khai theo mức thành thạo hay lỗ hổng, để tránh gắn nhãn năng lực.
+
+### 5.15. Dashboard nhà trường & xếp hạng
+
+**Mục tiêu:** Cho nhà trường một màn hình tổng quan để phát hiện sớm lớp cần hỗ trợ và
+tổ chức vinh danh.
+
+**Tác nhân:** Nhà trường (Ban giám hiệu).
+
+**Dữ liệu đầu vào:** Mức thành thạo tổng hợp theo khối/lớp, XP theo học sinh/lớp, cảnh
+báo tỷ lệ chưa đạt theo kỹ năng.
+
+**Luồng xử lý chính:**
+
+1. Tổng hợp mức thành thạo theo khối/lớp.
+2. Hiển thị bảng vinh danh XP theo tuần/tháng/học kỳ.
+3. Cảnh báo lớp có tỷ lệ chưa đạt cao ở một kỹ năng để ưu tiên hỗ trợ.
+4. Không hiển thị lỗ hổng/mức thành thạo chi tiết của từng học sinh cho vai trò này.
+
+**Kết quả đầu ra:** Một màn hình tổng quan khối/lớp, bảng vinh danh và cảnh báo lớp cần
+chú ý.
+
+**Trường hợp đặc biệt hoặc điều kiện xử lý:** Chỉ hiển thị số liệu tổng hợp; dữ liệu
+chưa đồng bộ phải được đánh dấu rõ, không dùng để kết luận vội.
+
+### 5.16. Gian hàng đổi quà (P2)
+
+**Mục tiêu:** Biến coin tích lũy thành phần thưởng thật do nhà trường tổ chức.
+
+**Tác nhân:** Học sinh đổi quà; nhà trường quản lý gian hàng.
+
+**Dữ liệu đầu vào:** Số dư coin của học sinh, danh mục quà và số lượng còn lại.
+
+**Luồng xử lý chính:**
+
+1. Học sinh xem danh mục quà và số coin cần để đổi.
+2. Chọn quà, trừ coin nếu đủ số dư.
+3. Nhà trường ghi nhận quà đã phát cho học sinh.
+
+**Kết quả đầu ra:** Lịch sử đổi quà theo học sinh, số dư coin cập nhật.
+
+**Trường hợp đặc biệt hoặc điều kiện xử lý:** Đây là P2 — trong phạm vi demo dùng mock
+1 màn hình với dữ liệu seed, không bắt buộc build logic trừ kho/tồn kho thật.
+
 ## 6. End-to-End User Journey
 
 ```mermaid
@@ -499,7 +603,10 @@ khi chưa có dữ liệu thử nghiệm được kiểm chứng.
 - Bài kiểm tra chẩn đoán, xác định target skill và root-cause skill.
 - Bằng chứng chẩn đoán và trạng thái “cần kiểm tra thêm”.
 - Lộ trình cá nhân, học sinh luyện tập, kiểm tra lại và dashboard học sinh.
+- Chấm phát âm (thu âm → so khớp từng từ → điểm % + tô màu từ sai + nghe lại mẫu).
+- Coin – XP – huy hiệu sinh từ làm đúng/phát âm đạt/chăm luyện tập.
 - Dashboard giáo viên, nhóm học sinh, ưu tiên hỗ trợ và gap chung của lớp.
+- Dashboard nhà trường một màn hình (tổng quan khối/lớp + bảng vinh danh XP).
 - Offline cơ bản: tải trước, lưu cục bộ và thử đồng bộ lại.
 - Phân quyền để học sinh chỉ xem dữ liệu của mình và giáo viên chỉ xem lớp được giao.
 
@@ -510,6 +617,8 @@ khi chưa có dữ liệu thử nghiệm được kiểm chứng.
 - Giải thích đầy đủ bằng chứng chẩn đoán.
 - Quy trình kiểm duyệt nội dung và phiên bản hóa.
 - Đồng bộ đầy đủ, hiển thị lỗi/xung đột rõ ràng.
+- Hội thoại đóng vai với AI theo tình huống Unit (chỉ làm nếu P0 xong sớm).
+- Gian hàng đổi quà bằng coin (mock 1 màn hình, không build logic tồn kho thật).
 
 ### 8.3. Mở rộng tương lai
 
@@ -518,8 +627,10 @@ khi chưa có dữ liệu thử nghiệm được kiểm chứng.
 - Mở rộng Tiếng Anh sang các khối lớp ngoài lớp 3–4.
 - Mở rộng sang các môn học khác.
 - Placement test bốn kỹ năng ở giai đoạn phù hợp.
-- ASR hỗ trợ luyện phát âm và đánh giá kỹ năng nói có kiểm duyệt.
+- Đánh giá kỹ năng nói toàn diện (hội thoại tự do, ngữ điệu) vượt ngoài chấm phát âm
+  từng từ đã có ở MVP.
 - Sinh câu hỏi bằng AI có quy trình kiểm duyệt.
+- Gian hàng đổi quà với quản lý tồn kho/import CSV thật (MVP chỉ mock).
 
 ## 9. AI Roles and Boundaries
 
