@@ -1,0 +1,27 @@
+[
+  {"skill_code": "TA3.PRE.PHONICS01", "content": "Chọn chữ cái đọc là /biː/", "question_type": "mcq", "options": ["B", "D", "P", "V"], "correct_answer": "B", "difficulty": 1},
+  {"skill_code": "TA3.PRE.PHONICS01", "content": "Chọn chữ cái đọc là /kjuː/", "question_type": "mcq", "options": ["C", "Q", "K", "U"], "correct_answer": "Q", "difficulty": 2},
+
+  {"skill_code": "TA3.PRE.NUM0110", "content": "Điền số còn thiếu: one, two, ___, four", "question_type": "fill_blank", "options": null, "correct_answer": "three", "difficulty": 1},
+  {"skill_code": "TA3.PRE.NUM0110", "content": "Chọn từ đúng cho số 7", "question_type": "mcq", "options": ["seven", "seventeen", "seventy", "six"], "correct_answer": "seven", "difficulty": 1},
+
+  {"skill_code": "TA3.PRE.NOUN_PLURAL", "content": "Số nhiều của 'box' là gì?", "question_type": "mcq", "options": ["boxs", "boxes", "boxies", "box"], "correct_answer": "boxes", "difficulty": 2},
+  {"skill_code": "TA3.PRE.NOUN_PLURAL", "content": "Số nhiều của 'cat' là gì?", "question_type": "mcq", "options": ["cates", "cats", "caties", "cat"], "correct_answer": "cats", "difficulty": 1},
+  {"skill_code": "TA3.PRE.NOUN_PLURAL", "content": "Số nhiều của 'watch' là gì?", "question_type": "mcq", "options": ["watchs", "watches", "watchies", "watch"], "correct_answer": "watches", "difficulty": 3},
+
+  {"skill_code": "TA3.U5.VOCAB_TOYS", "content": "Từ nào chỉ 'con gấu bông'?", "question_type": "mcq", "options": ["robot", "teddy bear", "kite", "doll"], "correct_answer": "teddy bear", "difficulty": 1},
+  {"skill_code": "TA3.U5.VOCAB_TOYS", "content": "Từ nào chỉ 'con diều'?", "question_type": "mcq", "options": ["kite", "ball", "yo-yo", "doll"], "correct_answer": "kite", "difficulty": 1},
+  {"skill_code": "TA3.U5.VOCAB_TOYS", "content": "Từ nào chỉ 'búp bê'?", "question_type": "mcq", "options": ["ball", "doll", "robot", "kite"], "correct_answer": "doll", "difficulty": 1},
+
+  {"skill_code": "TA3.U5.VOCAB_TOYS_PLURAL", "content": "Số nhiều của 'doll' là gì?", "question_type": "mcq", "options": ["dolles", "dolls", "dollies", "doll"], "correct_answer": "dolls", "difficulty": 2},
+  {"skill_code": "TA3.U5.VOCAB_TOYS_PLURAL", "content": "Số nhiều của 'box (đồ chơi)' là gì?", "question_type": "mcq", "options": ["boxs", "boxes", "box", "boxies"], "correct_answer": "boxes", "difficulty": 3},
+
+  {"skill_code": "TA3.U5.GRAM_HOWMANY", "content": "Chọn câu hỏi đúng: ___ dolls are there?", "question_type": "mcq", "options": ["How much", "How many", "How is", "What"], "correct_answer": "How many", "difficulty": 2},
+  {"skill_code": "TA3.U5.GRAM_HOWMANY", "content": "Sắp xếp đúng: many / are / how / there / kites /?", "question_type": "fill_blank", "options": null, "correct_answer": "How many kites are there?", "difficulty": 3},
+
+  {"skill_code": "TA3.U5.LISTEN_HOWMANY", "content": "Nghe hội thoại và chọn số lượng đồ chơi đúng (audio mẫu)", "question_type": "listening", "options": ["3", "5", "7", "9"], "correct_answer": "5", "difficulty": 3},
+  {"skill_code": "TA3.U5.LISTEN_HOWMANY", "content": "Nghe hội thoại và chọn loại đồ chơi được nhắc tới (audio mẫu)", "question_type": "listening", "options": ["balls", "dolls", "kites", "robots"], "correct_answer": "kites", "difficulty": 3},
+
+  {"skill_code": "TA3.U5.SPEAK_HOWMANY", "content": "Hoàn thành hội thoại: A: How many balls are there? B: ___ five balls.", "question_type": "dialogue", "options": null, "correct_answer": "There are", "difficulty": 3},
+  {"skill_code": "TA3.U5.SPEAK_HOWMANY", "content": "Hoàn thành hội thoại: A: ___ are there? B: There are three kites.", "question_type": "dialogue", "options": null, "correct_answer": "How many kites", "difficulty": 4}
+]

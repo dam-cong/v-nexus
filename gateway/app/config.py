@@ -9,6 +9,7 @@ class Settings:
         "DATABASE_URL", "postgresql+asyncpg://vnexus:vnexus@localhost:5432/vnexus"
     )
     mcp_server_url: str = os.environ.get("MCP_SERVER_URL", "http://mcp_server:8100/mcp")
+    auth_secret: str = os.environ.get("AUTH_SECRET", "change-me-dev-only-secret")
 
 
 settings = Settings()

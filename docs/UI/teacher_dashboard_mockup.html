@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>V-Nexus Tutor — Dashboard Giáo viên (mockup)</title>
+<style>
+  :root {
+    --indigo: #4f46e5;
+    --indigo-dark: #4338ca;
+    --indigo-soft: #eef2ff;
+    --orange: #f97316;
+    --yellow: #eab308;
+    --dark: #1e1b2e;
+    --green: #16a34a;
+    --red: #dc2626;
+    --text: #1f2430;
+    --muted: #8a8fa3;
+    --bg: #f4f5fa;
+    --card: #ffffff;
+    --border: #ececf3;
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+  }
+  a { text-decoration: none; color: inherit; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 240px 1fr 280px;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background: var(--indigo);
+    color: #e9e8ff;
+    padding: 20px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 17px;
+    padding: 4px 10px 22px;
+  }
+  .brand .logo {
+    width: 30px; height: 30px;
+    background: #fff;
+    color: var(--indigo);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+  }
+  .nav-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #b7b3f5;
+    padding: 14px 10px 6px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    color: #d9d7ff;
+  }
+  .nav-item .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #b7b3f5;
+  }
+  .nav-item.active {
+    background: rgba(255,255,255,.14);
+    color: #fff;
+    font-weight: 600;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.08); }
+  .sidebar-footer {
+    margin-top: auto;
+    font-size: 12px;
+    color: #b7b3f5;
+    padding: 14px 10px 4px;
+    border-top: 1px solid rgba(255,255,255,.14);
+  }
+
+  /* Main */
+  .main { padding: 20px 22px 32px; min-width: 0; }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .topbar h1 { font-size: 20px; margin: 0; }
+  .topbar-actions { display: flex; align-items: center; gap: 12px; }
+  .icon-btn {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+    font-size: 15px;
+  }
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--indigo-soft);
+    color: var(--indigo);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+  }
+
+  /* Stat row */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .stat-icon {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .stat-icon.indigo { background: var(--indigo); }
+  .stat-icon.orange { background: var(--orange); }
+  .stat-icon.yellow { background: var(--yellow); }
+  .stat-icon.dark { background: var(--dark); }
+  .stat-label { font-size: 12px; color: var(--muted); }
+  .stat-value { font-size: 19px; font-weight: 700; }
+
+  /* Grid cards */
+  .row { display: grid; gap: 16px; margin-bottom: 16px; }
+  .row.cols-2 { grid-template-columns: 1.3fr 1fr; }
+  .row.cols-2.balanced { grid-template-columns: 1fr 1fr; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .card-title { font-size: 14.5px; font-weight: 700; }
+  .card-sub { font-size: 12px; color: var(--muted); }
+  .link { font-size: 12.5px; color: var(--indigo); font-weight: 600; }
+
+  /* Line chart (SVG) */
+  .chart-legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .chart-legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+  /* Alerts list */
+  .alert-list { display: flex; flex-direction: column; gap: 10px; }
+  .alert-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+  }
+  .alert-item.critical { background: #fef2f2; border-color: #fecaca; }
+  .alert-skill { font-weight: 600; font-size: 13px; }
+  .alert-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .alert-pct { font-weight: 700; color: var(--red); font-size: 13px; }
+  .alert-item.critical .alert-pct { color: #b91c1c; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    color: var(--muted);
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 10px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .student-cell { display: flex; align-items: center; gap: 10px; }
+  .avatar-sm {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--indigo-soft); color: var(--indigo);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 12px; flex-shrink: 0;
+  }
+  .student-name { font-weight: 600; }
+  .student-class { font-size: 11.5px; color: var(--muted); }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 700;
+  }
+  .badge.danger { background: #fee2e2; color: #b91c1c; }
+  .badge.warn { background: #fef3c7; color: #92400e; }
+  .badge.ok { background: #dcfce7; color: #166534; }
+  .mastery-bar {
+    width: 90px; height: 6px; border-radius: 999px;
+    background: #ece9ff; overflow: hidden;
+  }
+  .mastery-bar > div { height: 100%; background: var(--indigo); }
+  .group-chip {
+    display: inline-flex; gap: 6px; align-items: center;
+    font-size: 12px; background: var(--indigo-soft); color: var(--indigo-dark);
+    padding: 4px 10px; border-radius: 999px; font-weight: 600;
+  }
+  .action-btn {
+    font-size: 12px; font-weight: 700; color: var(--indigo);
+    background: var(--indigo-soft); padding: 6px 12px; border-radius: 8px;
+    border: none;
+  }
+
+  /* Right sidebar */
+  .right-sidebar {
+    padding: 20px 18px;
+    border-left: 1px solid var(--border);
+    background: var(--card);
+  }
+  .rs-title { font-size: 13.5px; font-weight: 700; margin-bottom: 2px; }
+  .rs-sub { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+  .rs-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0;
+  }
+  .rs-name { font-weight: 600; font-size: 13px; }
+  .rs-meta { font-size: 11.5px; color: var(--muted); }
+  .rs-more {
+    width: 100%; margin-top: 10px; padding: 9px;
+    border-radius: 9px; border: 1px dashed #d3cffb;
+    background: var(--indigo-soft); color: var(--indigo);
+    font-weight: 700; font-size: 12.5px;
+  }
+  .rs-section { margin-bottom: 22px; }
+  .rs-alert-item {
+    padding: 9px 10px; border-radius: 9px; background: #f6f5ff;
+    font-size: 12px; margin-bottom: 8px;
+  }
+  .rs-alert-time { color: var(--muted); font-size: 11px; float: right; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand"><span class="logo">V</span> V-Nexus Tutor</div>
+
+    <div class="nav-label">Chính</div>
+    <a class="nav-item active"><span class="dot"></span> Dashboard</a>
+    <a class="nav-item"><span class="dot"></span> Học sinh</a>
+    <a class="nav-item"><span class="dot"></span> Lớp học</a>
+
+    <div class="nav-label">Nội dung</div>
+    <a class="nav-item"><span class="dot"></span> Đồ thị tri thức</a>
+    <a class="nav-item"><span class="dot"></span> Ngân hàng câu hỏi</a>
+    <a class="nav-item"><span class="dot"></span> Lộ trình luyện tập</a>
+
+    <div class="nav-label">Khác</div>
+    <a class="nav-item"><span class="dot"></span> Báo cáo</a>
+    <a class="nav-item"><span class="dot"></span> Cài đặt</a>
+
+    <div class="sidebar-footer">V-Nexus Tutor · Dashboard Giáo viên<br>Mockup tĩnh — chưa gắn dữ liệu thật</div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <h1>Dashboard Giáo viên — Lớp 3A</h1>
+      <div class="topbar-actions">
+        <div class="icon-btn">⌕</div>
+        <div class="icon-btn">☾</div>
+        <div class="icon-btn">⚙</div>
+        <div class="avatar">N</div>
+      </div>
+    </div>
+
+    <!-- STAT ROW -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-icon indigo">👥</div>
+        <div><div class="stat-label">Sĩ số lớp</div><div class="stat-value">32</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon orange">⚠</div>
+        <div><div class="stat-label">Học sinh cần chú ý</div><div class="stat-value">7</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon yellow">📉</div>
+        <div><div class="stat-label">Kỹ năng đang hổng diện rộng</div><div class="stat-value">2</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon dark">✓</div>
+        <div><div class="stat-label">Bài đã làm hôm nay</div><div class="stat-value">128</div></div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="row cols-2 balanced">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Mastery trung bình cả lớp theo thời gian</div>
+            <div class="card-sub">8 tuần gần nhất</div>
+          </div>
+          <div class="card-sub">Unit 5 — How many</div>
+        </div>
+        <svg viewBox="0 0 400 140" width="100%" height="140">
+          <polyline fill="none" stroke="#4f46e5" stroke-width="2.5"
+            points="10,110 60,95 110,100 160,80 210,70 260,55 310,48 390,35" />
+          <polyline fill="none" stroke="#f97316" stroke-width="2" stroke-dasharray="4 3"
+            points="10,120 60,118 110,112 160,108 210,100 260,95 310,88 390,80" />
+          <g fill="#4f46e5">
+            <circle cx="10" cy="110" r="3"/><circle cx="60" cy="95" r="3"/><circle cx="110" cy="100" r="3"/>
+            <circle cx="160" cy="80" r="3"/><circle cx="210" cy="70" r="3"/><circle cx="260" cy="55" r="3"/>
+            <circle cx="310" cy="48" r="3"/><circle cx="390" cy="35" r="3"/>
+          </g>
+        </svg>
+        <div class="chart-legend">
+          <span><i style="background:#4f46e5"></i> Mastery trung bình</span>
+          <span><i style="background:#f97316"></i> Học sinh yếu nhất lớp</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Heatmap kỹ năng — % học sinh còn hổng</div>
+            <div class="card-sub">Unit 5, Tiếng Anh lớp 3</div>
+          </div>
+        </div>
+        <svg viewBox="0 0 400 150" width="100%" height="150">
+          <!-- bars: PHONICS 12%, NUM 8%, PLURAL 45%, VOCAB 15%, VOCAB_PL 22%, HOWMANY 52%, LISTEN 38%, SPEAK 30% -->
+          <g font-size="9" fill="#8a8fa3">
+            <rect x="8"  y="118" width="30" height="12" fill="#c7d2fe"/><text x="10" y="140">PHONICS</text>
+            <rect x="52" y="122" width="30" height="8"  fill="#c7d2fe"/><text x="54" y="140">NUM</text>
+            <rect x="96" y="60"  width="30" height="70" fill="#dc2626"/><text x="90" y="140">PLURAL</text>
+            <rect x="140" y="108" width="30" height="22" fill="#c7d2fe"/><text x="136" y="140">VOCAB</text>
+            <rect x="184" y="95" width="30" height="35" fill="#f97316"/><text x="172" y="140">VOCAB-PL</text>
+            <rect x="228" y="50" width="30" height="80" fill="#dc2626"/><text x="214" y="140">HOWMANY</text>
+            <rect x="272" y="70" width="30" height="60" fill="#f97316"/><text x="262" y="140">LISTEN</text>
+            <rect x="316" y="85" width="30" height="45" fill="#eab308"/><text x="308" y="140">SPEAK</text>
+          </g>
+        </svg>
+        <div class="chart-legend">
+          <span><i style="background:#c7d2fe"></i> Ổn</span>
+          <span><i style="background:#eab308"></i> Cần theo dõi</span>
+          <span><i style="background:#f97316"></i> Đáng lo</span>
+          <span><i style="background:#dc2626"></i> Diện rộng</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERTS + PRIORITY -->
+    <div class="row cols-2">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Học sinh cần ưu tiên</div>
+          <a class="link">Xem tất cả ›</a>
+        </div>
+        <table>
+          <thead><tr><th>Học sinh</th><th>Skill gốc</th><th>Mastery</th><th>Kẹt</th><th>Trạng thái</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><div class="student-cell"><div class="avatar-sm">JN</div><div><div class="student-name">Jordan Nico</div><div class="student-class">Lớp 3A</div></div></div></td>
+              <td>NOUN_PLURAL</td>
+              <td><div class="mastery-bar"><div style="width:28%"></div></div></td>
+              <td>6 ngày</td>
+              <td><span class="badge danger">Khẩn cấp</span></td>
+            </tr>
+            <tr>
+              <td><div class="student-cell"><div class="avatar-sm">KH</div><div><div class="student-name">Karen Hope</div><div class="student-class">Lớp 3A</div></div></div></td>
+              <td>GRAM_HOWMANY</td>
+              <td><div class="mastery-bar"><div style="width:34%"></div></div></td>
+              <td>4 ngày</td>
+              <td><span class="badge danger">Khẩn cấp</span></td>
+            </tr>
+            <tr>
+              <td><div class="student-cell"><div class="avatar-sm">NA</div><div><div class="student-name">Nadila Adja</div><div class="student-class">Lớp 3A</div></div></div></td>
+              <td>LISTEN_HOWMANY</td>
+              <td><div class="mastery-bar"><div style="width:47%"></div></div></td>
+              <td>3 ngày</td>
+              <td><span class="badge warn">Cần chú ý</span></td>
+            </tr>
+            <tr>
+              <td><div class="student-cell"><div class="avatar-sm">SW</div><div><div class="student-name">Samantha William</div><div class="student-class">Lớp 3A</div></div></div></td>
+              <td>VOCAB_TOYS_PLURAL</td>
+              <td><div class="mastery-bar"><div style="width:58%"></div></div></td>
+              <td>2 ngày</td>
+              <td><span class="badge warn">Cần chú ý</span></td>
+            </tr>
+            <tr>
+              <td><div class="student-cell"><div class="avatar-sm">TS</div><div><div class="student-name">Tony Soap</div><div class="student-class">Lớp 3B</div></div></div></td>
+              <td>—</td>
+              <td><div class="mastery-bar"><div style="width:82%"></div></div></td>
+              <td>—</td>
+              <td><span class="badge ok">Tốt</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Cảnh báo lỗ hổng diện rộng</div>
+        </div>
+        <div class="alert-list">
+          <div class="alert-item critical">
+            <div>
+              <div class="alert-skill">GRAM_HOWMANY — "How many + plural noun"</div>
+              <div class="alert-desc">Nên dạy lại cho cả lớp trong tiết tới</div>
+            </div>
+            <div class="alert-pct">52%</div>
+          </div>
+          <div class="alert-item critical">
+            <div>
+              <div class="alert-skill">NOUN_PLURAL — Quy tắc số nhiều (-s/-es)</div>
+              <div class="alert-desc">Gốc của nhiều lỗi ở GRAM_HOWMANY, LISTEN</div>
+            </div>
+            <div class="alert-pct">45%</div>
+          </div>
+          <div class="alert-item">
+            <div>
+              <div class="alert-skill">LISTEN_HOWMANY — Nghe hiểu hỏi-đáp số lượng</div>
+              <div class="alert-desc">Theo dõi thêm, chưa tới ngưỡng diện rộng</div>
+            </div>
+            <div class="alert-pct">38%</div>
+          </div>
+          <div class="alert-item">
+            <div>
+              <div class="alert-skill">SPEAK_HOWMANY — Hỏi-đáp số lượng (text)</div>
+              <div class="alert-desc">Ổn định, không cần can thiệp ngay</div>
+            </div>
+            <div class="alert-pct">30%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GROUPS TABLE -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Nhóm học sinh theo lỗ hổng chung</div>
+        <a class="link">Xem tất cả ›</a>
+      </div>
+      <table>
+        <thead><tr><th>Skill gốc chung</th><th>Số học sinh</th><th>Danh sách</th><th>Gợi ý phụ đạo</th><th>Hành động</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="group-chip">● NOUN_PLURAL</span></td>
+            <td>6 em</td>
+            <td>Jordan N., Karen H., +4</td>
+            <td>Ôn quy tắc -s/-es, 15 phút</td>
+            <td><button class="action-btn">Xem chi tiết</button></td>
+          </tr>
+          <tr>
+            <td><span class="group-chip">● GRAM_HOWMANY</span></td>
+            <td>9 em</td>
+            <td>Nadila A., Samantha W., +7</td>
+            <td>Luyện mẫu câu theo cặp</td>
+            <td><button class="action-btn">Xem chi tiết</button></td>
+          </tr>
+          <tr>
+            <td><span class="group-chip">● VOCAB_TOYS</span></td>
+            <td>4 em</td>
+            <td>Tony S., Harry J., +2</td>
+            <td>Flashcard từ vựng Toys</td>
+            <td><button class="action-btn">Xem chi tiết</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- RIGHT SIDEBAR -->
+  <aside class="right-sidebar">
+    <div class="rs-section">
+      <div class="rs-title">Học sinh mới cập nhật</div>
+      <div class="rs-sub">Vừa nộp bài luyện tập</div>
+      <div class="rs-item"><div class="avatar-sm">SW</div><div><div class="rs-name">Samantha William</div><div class="rs-meta">Lớp 3A · 5 phút trước</div></div></div>
+      <div class="rs-item"><div class="avatar-sm">TS</div><div><div class="rs-name">Tony Soap</div><div class="rs-meta">Lớp 3B · 12 phút trước</div></div></div>
+      <div class="rs-item"><div class="avatar-sm">KH</div><div><div class="rs-name">Karen Hope</div><div class="rs-meta">Lớp 3A · 20 phút trước</div></div></div>
+      <div class="rs-item"><div class="avatar-sm">JN</div><div><div class="rs-name">Jordan Nico</div><div class="rs-meta">Lớp 3A · 33 phút trước</div></div></div>
+      <button class="rs-more">Xem thêm</button>
+    </div>
+
+    <div class="rs-section">
+      <div class="rs-title">Cảnh báo mới</div>
+      <div class="rs-alert-item">GRAM_HOWMANY vượt ngưỡng 50% lớp 3A <span class="rs-alert-time">10:45</span></div>
+      <div class="rs-alert-item">3 học sinh kẹt &gt;5 ngày ở NOUN_PLURAL <span class="rs-alert-time">09:30</span></div>
+      <div class="rs-alert-item">Đề xuất nhóm phụ đạo mới cho VOCAB_TOYS <span class="rs-alert-time">Hôm qua</span></div>
+      <button class="rs-more">Xem thêm</button>
+    </div>
+  </aside>
+
+</div>
+</body>
+</html>

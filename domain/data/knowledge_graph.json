@@ -1,0 +1,110 @@
+{
+  "skills": [
+    {
+      "code": "TA3.PRE.PHONICS01",
+      "name_vi": "Nhận biết & phát âm bảng chữ cái",
+      "name_en": "Alphabet recognition & pronunciation",
+      "grade": 3,
+      "unit": "Unit 1-2",
+      "skill_type": "phonics",
+      "p_init": 0.4,
+      "p_transit": 0.1,
+      "p_slip": 0.1,
+      "p_guess": 0.2
+    },
+    {
+      "code": "TA3.PRE.NUM0110",
+      "name_vi": "Đếm số 1–10 bằng tiếng Anh",
+      "name_en": "Counting 1-10",
+      "grade": 3,
+      "unit": "Unit 1-2",
+      "skill_type": "vocab",
+      "p_init": 0.4,
+      "p_transit": 0.1,
+      "p_slip": 0.1,
+      "p_guess": 0.2
+    },
+    {
+      "code": "TA3.PRE.NOUN_PLURAL",
+      "name_vi": "Quy tắc số nhiều danh từ (-s/-es)",
+      "name_en": "Plural noun rule (-s/-es)",
+      "grade": 3,
+      "unit": "Unit 3-4",
+      "skill_type": "grammar",
+      "p_init": 0.4,
+      "p_transit": 0.1,
+      "p_slip": 0.1,
+      "p_guess": 0.2
+    },
+    {
+      "code": "TA3.U5.VOCAB_TOYS",
+      "name_vi": "Từ vựng chủ đề Toys (ball, doll, kite, robot, teddy bear, yo-yo)",
+      "name_en": "Toys vocabulary",
+      "grade": 3,
+      "unit": "Unit 5",
+      "skill_type": "vocab",
+      "p_init": 0.4,
+      "p_transit": 0.1,
+      "p_slip": 0.1,
+      "p_guess": 0.2
+    },
+    {
+      "code": "TA3.U5.VOCAB_TOYS_PLURAL",
+      "name_vi": "Số nhiều từ vựng Toys (balls, dolls, kites...)",
+      "name_en": "Toys vocabulary, plural form",
+      "grade": 3,
+      "unit": "Unit 5",
+      "skill_type": "vocab",
+      "p_init": 0.4,
+      "p_transit": 0.1,
+      "p_slip": 0.1,
+      "p_guess": 0.2
+    },
+    {
+      "code": "TA3.U5.GRAM_HOWMANY",
+      "name_vi": "Mẫu câu \"How many + plural noun + are there?\"",
+      "name_en": "\"How many...are there?\" sentence pattern",
+      "grade": 3,
+      "unit": "Unit 5",
+      "skill_type": "grammar",
+      "p_init": 0.4,
+      "p_transit": 0.1,
+      "p_slip": 0.1,
+      "p_guess": 0.2
+    },
+    {
+      "code": "TA3.U5.LISTEN_HOWMANY",
+      "name_vi": "Nghe hiểu hội thoại hỏi-đáp số lượng",
+      "name_en": "Listening comprehension: quantity dialogue",
+      "grade": 3,
+      "unit": "Unit 5",
+      "skill_type": "listening",
+      "p_init": 0.4,
+      "p_transit": 0.1,
+      "p_slip": 0.1,
+      "p_guess": 0.2
+    },
+    {
+      "code": "TA3.U5.SPEAK_HOWMANY",
+      "name_vi": "Hỏi-đáp số lượng đồ chơi (dạng văn bản, chưa chấm ASR)",
+      "name_en": "Quantity Q&A (text dialogue, no ASR yet)",
+      "grade": 3,
+      "unit": "Unit 5",
+      "skill_type": "speaking",
+      "p_init": 0.4,
+      "p_transit": 0.1,
+      "p_slip": 0.1,
+      "p_guess": 0.2
+    }
+  ],
+  "edges": [
+    {"prerequisite": "TA3.PRE.PHONICS01", "dependent": "TA3.U5.VOCAB_TOYS", "weight": 1.0},
+    {"prerequisite": "TA3.PRE.NUM0110", "dependent": "TA3.U5.GRAM_HOWMANY", "weight": 1.0},
+    {"prerequisite": "TA3.PRE.NOUN_PLURAL", "dependent": "TA3.U5.VOCAB_TOYS_PLURAL", "weight": 1.0},
+    {"prerequisite": "TA3.PRE.NOUN_PLURAL", "dependent": "TA3.U5.GRAM_HOWMANY", "weight": 1.0},
+    {"prerequisite": "TA3.U5.VOCAB_TOYS", "dependent": "TA3.U5.VOCAB_TOYS_PLURAL", "weight": 1.0},
+    {"prerequisite": "TA3.U5.VOCAB_TOYS_PLURAL", "dependent": "TA3.U5.GRAM_HOWMANY", "weight": 1.0},
+    {"prerequisite": "TA3.U5.GRAM_HOWMANY", "dependent": "TA3.U5.LISTEN_HOWMANY", "weight": 1.0},
+    {"prerequisite": "TA3.U5.GRAM_HOWMANY", "dependent": "TA3.U5.SPEAK_HOWMANY", "weight": 1.0}
+  ]
+}

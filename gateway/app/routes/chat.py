@@ -1,14 +1,19 @@
-"""Endpoint /chat — cầu nối duy nhất giữa frontend và Planner Agent."""
+"""Endpoint /chat — bot hỏi-đáp phụ (online), gọi Planner Agent + Tool Registry.
+
+Bề mặt sản phẩm chính là /diagnostic /practice /teacher /parent (REST, access control
+thực thi bằng code). /chat là lớp tiện ích cộng thêm, xem lưu ý về access-control ở
+domain/adaptive_tutor_adapter.py.
+"""
 from fastapi import APIRouter
 from pydantic import BaseModel
 
 from agent.planner import PlannerAgent
-from domain.sme_innovation_adapter import SMEInnovationAdapter
+from domain.adaptive_tutor_adapter import AdaptiveTutorAdapter
 
 from ..config import settings
 
 router = APIRouter()
-_adapter = SMEInnovationAdapter()
+_adapter = AdaptiveTutorAdapter()
 _agent = PlannerAgent(domain=_adapter, model=settings.llm_model)
 
 
