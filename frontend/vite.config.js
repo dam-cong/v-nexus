@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 8501,
-    host: '0.0.0.0'
+    host: '0.0.0.0',
+    allowedHosts: ['v-nexus.editech.vn']
   }
 })

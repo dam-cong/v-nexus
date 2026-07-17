@@ -20,7 +20,7 @@ services:
       context: .
       dockerfile: mcp_server/Dockerfile
     ports:
-      - "8100:8100"
+      - "8500:8100"
 
   gateway:
     build:
@@ -47,7 +47,7 @@ services:
     depends_on:
       - gateway
     ports:
-      - "8080:8501"
+      - "8081:8501"
 
 volumes:
   vnexus_db_data:

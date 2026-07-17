@@ -60,12 +60,35 @@ v-nexus/
 
 ```bash
 cp .env.example .env        # điền ANTHROPIC_API_KEY
-docker compose up --build
+docker-compose up --build -d
 ```
 
-- Frontend (chat): http://localhost:8501
+- Frontend (chat): http://localhost:8080
 - Gateway API: http://localhost:8000/health
 - MCP Server mẫu: http://localhost:8100/mcp
+- PostgreSQL (từ host): localhost:5434
+
+*(Dùng `docker-compose` (bản standalone) hoặc `docker compose` (plugin) tuỳ máy —
+thay khoảng trắng bằng gạch nối nếu máy bạn dùng bản còn lại.)*
+
+### Build lại khi có thay đổi code
+
+```bash
+docker-compose up -d --build --force-recreate
+```
+
+Nếu nghi ngờ bị dính cache layer cũ (code mới không lên dù đã build lại), build lại
+từ đầu không dùng cache rồi mới recreate container:
+
+```bash
+docker-compose build --no-cache && docker-compose up -d --force-recreate
+```
+
+Muốn rebuild riêng 1 service (ví dụ chỉ `frontend`):
+
+```bash
+docker-compose build --no-cache frontend && docker-compose up -d --force-recreate frontend
+```
 
 ## Chạy local không dùng Docker
 
