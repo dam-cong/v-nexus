@@ -3,7 +3,7 @@ import os
 from collections.abc import AsyncIterator
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from db.models import Base, Role
 from db.seed import seed_data, seed_questions, seed_placement_tests, seed_test_results
@@ -27,6 +27,15 @@ async def init_db() -> None:
     # 1. Tạo tất cả các bảng
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    # 1b. Thêm cột mới nếu chưa tồn tại (tương đương migration nhẹ, không dùng Alembic)
+    async with engine.begin() as conn:
+        await conn.execute(
+            text(
+                "ALTER TABLE student_test_results "
+                "ADD COLUMN IF NOT EXISTS training_plan TEXT;"
+            )
+        )
 
     # 2. Thêm các vai trò mặc định nếu chưa tồn tại
     async with SessionLocal() as session:

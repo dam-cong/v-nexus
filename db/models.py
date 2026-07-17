@@ -143,6 +143,7 @@ class StudentTestResult(Base):
     mastery: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     gaps: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     recommendations: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+    training_plan: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     test_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 

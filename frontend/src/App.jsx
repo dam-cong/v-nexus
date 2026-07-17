@@ -33,6 +33,7 @@ import { useAuth } from './context/AuthContext';
 import { apiFetch } from './api';
 import Login from './pages/Login';
 import StudentSurvey from './StudentSurvey';
+import StudentHistory from './StudentHistory';
 import './App.css';
 
 // Base API URL
@@ -81,6 +82,7 @@ function DashboardApp({ user, logout }) {
 
   // Student survey state
   const [studentActiveTab, setStudentActiveTab] = useState('survey');
+  const [studentTestResults, setStudentTestResults] = useState([]);
 
   // Search queries
   const [studentSearch, setStudentSearch] = useState('');
@@ -162,6 +164,19 @@ function DashboardApp({ user, logout }) {
       }
     } catch (err) {
       console.error("Error fetching test results:", err);
+    }
+  };
+
+  const fetchStudentTestResults = async () => {
+    if (!user || !user.id) return;
+    try {
+      const res = await apiFetch(`/api/test-results/student/${user.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setStudentTestResults(data);
+      }
+    } catch (err) {
+      console.error("Error fetching student test results:", err);
     }
   };
 
@@ -413,7 +428,7 @@ function DashboardApp({ user, logout }) {
   };
 
   const resetStudentPassword = async (id, name) => {
-    if (!window.confirm(`Reset mật khẩu của "${name}" về mặc định (default123)?`)) return;
+    if (!window.confirm(`Reset mật khẩu của "${name}" về mặc định (88888888)?`)) return;
     try {
       const res = await apiFetch(`/api/students/${id}/reset-password`, { method: 'POST' });
       if (res.ok) {
@@ -474,7 +489,7 @@ function DashboardApp({ user, logout }) {
   };
 
   const resetTeacherPassword = async (id, name) => {
-    if (!window.confirm(`Reset mật khẩu của "${name}" về mặc định (default123)?`)) return;
+    if (!window.confirm(`Reset mật khẩu của "${name}" về mặc định (88888888)?`)) return;
     try {
       const res = await apiFetch(`/api/teachers/${id}/reset-password`, { method: 'POST' });
       if (res.ok) {
@@ -618,6 +633,13 @@ function DashboardApp({ user, logout }) {
                 <TrendingUp size={20} />
                 <span>Tiến bộ</span>
               </button>
+              <button
+                className={`menu-item ${studentActiveTab === 'history' ? 'active' : ''}`}
+                onClick={() => { setStudentActiveTab('history'); fetchStudentTestResults(); if (!questions.length) fetchQuestions(); setSidebarOpen(false); }}
+              >
+                <ClipboardCheck size={20} />
+                <span>Lịch sử bài đánh giá</span>
+              </button>
             </>
           ) : (
             <>
@@ -692,6 +714,7 @@ function DashboardApp({ user, logout }) {
                   {studentActiveTab === 'survey' && 'Khảo sát đầu vào'}
                   {studentActiveTab === 'roadmap' && 'Lộ trình của em'}
                   {studentActiveTab === 'progress' && 'Tiến bộ'}
+                  {studentActiveTab === 'history' && 'Lịch sử bài đánh giá'}
                 </>
               ) : (
                 <>
@@ -852,6 +875,15 @@ function DashboardApp({ user, logout }) {
                 <div className="animate-fade-in" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
                   <p>Tính năng Tiến bộ đang được phát triển.</p>
                 </div>
+              )}
+              {studentActiveTab === 'history' && (
+                <StudentHistory
+                  user={user}
+                  results={studentTestResults}
+                  questions={questions}
+                  onStartSurvey={() => setStudentActiveTab('survey')}
+                  onRetry={fetchStudentTestResults}
+                />
               )}
             </>
           ) : (
@@ -1863,6 +1895,17 @@ function DashboardApp({ user, logout }) {
                     </div>
                   </div>
 
+                  {/* Training plan (AI) */}
+                  {selectedResult.training_plan && (
+                    <div style={{ padding: '0 32px 24px' }}>
+                      <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Lightbulb size={18} style={{ color: '#a43c20' }} />
+                        Kế hoạch đào tạo cá nhân hóa (AI)
+                      </h4>
+                      <div className="history-training-plan">{selectedResult.training_plan}</div>
+                    </div>
+                  )}
+
                   {/* Answers detail */}
                   <div className="detail-answers-section" style={{ padding: '0 32px 24px' }}>
                     <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -2379,7 +2422,7 @@ function DashboardApp({ user, logout }) {
                 <label>Mật khẩu</label>
                 <input 
                   type="password"
-                  placeholder={studentModal.mode === 'create' ? 'Mặc định: default123' : 'Để trống nếu không đổi'}
+                  placeholder={studentModal.mode === 'create' ? 'Mặc định: 88888888' : 'Để trống nếu không đổi'}
                   value={studentForm.password}
                   onChange={e => setStudentForm({ ...studentForm, password: e.target.value })}
                 />
@@ -2454,7 +2497,7 @@ function DashboardApp({ user, logout }) {
                 <label>Mật khẩu</label>
                 <input 
                   type="password"
-                  placeholder={teacherModal.mode === 'create' ? 'Mặc định: default123' : 'Để trống nếu không đổi'}
+                  placeholder={teacherModal.mode === 'create' ? 'Mặc định: 88888888' : 'Để trống nếu không đổi'}
                   value={teacherForm.password}
                   onChange={e => setTeacherForm({ ...teacherForm, password: e.target.value })}
                 />

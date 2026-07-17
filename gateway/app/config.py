@@ -5,6 +5,9 @@ import os
 class Settings:
     anthropic_api_key: str = os.environ.get("ANTHROPIC_API_KEY", "")
     llm_model: str = os.environ.get("LLM_MODEL", "claude-sonnet-5")
+    fpt_api_key: str = os.environ.get("FPT_API_KEY", "")
+    fpt_api_base: str = os.environ.get("FPT_API_BASE", "https://mkp-api.fptcloud.com/v1")
+    fpt_model: str = os.environ.get("FPT_MODEL", "DeepSeek-V4-Flash")
     database_url: str = os.environ.get(
         "DATABASE_URL", "postgresql+asyncpg://vnexus:vnexus@localhost:5432/vnexus"
     )

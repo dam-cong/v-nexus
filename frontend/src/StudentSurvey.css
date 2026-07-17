@@ -1551,3 +1551,229 @@
   .survey-review-grid { grid-template-columns: repeat(4, 1fr); }
   .survey-navigator-grid { grid-template-columns: repeat(4, 1fr); }
 }
+
+/* =========================================================
+   STUDENT HISTORY (Lịch sử bài đánh giá)
+   ========================================================= */
+.btn-ghost {
+  background: var(--bg-light);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-ghost:hover { background: #eaeaf3; color: var(--text); }
+
+.student-history { padding: 4px 0; }
+
+.history-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.history-subtitle { margin: 0; color: var(--text-muted); font-size: 14px; }
+
+.history-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  padding: 60px 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--text-muted);
+}
+.history-empty h3 { margin: 0; color: var(--text); font-size: 18px; }
+.history-empty p { margin: 0; max-width: 420px; }
+.history-empty .btn-primary { margin-top: 8px; display: inline-flex; align-items: center; gap: 8px; }
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.history-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 14px;
+  padding: 18px 22px;
+  flex-wrap: wrap;
+}
+.history-card.starter { border-left-color: #fd7e5c; }
+.history-card.beginner { border-left-color: #4d44b5; }
+.history-card.elementary { border-left-color: #006231; }
+
+.history-card-main { display: flex; align-items: center; gap: 16px; min-width: 220px; }
+.history-card-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 16px;
+  color: #fff;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+.history-card-badge.starter { background: #fd7e5c; }
+.history-card-badge.beginner { background: #4d44b5; }
+.history-card-badge.elementary { background: #006231; }
+
+.history-card-info { display: flex; flex-direction: column; gap: 4px; }
+.history-card-level { font-weight: 700; font-size: 16px; color: var(--text); }
+.history-card-date { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); }
+
+.history-card-stats { display: flex; gap: 28px; margin-left: auto; }
+.history-stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.history-stat-val { font-weight: 700; font-size: 18px; color: var(--text); }
+.history-stat-label { font-size: 12px; color: var(--text-muted); }
+
+.history-detail-btn { white-space: nowrap; }
+
+/* Inline detail (replaces popup) */
+.history-detail { padding: 4px 0; }
+.history-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-light);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.2s;
+}
+.history-back-btn:hover { background: #eaeaf3; }
+
+/* Answered questions in detail */
+.history-answers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.history-answer-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--text-muted);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+.history-answer-item.correct { border-left-color: #006231; }
+.history-answer-item.wrong { border-left-color: #ba1a1a; }
+
+.history-answer-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.history-answer-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--bg-light);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+}
+.history-answer-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.history-answer-badge.correct { background: #d3f5e4; color: #006231; }
+.history-answer-badge.wrong { background: #ffdad6; color: #ba1a1a; }
+.history-answer-skill {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.history-answer-prompt {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+.history-answer-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.history-answer-opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-card);
+  font-size: 14px;
+}
+.history-answer-opt.is-correct {
+  border-color: rgba(0, 98, 49, 0.4);
+  background: rgba(211, 245, 228, 0.4);
+}
+.history-answer-opt.is-selected-wrong {
+  border-color: rgba(186, 26, 26, 0.4);
+  background: rgba(255, 218, 214, 0.4);
+}
+.history-answer-mark {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.history-answer-opt.is-correct .history-answer-mark { color: #006231; }
+.history-answer-opt.is-selected-wrong .history-answer-mark { color: #ba1a1a; }
+.history-answer-explain {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.history-training-plan {
+  background: linear-gradient(135deg, #fff7f3 0%, #f3f0ff 100%);
+  border: 1px solid rgba(164, 60, 32, 0.25);
+  border-radius: 12px;
+  padding: 18px 22px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+@media (max-width: 640px) {
+  .history-card { flex-direction: column; align-items: stretch; gap: 16px; }
+  .history-card-stats { margin-left: 0; justify-content: space-around; gap: 12px; }
+  .history-detail-btn { width: 100%; }
+}
