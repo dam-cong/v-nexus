@@ -3,12 +3,12 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from agent.planner import PlannerAgent
-from domain.sme_innovation_adapter import SMEInnovationAdapter
+from domain.sme_innovation_adapter import VNexusTutorAdapter
 
 from ..config import settings
 
 router = APIRouter()
-_adapter = SMEInnovationAdapter()
+_adapter = VNexusTutorAdapter()
 _agent = PlannerAgent(domain=_adapter, model=settings.llm_model)
 
 

@@ -151,6 +151,7 @@ class TestResultResponse(BaseModel):
     mastery: Optional[dict] = None
     gaps: Optional[list] = None
     recommendations: Optional[list] = None
+    training_plan: Optional[str] = None
     test_date: datetime
     created_at: datetime
     class Config:
@@ -168,6 +169,7 @@ class TestResultSubmit(BaseModel):
     mastery: Optional[dict] = None
     gaps: Optional[list] = None
     recommendations: Optional[list] = None
+    training_plan: Optional[str] = None
     test_date: Optional[str] = None
 
 
@@ -288,7 +290,7 @@ async def create_student(
         email=student.email,
         grade=student.grade,
         role_id=student.role_id,
-        hashed_password=hash_password(student.password or "default123"),
+        hashed_password=hash_password(student.password or "88888888"),
     )
     db.add(db_student)
     await db.commit()
@@ -379,7 +381,7 @@ async def reset_student_password(
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
     from db.password import hash_password
-    default_pw = "default123"
+    default_pw = "88888888"
     student.hashed_password = hash_password(default_pw)
     await db.commit()
     return {"message": "Đã reset mật khẩu thành công", "new_password": default_pw}
@@ -421,7 +423,7 @@ async def create_teacher(
         email=teacher.email,
         subject=teacher.subject,
         role_id=teacher.role_id,
-        hashed_password=hash_password(teacher.password or "default123"),
+        hashed_password=hash_password(teacher.password or "88888888"),
     )
     db.add(db_teacher)
     await db.commit()
@@ -478,7 +480,7 @@ async def reset_teacher_password(
     if not teacher:
         raise HTTPException(status_code=404, detail="Teacher not found")
     from db.password import hash_password
-    default_pw = "default123"
+    default_pw = "88888888"
     teacher.hashed_password = hash_password(default_pw)
     await db.commit()
     return {"message": "Đã reset mật khẩu thành công", "new_password": default_pw}
@@ -828,8 +830,12 @@ async def get_test_result(
 async def get_student_test_results(
     student_id: int,
     db: AsyncSession = Depends(get_session),
-    _user: dict = Depends(get_current_user),
+    user: dict = Depends(get_current_user),
 ):
+    # Students can only view their own results; admins/teachers may view any student.
+    if user.get("role") == "hoc_sinh":
+        student_id = user["id"]
+
     result = await db.execute(
         select(StudentTestResult)
         .where(StudentTestResult.student_id == student_id)
@@ -862,6 +868,36 @@ async def submit_placement_test(
         except Exception:
             pass
 
+    # --- Tầng 2: BKT Engine chẩn đoán lỗ hổng (ưu tiên backend, fallback body) ---
+    mastery = body.mastery
+    gaps = body.gaps
+    try:
+        from domain.bkt import run_assessment
+
+        assessment = run_assessment(body.answers or [], None)
+        # Chỉ ghi đè khi body không mang sẵn kết quả (giữ tương thích ngược)
+        if not mastery:
+            mastery = assessment["mastery"]
+        if not gaps:
+            gaps = assessment["gaps"]
+    except Exception as e:
+        print(f"[BKT] assessment failed, using client values: {e}")
+
+    # --- Tầng 3: LLM sinh kế hoạch đào tạo cá nhân hóa (FPT / DeepSeek) ---
+    training_plan = body.training_plan
+    try:
+        from tools.plan_tool import generate_training_plan
+
+        training_plan = generate_training_plan(
+            gaps=gaps or [],
+            mastery=mastery or {},
+            student_name=user.get("name", ""),
+            level=body.cefr,
+        )
+    except Exception as e:
+        print(f"[LLM] training plan generation failed: {e}")
+        training_plan = None
+
     test_result = StudentTestResult(
         student_id=student_id,
         test_id=test_id,
@@ -872,9 +908,10 @@ async def submit_placement_test(
         result_level=body.result_level,
         cefr=body.cefr,
         time_total_sec=body.time_total_sec,
-        mastery=body.mastery,
-        gaps=body.gaps,
+        mastery=mastery,
+        gaps=gaps,
         recommendations=body.recommendations,
+        training_plan=training_plan,
         test_date=test_date,
     )
     db.add(test_result)
