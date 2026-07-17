@@ -154,6 +154,10 @@ Dashboard phụ huynh không thuộc MVP và chỉ được xem xét trong Futur
 
 ## 5. Core Functional Flows
 
+> **Sơ đồ BPMN:** xem [`v-nexus-core-flows.drawio`](./v-nexus-core-flows.drawio), gồm 4
+> trang tổng hợp và 16 trang swimlane chi tiết tương ứng với từng chức năng từ 5.1 đến
+> 5.16.
+
 ### 5.1. Quản lý chương trình và Knowledge Graph
 
 **Mục tiêu:** Tạo nền dữ liệu có kiểm duyệt để hệ thống hiểu kỹ năng nào thuộc môn/khối
