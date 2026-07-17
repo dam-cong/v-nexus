@@ -20,7 +20,12 @@ import {
   Calendar,
   Settings,
   Bell,
-  LogOut
+  LogOut,
+  ClipboardCheck,
+  Database,
+  FileText,
+  AlertTriangle,
+  Lightbulb
 } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { apiFetch } from './api';
@@ -45,6 +50,21 @@ function DashboardApp({ user, logout }) {
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [rankings, setRankings] = useState([]);
+  const [testResults, setTestResults] = useState([]);
+  const [questions, setQuestions] = useState([]);
+  const [placementTests, setPlacementTests] = useState([]);
+  const [selectedTest, setSelectedTest] = useState(null);
+  const [testQuestions, setTestQuestions] = useState([]);
+  const [questionSearch, setQuestionSearch] = useState('');
+  const [questionSkillFilter, setQuestionSkillFilter] = useState('');
+  const [questionDiffFilter, setQuestionDiffFilter] = useState('');
+  const [editQuestionModal, setEditQuestionModal] = useState({ open: false, data: null });
+  const [editTestModal, setEditTestModal] = useState({ open: false, data: null });
+  const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
+  const [selectedResult, setSelectedResult] = useState(null);
+  const [addQuestionSearch, setAddQuestionSearch] = useState('');
+  const [addQuestionSkillFilter, setAddQuestionSkillFilter] = useState('');
+  const [addQuestionDiffFilter, setAddQuestionDiffFilter] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
@@ -117,9 +137,155 @@ function DashboardApp({ user, logout }) {
     }
   };
 
+  const fetchTestResults = async () => {
+    try {
+      const res = await apiFetch('/api/test-results');
+      if (res.ok) {
+        const data = await res.json();
+        setTestResults(data);
+      }
+    } catch (err) {
+      console.error("Error fetching test results:", err);
+    }
+  };
+
+  const fetchQuestions = async () => {
+    try {
+      const res = await apiFetch('/api/questions');
+      if (res.ok) {
+        const data = await res.json();
+        setQuestions(data);
+      }
+    } catch (err) {
+      console.error("Error fetching questions:", err);
+    }
+  };
+
+  const fetchPlacementTests = async () => {
+    try {
+      const res = await apiFetch('/api/placement-tests');
+      if (res.ok) {
+        const data = await res.json();
+        setPlacementTests(data);
+      }
+    } catch (err) {
+      console.error("Error fetching placement tests:", err);
+    }
+  };
+
+  const fetchTestQuestions = async (testId) => {
+    try {
+      const res = await apiFetch(`/api/placement-tests/${testId}/questions`);
+      if (res.ok) {
+        const data = await res.json();
+        setTestQuestions(data);
+      }
+    } catch (err) {
+      console.error("Error fetching test questions:", err);
+    }
+  };
+
+  // Update question
+  const handleUpdateQuestion = async (questionId, data) => {
+    try {
+      const res = await apiFetch(`/api/questions/${questionId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      if (res.ok) {
+        triggerNotification("Cập nhật câu hỏi thành công!");
+        setEditQuestionModal({ open: false, data: null });
+        fetchQuestions();
+      } else {
+        const err = await res.json();
+        triggerNotification(err.detail || "Lỗi cập nhật", "error");
+      }
+    } catch (err) {
+      triggerNotification("Lỗi kết nối server", "error");
+    }
+  };
+
+  // Delete question
+  const handleDeleteQuestion = async (questionId) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa câu hỏi này?")) return;
+    try {
+      const res = await apiFetch(`/api/questions/${questionId}`, { method: 'DELETE' });
+      if (res.ok) {
+        triggerNotification("Đã xóa câu hỏi!");
+        fetchQuestions();
+      }
+    } catch (err) {
+      triggerNotification("Lỗi kết nối server", "error");
+    }
+  };
+
+  // Update placement test
+  const handleUpdateTest = async (testId, data) => {
+    try {
+      const res = await apiFetch(`/api/placement-tests/${testId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      if (res.ok) {
+        triggerNotification("Cập nhật bài test thành công!");
+        setEditTestModal({ open: false, data: null });
+        fetchPlacementTests();
+      } else {
+        const err = await res.json();
+        triggerNotification(err.detail || "Lỗi cập nhật", "error");
+      }
+    } catch (err) {
+      triggerNotification("Lỗi kết nối server", "error");
+    }
+  };
+
+  // Delete placement test
+  const handleDeleteTest = async (testId) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa bài test này?")) return;
+    try {
+      const res = await apiFetch(`/api/placement-tests/${testId}`, { method: 'DELETE' });
+      if (res.ok) {
+        triggerNotification("Đã xóa bài test!");
+        setSelectedTest(null);
+        setTestQuestions([]);
+        fetchPlacementTests();
+      }
+    } catch (err) {
+      triggerNotification("Lỗi kết nối server", "error");
+    }
+  };
+
+  // Save test questions (replace all)
+  const handleSaveTestQuestions = async (testId, questionIds) => {
+    try {
+      const res = await apiFetch(`/api/placement-tests/${testId}/questions`, {
+        method: 'PUT',
+        body: JSON.stringify(questionIds)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTestQuestions(data);
+        setShowAddQuestionModal(false);
+        triggerNotification(`Đã cập nhật ${data.length} câu hỏi trong bài test!`);
+      } else {
+        const err = await res.json();
+        triggerNotification(err.detail || "Lỗi cập nhật", "error");
+      }
+    } catch (err) {
+      triggerNotification("Lỗi kết nối server", "error");
+    }
+  };
+
+  // Remove a question from test
+  const handleRemoveQuestionFromTest = async (testId, questionId) => {
+    if (!window.confirm("Xóa câu hỏi này khỏi bài test?")) return;
+    const newIds = testQuestions.filter(q => q.id !== questionId).map(q => q.id);
+    await handleSaveTestQuestions(testId, newIds);
+  };
+
   const loadAllData = async () => {
     setLoading(true);
-    await Promise.all([fetchStudents(), fetchTeachers(), fetchRankings()]);
+    await Promise.all([fetchStudents(), fetchTeachers(), fetchRankings(), fetchTestResults()]);
     setLoading(false);
   };
 
@@ -140,7 +306,7 @@ function DashboardApp({ user, logout }) {
     setError(null);
 
     try {
-      // 1. Create Student
+      // Create Student (survey data stored as part of student profile)
       const studentRes = await apiFetch('/api/students', {
         method: 'POST',
         body: JSON.stringify({
@@ -156,25 +322,7 @@ function DashboardApp({ user, logout }) {
         throw new Error(errorDetail.detail || "Không thể tạo tài khoản học sinh");
       }
 
-      const newStudent = await studentRes.json();
-
-      // 2. Create Survey record linked to student ID
-      const surveyRes = await apiFetch('/api/surveys', {
-        method: 'POST',
-        body: JSON.stringify({
-          student_id: newStudent.id,
-          years_studying_english: parseInt(surveyForm.years_studying_english) || 0,
-          learning_environment: surveyForm.learning_environment,
-          self_assessment_level: surveyForm.self_assessment_level,
-          learning_goal: surveyForm.learning_goal
-        })
-      });
-
-      if (!surveyRes.ok) {
-        throw new Error("Không thể lưu kết quả khảo sát đầu vào");
-      }
-
-      triggerNotification("Khảo sát đầu vào đã được nộp thành công! Tài khoản học sinh đã được tạo.");
+      triggerNotification("Học sinh đã được tạo thành công! Hãy cho học sinh làm bài kiểm tra trình độ.");
       
       // Reset survey form
       setSurveyForm({
@@ -358,8 +506,8 @@ function DashboardApp({ user, logout }) {
   const sortedRankings = [...rankings].sort((a, b) => b.score - a.score);
   const podiumStudents = sortedRankings.slice(0, 3);
 
-  // Total surveys count
-  const totalSurveys = students.reduce((acc, curr) => acc + (curr.surveys?.length || 0), 0);
+  // Total test results count
+  const totalTestResults = testResults.length;
   const avgScore = rankings.length > 0 
     ? Math.round(rankings.reduce((acc, curr) => acc + curr.score, 0) / rankings.length)
     : 0;
@@ -422,6 +570,39 @@ function DashboardApp({ user, logout }) {
               <span>Khảo sát đầu vào</span>
             </button>
           )}
+
+          {/* Test Results tab: visible to admin and teacher */}
+          {(user?.role === 'admin' || user?.role === 'giao_vien') && (
+            <button 
+              className={`menu-item ${activeTab === 'test-results' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('test-results'); fetchTestResults(); fetchStudents(); }}
+            >
+              <ClipboardCheck size={20} />
+              <span>Kết quả kiểm tra</span>
+            </button>
+          )}
+
+          {/* Question Bank tab: visible to admin and teacher */}
+          {(user?.role === 'admin' || user?.role === 'giao_vien') && (
+            <button 
+              className={`menu-item ${activeTab === 'questions' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('questions'); fetchQuestions(); }}
+            >
+              <Database size={20} />
+              <span>Ngân hàng câu hỏi</span>
+            </button>
+          )}
+
+          {/* Placement Tests tab: visible to admin and teacher */}
+          {(user?.role === 'admin' || user?.role === 'giao_vien') && (
+            <button 
+              className={`menu-item ${activeTab === 'placement-tests' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('placement-tests'); fetchPlacementTests(); setSelectedTest(null); }}
+            >
+              <FileText size={20} />
+              <span>Danh sách bài test</span>
+            </button>
+          )}
         </div>
 
         <div className="sidebar-footer">
@@ -441,6 +622,9 @@ function DashboardApp({ user, logout }) {
               {activeTab === 'teachers' && 'Danh sách Giáo viên'}
               {activeTab === 'leaderboard' && 'Bảng xếp hạng'}
               {activeTab === 'survey' && 'Khảo sát đầu vào'}
+              {activeTab === 'test-results' && 'Kết quả kiểm tra trình độ'}
+              {activeTab === 'questions' && 'Ngân hàng câu hỏi'}
+              {activeTab === 'placement-tests' && 'Danh sách bài test'}
             </h1>
           </div>
           
@@ -465,6 +649,17 @@ function DashboardApp({ user, logout }) {
                   placeholder="Tìm giáo viên, môn học..." 
                   value={teacherSearch}
                   onChange={e => setTeacherSearch(e.target.value)}
+                />
+              </div>
+            )}
+            {activeTab === 'questions' && (
+              <div className="search-bar">
+                <Search size={18} />
+                <input 
+                  type="text" 
+                  placeholder="Tìm câu hỏi, kỹ năng..." 
+                  value={questionSearch}
+                  onChange={e => setQuestionSearch(e.target.value)}
                 />
               </div>
             )}
@@ -545,11 +740,11 @@ function DashboardApp({ user, logout }) {
                 </div>
                 <div className="stat-card">
                   <div className="stat-icon" style={{ background: '#e1f6e8', color: '#27c26c' }}>
-                    <BookOpen />
+                    <ClipboardCheck />
                   </div>
                   <div className="stat-info">
-                    <span className="stat-label">Khảo sát</span>
-                    <span className="stat-val">{totalSurveys}</span>
+                    <span className="stat-label">Bài kiểm tra</span>
+                    <span className="stat-val">{totalTestResults}</span>
                   </div>
                 </div>
                 <div className="stat-card">
@@ -1149,6 +1344,728 @@ function DashboardApp({ user, logout }) {
             </div>
           )}
 
+          {/* ==========================================================
+              TAB: TEST RESULTS (Kết quả kiểm tra trình độ)
+              ========================================================== */}
+          {activeTab === 'test-results' && (
+            <div className="animate-fade-in panel table-panel">
+              {!selectedResult ? (
+                <>
+                  <div className="table-header-bar">
+                    <h3 className="table-title">Kết quả kiểm tra trình độ</h3>
+                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                      {testResults.length} kết quả
+                    </div>
+                  </div>
+
+                  {loading && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Đang tải dữ liệu...</div>}
+
+                  {!loading && testResults.length === 0 ? (
+                    <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                      <ClipboardCheck size={48} style={{ opacity: '0.4', marginBottom: '16px' }} />
+                      <p>Chưa có kết quả kiểm tra nào.</p>
+                    </div>
+                  ) : (
+                    <div className="table-container">
+                      <table className="custom-table">
+                        <thead>
+                          <tr>
+                            <th>Học sinh</th>
+                            <th>Ngày thi</th>
+                            <th style={{ width: '140px' }}>Điểm số</th>
+                            <th>Trình độ</th>
+                            <th>CEFR</th>
+                            <th>Thời gian</th>
+                            <th style={{ width: '120px', textAlign: 'center' }}>Thao tác</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {testResults.map(result => {
+                            const pct = result.percentage || Math.round((result.score / result.max_score) * 100);
+                            return (
+                              <tr key={result.id}>
+                                <td>
+                                  <div className="student-meta">
+                                    <div className="avatar-circle" style={{ background: getAvatarColor(getStudentName(result.student_id)) }}>
+                                      {getStudentName(result.student_id).charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                      <div className="meta-name">{getStudentName(result.student_id)}</div>
+                                      <div className="meta-email">{getStudentEmail(result.student_id)}</div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>
+                                    <Calendar size={12} />
+                                    <span>{new Date(result.test_date).toLocaleDateString('vi-VN')}</span>
+                                  </div>
+                                </td>
+                                <td>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <div style={{ flex: 1, height: '8px', background: '#f0eef5', borderRadius: '4px', overflow: 'hidden' }}>
+                                      <div style={{ 
+                                        height: '100%', 
+                                        width: `${pct}%`,
+                                        borderRadius: '4px',
+                                        background: pct >= 70 ? '#27c26c' : pct >= 40 ? '#fb7d5b' : '#ff4d4f',
+                                        transition: 'width 0.5s ease'
+                                      }} />
+                                    </div>
+                                    <span style={{ fontWeight: '800', fontSize: '14px', color: pct >= 70 ? '#27c26c' : pct >= 40 ? '#fb7d5b' : '#ff4d4f', minWidth: '50px', textAlign: 'right' }}>
+                                      {result.score}/{result.max_score}
+                                    </span>
+                                  </div>
+                                </td>
+                                <td>
+                                  <span className={`badge ${result.result_level === 'elementary' ? 'badge-success' : result.result_level === 'beginner' ? 'badge-secondary' : 'badge-primary'}`}>
+                                    {result.result_level === 'starter' ? 'Starter' : result.result_level === 'beginner' ? 'Beginner' : 'Elementary'}
+                                  </span>
+                                </td>
+                                <td style={{ fontWeight: '700', fontSize: '14px' }}>{result.cefr}</td>
+                                <td>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>
+                                    <Clock size={12} />
+                                    <span>{Math.floor(result.time_total_sec / 60)}m {result.time_total_sec % 60}s</span>
+                                  </div>
+                                </td>
+                                <td style={{ textAlign: 'center' }}>
+                                  <button 
+                                    className="btn btn-primary btn-small"
+                                    onClick={() => setSelectedResult(result)}
+                                  >
+                                    <TrendingUp size={12} />
+                                    Chi tiết
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* ===== DETAIL VIEW ===== */}
+                  <div className="table-header-bar">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                      <button 
+                        className="btn btn-outline btn-small"
+                        onClick={() => setSelectedResult(null)}
+                      >
+                        ← Quay lại
+                      </button>
+                      <h3 className="table-title" style={{ margin: 0, flex: 1 }}>
+                        Kết quả: {getStudentName(selectedResult.student_id)}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Summary Cards */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', padding: '24px 32px', borderBottom: '1px solid var(--border)' }}>
+                    {/* Score card */}
+                    <div style={{ 
+                      padding: '20px', borderRadius: '14px', 
+                      background: 'linear-gradient(135deg, rgba(79,69,229,0.06), rgba(79,69,229,0.02))',
+                      border: '1px solid rgba(79,69,229,0.1)'
+                    }}>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Điểm số</div>
+                      <div style={{ fontSize: '28px', fontWeight: '800', color: 'var(--primary)' }}>
+                        {selectedResult.score}<span style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-muted)' }}>/{selectedResult.max_score}</span>
+                      </div>
+                      <div style={{ marginTop: '8px', height: '6px', background: '#f0eef5', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ 
+                          height: '100%', width: `${selectedResult.percentage || 0}%`, borderRadius: '3px',
+                          background: 'linear-gradient(90deg, #4d44b5, #7c6ff0)'
+                        }} />
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{selectedResult.percentage || 0}% đúng</div>
+                    </div>
+
+                    {/* Level card */}
+                    <div style={{ 
+                      padding: '20px', borderRadius: '14px',
+                      background: selectedResult.result_level === 'elementary' ? 'rgba(39,194,108,0.06)' : selectedResult.result_level === 'beginner' ? 'rgba(251,125,91,0.06)' : 'rgba(79,69,229,0.06)',
+                      border: `1px solid ${selectedResult.result_level === 'elementary' ? 'rgba(39,194,108,0.15)' : selectedResult.result_level === 'beginner' ? 'rgba(251,125,91,0.15)' : 'rgba(79,69,229,0.1)'}`
+                    }}>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Trình độ</div>
+                      <div style={{ fontSize: '22px', fontWeight: '800', color: selectedResult.result_level === 'elementary' ? '#27c26c' : selectedResult.result_level === 'beginner' ? '#fb7d5b' : '#4d44b5', textTransform: 'capitalize' }}>
+                        {selectedResult.result_level}
+                      </div>
+                      <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>CEFR: <strong>{selectedResult.cefr}</strong></div>
+                    </div>
+
+                    {/* Time card */}
+                    <div style={{ 
+                      padding: '20px', borderRadius: '14px',
+                      background: 'rgba(251,125,91,0.06)',
+                      border: '1px solid rgba(251,125,91,0.1)'
+                    }}>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Thời gian</div>
+                      <div style={{ fontSize: '28px', fontWeight: '800', color: '#fb7d5b' }}>
+                        {Math.floor(selectedResult.time_total_sec / 60)}<span style={{ fontSize: '14px', fontWeight: '600' }}> phút </span>{selectedResult.time_total_sec % 60}<span style={{ fontSize: '14px', fontWeight: '600' }}> giây</span>
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        Trung bình {Math.round(selectedResult.time_total_sec / (selectedResult.answers?.length || 1))}s/câu
+                      </div>
+                    </div>
+
+                    {/* Date card */}
+                    <div style={{ 
+                      padding: '20px', borderRadius: '14px',
+                      background: 'rgba(39,194,108,0.06)',
+                      border: '1px solid rgba(39,194,108,0.1)'
+                    }}>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ngày thi</div>
+                      <div style={{ fontSize: '18px', fontWeight: '700', color: '#27c26c' }}>
+                        {new Date(selectedResult.test_date).toLocaleDateString('vi-VN')}
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                        {new Date(selectedResult.test_date).toLocaleTimeString('vi-VN')}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mastery + Gaps + Recommendations */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', padding: '24px 32px' }}>
+                    {/* Mastery (left) */}
+                    <div>
+                      <h4 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <TrendingUp size={18} style={{ color: 'var(--primary)' }} />
+                        Mức thuần thục kỹ năng (BKT)
+                      </h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {selectedResult.mastery && Object.entries(selectedResult.mastery).map(([skillId, m]) => {
+                          const pct = Math.round(m.probability * 100);
+                          const color = m.status === 'mastered' ? '#27c26c' : m.status === 'learning' ? '#fb7d5b' : '#ff4d4f';
+                          return (
+                            <div key={skillId} style={{ 
+                              padding: '12px 16px', borderRadius: '10px',
+                              background: '#fdfcff', border: '1px solid var(--border)'
+                            }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                <div>
+                                  <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: '700', color: 'var(--primary)', marginRight: '6px' }}>{skillId}</span>
+                                  <span style={{ fontSize: '12px', color: 'var(--text-color)', fontWeight: '600' }}>{m.skill_name}</span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <span style={{ fontSize: '13px', fontWeight: '800', color }}>{pct}%</span>
+                                  <span style={{ 
+                                    fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px',
+                                    background: m.status === 'mastered' ? 'rgba(39,194,108,0.1)' : m.status === 'learning' ? 'rgba(251,125,91,0.1)' : 'rgba(255,77,79,0.1)',
+                                    color
+                                  }}>
+                                    {m.status === 'mastered' ? 'Thành thạo' : m.status === 'learning' ? 'Đang học' : 'Yếu'}
+                                  </span>
+                                </div>
+                              </div>
+                              <div style={{ height: '6px', background: '#f0eef5', borderRadius: '3px', overflow: 'hidden' }}>
+                                <div style={{ height: '100%', width: `${pct}%`, borderRadius: '3px', background: color, transition: 'width 0.5s ease' }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Gaps + Recommendations (right) */}
+                    <div>
+                      {/* Gaps */}
+                      <h4 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <AlertTriangle size={18} style={{ color: '#ff4d4f' }} />
+                        Lỗ hổng kiến thức ({selectedResult.gaps?.length || 0})
+                      </h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+                        {selectedResult.gaps?.map((gap, i) => (
+                          <div key={i} style={{ 
+                            padding: '12px 16px', borderRadius: '10px',
+                            background: gap.severity === 'high' ? 'rgba(255,77,79,0.04)' : 'rgba(251,125,91,0.04)',
+                            border: `1px solid ${gap.severity === 'high' ? 'rgba(255,77,79,0.15)' : 'rgba(251,125,91,0.15)'}`
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                              <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: '700', color: 'var(--primary)' }}>{gap.skill_id}</span>
+                              <span style={{ 
+                                fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px',
+                                background: gap.severity === 'high' ? 'rgba(255,77,79,0.12)' : 'rgba(251,125,91,0.12)',
+                                color: gap.severity === 'high' ? '#ff4d4f' : '#fb7d5b'
+                              }}>
+                                {gap.severity === 'high' ? 'Nghiêm trọng' : 'Trung bình'}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4' }}>{gap.reason}</div>
+                          </div>
+                        ))}
+                        {(!selectedResult.gaps || selectedResult.gaps.length === 0) && (
+                          <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>Không có lỗ hổng nào</div>
+                        )}
+                      </div>
+
+                      {/* Recommendations */}
+                      <h4 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Lightbulb size={18} style={{ color: '#fb7d5b' }} />
+                        Đề xuất học tập ({selectedResult.recommendations?.length || 0})
+                      </h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {selectedResult.recommendations?.map((rec, i) => (
+                          <div key={i} style={{ 
+                            padding: '12px 16px', borderRadius: '10px',
+                            background: rec.priority === 'high' ? 'rgba(251,125,91,0.04)' : 'rgba(79,69,229,0.04)',
+                            border: `1px solid ${rec.priority === 'high' ? 'rgba(251,125,91,0.15)' : 'rgba(79,69,229,0.1)'}`
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                              <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: '700', color: 'var(--primary)' }}>{rec.skill_id}</span>
+                              <span style={{ 
+                                fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px',
+                                background: rec.priority === 'high' ? 'rgba(251,125,91,0.12)' : 'rgba(79,69,229,0.08)',
+                                color: rec.priority === 'high' ? '#fb7d5b' : '#4d44b5'
+                              }}>
+                                {rec.priority === 'high' ? 'Ưu tiên cao' : 'Bình thường'}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '12px', color: 'var(--text-color)', lineHeight: '1.4' }}>{rec.action}</div>
+                          </div>
+                        ))}
+                        {(!selectedResult.recommendations || selectedResult.recommendations.length === 0) && (
+                          <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>Không có đề xuất nào</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Answers detail */}
+                  <div style={{ padding: '0 32px 24px' }}>
+                    <h4 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <FileText size={18} style={{ color: 'var(--primary)' }} />
+                      Chi tiết câu trả lời ({selectedResult.answers?.length || 0} câu)
+                    </h4>
+                    <div className="table-container">
+                      <table className="custom-table">
+                        <thead>
+                          <tr>
+                            <th style={{ width: '50px', textAlign: 'center' }}>STT</th>
+                            <th style={{ width: '100px' }}>Mã câu</th>
+                            <th style={{ width: '130px' }}>Kỹ năng</th>
+                            <th style={{ width: '80px', textAlign: 'center' }}>Trả lời</th>
+                            <th style={{ width: '80px', textAlign: 'center' }}>Kết quả</th>
+                            <th style={{ width: '80px', textAlign: 'center' }}>Thời gian</th>
+                            <th>Lỗi sai</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedResult.answers?.map((a, idx) => (
+                            <tr key={idx}>
+                              <td style={{ textAlign: 'center', fontWeight: '800', color: 'var(--primary)' }}>{idx + 1}</td>
+                              <td>
+                                <span style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: '700', color: 'var(--primary)' }}>{a.question_id}</span>
+                              </td>
+                              <td>
+                                <span className="badge badge-primary" style={{ fontSize: '10px' }}>{a.skill_id}</span>
+                              </td>
+                              <td style={{ textAlign: 'center', fontWeight: '700', fontSize: '15px' }}>
+                                {a.selected?.toUpperCase()}
+                              </td>
+                              <td style={{ textAlign: 'center' }}>
+                                <span style={{ 
+                                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                  width: '28px', height: '28px', borderRadius: '50%', fontWeight: '800', fontSize: '13px',
+                                  background: a.correct ? 'rgba(39,194,108,0.12)' : 'rgba(255,77,79,0.12)',
+                                  color: a.correct ? '#27c26c' : '#ff4d4f'
+                                }}>
+                                  {a.correct ? '✓' : '✗'}
+                                </span>
+                              </td>
+                              <td style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)' }}>
+                                {a.time_spent_sec}s
+                              </td>
+                              <td style={{ fontSize: '12px', color: a.error_tag ? '#ff4d4f' : 'var(--text-muted)' }}>
+                                {a.error_tag || '—'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ==========================================================
+              TAB: QUESTION BANK (Ngân hàng câu hỏi)
+              ========================================================== */}
+          {activeTab === 'questions' && (
+            <div className="animate-fade-in panel table-panel">
+              <div className="table-header-bar">
+                <h3 className="table-title">Ngân hàng câu hỏi ({questions.length} câu)</h3>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <select 
+                    value={questionSkillFilter} 
+                    onChange={e => setQuestionSkillFilter(e.target.value)}
+                    style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', fontWeight: '600' }}
+                  >
+                    <option value="">Tất cả kỹ năng</option>
+                    {[...new Set(questions.map(q => q.skill_id))].sort().map(sid => (
+                      <option key={sid} value={sid}>{sid}</option>
+                    ))}
+                  </select>
+                  <select 
+                    value={questionDiffFilter} 
+                    onChange={e => setQuestionDiffFilter(e.target.value)}
+                    style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', fontWeight: '600' }}
+                  >
+                    <option value="">Tất cả độ khó</option>
+                    <option value="easy">Dễ</option>
+                    <option value="medium">Trung bình</option>
+                    <option value="hard">Khó</option>
+                  </select>
+                </div>
+              </div>
+
+              {loading && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Đang tải dữ liệu...</div>}
+
+              {!loading && (
+                <div className="table-container">
+                  <table className="custom-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '90px' }}>Mã câu</th>
+                        <th>Câu hỏi</th>
+                        <th style={{ width: '140px' }}>Kỹ năng</th>
+                        <th style={{ width: '100px' }}>Độ khó</th>
+                        <th style={{ width: '80px' }}>Đáp án</th>
+                        <th style={{ width: '80px' }}>Loại</th>
+                        <th style={{ width: '100px', textAlign: 'center' }}>Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {questions
+                        .filter(q => {
+                          if (questionSearch) {
+                            const s = questionSearch.toLowerCase();
+                            if (!q.prompt?.text?.toLowerCase().includes(s) && 
+                                !q.skill_name?.toLowerCase().includes(s) &&
+                                !q.skill_id?.toLowerCase().includes(s) &&
+                                !q.question_id?.toLowerCase().includes(s)) return false;
+                          }
+                          if (questionSkillFilter && q.skill_id !== questionSkillFilter) return false;
+                          if (questionDiffFilter && q.difficulty !== questionDiffFilter) return false;
+                          return true;
+                        })
+                        .map(q => (
+                          <tr key={q.id}>
+                            <td>
+                              <span style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: '700', color: 'var(--primary)' }}>
+                                {q.question_id}
+                              </span>
+                            </td>
+                            <td>
+                              <div style={{ maxWidth: '350px' }}>
+                                <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '2px' }}>
+                                  {q.prompt?.text || '—'}
+                                </div>
+                                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                                  {q.options?.map(o => `${o.option_id}) ${o.label}`).join('  |  ')}
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <div>
+                                <span className="badge badge-primary" style={{ fontSize: '11px' }}>{q.skill_id}</span>
+                                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px', lineHeight: '1.2' }}>
+                                  {q.skill_name}
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`badge ${q.difficulty === 'easy' ? 'badge-success' : q.difficulty === 'hard' ? 'badge-danger' : 'badge-secondary'}`}>
+                                {q.difficulty === 'easy' ? 'Dễ' : q.difficulty === 'hard' ? 'Khó' : 'TB'}
+                              </span>
+                            </td>
+                            <td style={{ fontWeight: '800', color: '#27c26c', textAlign: 'center' }}>
+                              {q.correct_option_id}
+                            </td>
+                            <td>
+                              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                                {q.type === 'read_choice' ? 'Đọc' : 'Nghe'}
+                              </span>
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                                <button 
+                                  className="btn btn-primary btn-small"
+                                  style={{ padding: '4px 8px', fontSize: '11px' }}
+                                  onClick={() => setEditQuestionModal({ open: true, data: { ...q } })}
+                                >
+                                  Sửa
+                                </button>
+                                <button 
+                                  className="btn btn-danger btn-small"
+                                  style={{ padding: '4px 8px', fontSize: '11px' }}
+                                  onClick={() => handleDeleteQuestion(q.id)}
+                                >
+                                  Xóa
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                      ))}
+                      {questions.filter(q => {
+                        if (questionSearch) {
+                          const s = questionSearch.toLowerCase();
+                          if (!q.prompt?.text?.toLowerCase().includes(s) && 
+                              !q.skill_name?.toLowerCase().includes(s) &&
+                              !q.skill_id?.toLowerCase().includes(s)) return false;
+                        }
+                        if (questionSkillFilter && q.skill_id !== questionSkillFilter) return false;
+                        if (questionDiffFilter && q.difficulty !== questionDiffFilter) return false;
+                        return true;
+                      }).length === 0 && (
+                        <tr>
+                          <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
+                            Không tìm thấy câu hỏi nào.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ==========================================================
+              TAB: PLACEMENT TESTS (Danh sách bài test)
+              ========================================================== */}
+          {activeTab === 'placement-tests' && (
+            <div className="animate-fade-in panel table-panel">
+              {!selectedTest ? (
+                <>
+                  <div className="table-header-bar">
+                    <h3 className="table-title">Danh sách bài kiểm tra trình độ</h3>
+                  </div>
+
+                  {loading && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Đang tải dữ liệu...</div>}
+
+                  {!loading && (
+                    <div className="table-container">
+                      <table className="custom-table">
+                        <thead>
+                          <tr>
+                            <th style={{ width: '100px' }}>Mã bài</th>
+                            <th>Tên bài kiểm tra</th>
+                            <th>Số câu hỏi</th>
+                            <th>Chiến lược</th>
+                            <th style={{ width: '120px', textAlign: 'center' }}>Thao tác</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {placementTests.map(test => (
+                            <tr key={test.id}>
+                              <td>
+                                <span style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: '700', color: 'var(--primary)' }}>
+                                  {test.test_id}
+                                </span>
+                              </td>
+                              <td>
+                                <div>
+                                  <div style={{ fontSize: '14px', fontWeight: '700' }}>{test.title}</div>
+                                  {test.mascot && (
+                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                      {test.mascot.name} {test.mascot.icon === 'bee' ? '🐝' : '📖'}
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                              <td>
+                                <span className="badge badge-primary">
+                                  {test.adaptive_config?.questions_per_level 
+                                    ? Object.values(test.adaptive_config.questions_per_level).reduce((a, b) => a + b, 0)
+                                    : '?'} câu
+                                </span>
+                              </td>
+                              <td>
+                                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                                  {test.adaptive_config?.strategy === 'level_sequential' ? 'Tuyến tính theo level' : test.adaptive_config?.strategy || '—'}
+                                </span>
+                              </td>
+                              <td style={{ textAlign: 'center' }}>
+                                <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                                  <button 
+                                    className="btn btn-primary btn-small"
+                                    onClick={() => {
+                                      setSelectedTest(test);
+                                      fetchTestQuestions(test.id);
+                                    }}
+                                  >
+                                    <FileText size={12} />
+                                    Chi tiết
+                                  </button>
+                                  <button 
+                                    className="btn btn-outline btn-small"
+                                    onClick={() => setEditTestModal({ open: true, data: { ...test } })}
+                                  >
+                                    Sửa
+                                  </button>
+                                  <button 
+                                    className="btn btn-danger btn-small"
+                                    onClick={() => handleDeleteTest(test.id)}
+                                  >
+                                    Xóa
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                          {placementTests.length === 0 && (
+                            <tr>
+                              <td colSpan="5" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
+                                Chưa có bài test nào.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {/* Levels info */}
+                  {placementTests.length > 0 && placementTests[0].levels && (
+                    <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border)' }}>
+                      <h4 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '12px', color: 'var(--text-color)' }}>Cấp độ bài kiểm tra</h4>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                        {placementTests[0].levels.map(lvl => (
+                          <div key={lvl.level_id} style={{ 
+                            padding: '14px 16px', 
+                            borderRadius: '10px', 
+                            background: lvl.level_id === 'starter' ? '#e6e4f6' : lvl.level_id === 'beginner' ? '#fff2eb' : '#e1f6e8',
+                            border: '1px solid transparent'
+                          }}>
+                            <div style={{ fontSize: '13px', fontWeight: '800', color: lvl.level_id === 'starter' ? '#4d44b5' : lvl.level_id === 'beginner' ? '#fb7d5b' : '#27c26c' }}>
+                              {lvl.label}
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                              CEFR: {lvl.cefr_equivalent}
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', lineHeight: '1.3' }}>
+                              {lvl.description}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* Test Detail View */}
+                  <div className="table-header-bar">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                      <button 
+                        className="btn btn-outline btn-small"
+                        onClick={() => { setSelectedTest(null); setTestQuestions([]); }}
+                      >
+                        ← Quay lại
+                      </button>
+                      <h3 className="table-title" style={{ margin: 0, flex: 1 }}>
+                        {selectedTest.title} <span style={{ fontWeight: '400', fontSize: '13px', color: 'var(--text-muted)' }}>({testQuestions.length} câu hỏi)</span>
+                      </h3>
+                      <button 
+                        className="btn btn-primary btn-small"
+                        onClick={() => setShowAddQuestionModal(true)}
+                      >
+                        + Thêm câu hỏi
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="table-container">
+                    <table className="custom-table">
+                      <thead>
+                        <tr>
+                          <th style={{ width: '50px', textAlign: 'center' }}>STT</th>
+                          <th style={{ width: '140px' }}>Kỹ năng</th>
+                          <th>Câu hỏi</th>
+                          <th style={{ width: '80px' }}>Độ khó</th>
+                          <th style={{ width: '80px' }}>Đáp án</th>
+                          <th>Giải thích</th>
+                          <th style={{ width: '70px', textAlign: 'center' }}>Thao tác</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {testQuestions.map((q, idx) => (
+                          <tr key={q.id}>
+                            <td style={{ textAlign: 'center', fontWeight: '800', color: 'var(--primary)' }}>
+                              {idx + 1}
+                            </td>
+                            <td>
+                              <span className="badge badge-primary" style={{ fontSize: '11px' }}>{q.skill_id}</span>
+                              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                {q.skill_name}
+                              </div>
+                            </td>
+                            <td>
+                              <div style={{ fontSize: '13px', fontWeight: '600' }}>
+                                {q.prompt?.text || '—'}
+                              </div>
+                              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                {q.options?.map(o => (
+                                  <span key={o.option_id} style={{ 
+                                    marginRight: '8px',
+                                    color: o.option_id === q.correct_option_id ? '#27c26c' : 'var(--text-muted)',
+                                    fontWeight: o.option_id === q.correct_option_id ? '700' : '400'
+                                  }}>
+                                    {o.option_id}) {o.label}
+                                  </span>
+                                ))}
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`badge ${q.difficulty === 'easy' ? 'badge-success' : q.difficulty === 'hard' ? 'badge-danger' : 'badge-secondary'}`}>
+                                {q.difficulty === 'easy' ? 'Dễ' : q.difficulty === 'hard' ? 'Khó' : 'TB'}
+                              </span>
+                            </td>
+                            <td style={{ fontWeight: '800', color: '#27c26c', textAlign: 'center', fontSize: '15px' }}>
+                              {q.correct_option_id}
+                            </td>
+                            <td>
+                              <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4', maxWidth: '250px' }}>
+                                {q.explanation || '—'}
+                              </div>
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <button 
+                                className="btn btn-danger btn-small"
+                                style={{ padding: '4px 8px', fontSize: '11px' }}
+                                onClick={() => handleRemoveQuestionFromTest(selectedTest.id, q.id)}
+                              >
+                                Xóa
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Scoring info */}
+                  {selectedTest.adaptive_config && (
+                    <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: '24px', alignItems: 'center' }}>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                        <strong>Chiến lược:</strong> {selectedTest.adaptive_config.strategy === 'level_sequential' ? 'Tuyến tính theo level' : selectedTest.adaptive_config.strategy}
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                        <strong>Số câu/level:</strong> {Object.entries(selectedTest.adaptive_config.questions_per_level || {}).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
         </main>
       </div>
 
@@ -1283,6 +2200,454 @@ function DashboardApp({ user, logout }) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================================
+          MODALS: QUESTION (EDIT)
+          ========================================================== */}
+      {editQuestionModal.open && editQuestionModal.data && (
+        <div className="modal-overlay">
+          <div className="modal-card animate-fade-in" style={{ maxWidth: '640px' }}>
+            <button 
+              className="modal-close-btn" 
+              onClick={() => setEditQuestionModal({ open: false, data: null })}
+            >
+              <X size={24} />
+            </button>
+            <h3 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '20px' }}>
+              Sửa câu hỏi: {editQuestionModal.data.question_id}
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Mã câu (question_id)</label>
+                  <input 
+                    type="text" 
+                    value={editQuestionModal.data.question_id || ''}
+                    onChange={e => setEditQuestionModal({ ...editQuestionModal, data: { ...editQuestionModal.data, question_id: e.target.value } })}
+                    style={{ width: '100%' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Loại</label>
+                  <select 
+                    value={editQuestionModal.data.type || 'read_choice'}
+                    onChange={e => setEditQuestionModal({ ...editQuestionModal, data: { ...editQuestionModal.data, type: e.target.value } })}
+                    style={{ width: '100%' }}
+                  >
+                    <option value="read_choice">Đọc</option>
+                    <option value="listen_choice">Nghe</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Skill ID</label>
+                  <input 
+                    type="text" 
+                    value={editQuestionModal.data.skill_id || ''}
+                    onChange={e => setEditQuestionModal({ ...editQuestionModal, data: { ...editQuestionModal.data, skill_id: e.target.value } })}
+                    style={{ width: '100%' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Tên kỹ năng</label>
+                  <input 
+                    type="text" 
+                    value={editQuestionModal.data.skill_name || ''}
+                    onChange={e => setEditQuestionModal({ ...editQuestionModal, data: { ...editQuestionModal.data, skill_name: e.target.value } })}
+                    style={{ width: '100%' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Độ khó</label>
+                  <select 
+                    value={editQuestionModal.data.difficulty || 'medium'}
+                    onChange={e => setEditQuestionModal({ ...editQuestionModal, data: { ...editQuestionModal.data, difficulty: e.target.value } })}
+                    style={{ width: '100%' }}
+                  >
+                    <option value="easy">Dễ</option>
+                    <option value="medium">Trung bình</option>
+                    <option value="hard">Khó</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Đáp án đúng</label>
+                  <select 
+                    value={editQuestionModal.data.correct_option_id || 'A'}
+                    onChange={e => setEditQuestionModal({ ...editQuestionModal, data: { ...editQuestionModal.data, correct_option_id: e.target.value } })}
+                    style={{ width: '100%' }}
+                  >
+                    {['A','B','C','D'].map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Nội dung câu hỏi (prompt.text)</label>
+                <textarea 
+                  rows={2}
+                  value={editQuestionModal.data.prompt?.text || ''}
+                  onChange={e => setEditQuestionModal({ 
+                    ...editQuestionModal, 
+                    data: { ...editQuestionModal.data, prompt: { ...editQuestionModal.data.prompt, text: e.target.value } }
+                  })}
+                  style={{ width: '100%', resize: 'vertical' }}
+                />
+              </div>
+
+              {/* Options */}
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '8px', display: 'block' }}>Các lựa chọn (A, B, C, D)</label>
+                {(editQuestionModal.data.options || []).map((opt, idx) => (
+                  <div key={opt.option_id} style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'center' }}>
+                    <span style={{ fontWeight: '800', fontSize: '13px', color: 'var(--primary)', width: '20px' }}>{opt.option_id})</span>
+                    <input 
+                      type="text" 
+                      value={opt.label}
+                      onChange={e => {
+                        const newOpts = [...editQuestionModal.data.options];
+                        newOpts[idx] = { ...newOpts[idx], label: e.target.value };
+                        setEditQuestionModal({ ...editQuestionModal, data: { ...editQuestionModal.data, options: newOpts } });
+                      }}
+                      style={{ flex: 1 }}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Giải thích</label>
+                <textarea 
+                  rows={2}
+                  value={editQuestionModal.data.explanation || ''}
+                  onChange={e => setEditQuestionModal({ ...editQuestionModal, data: { ...editQuestionModal.data, explanation: e.target.value } })}
+                  style={{ width: '100%', resize: 'vertical' }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
+                <button 
+                  className="btn btn-outline"
+                  onClick={() => setEditQuestionModal({ open: false, data: null })}
+                >
+                  Hủy
+                </button>
+                <button 
+                  className="btn btn-primary"
+                  onClick={() => handleUpdateQuestion(editQuestionModal.data.id, editQuestionModal.data)}
+                >
+                  Lưu lại
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================================
+          MODALS: PLACEMENT TEST (EDIT)
+          ========================================================== */}
+      {editTestModal.open && editTestModal.data && (
+        <div className="modal-overlay">
+          <div className="modal-card animate-fade-in" style={{ maxWidth: '560px' }}>
+            <button 
+              className="modal-close-btn" 
+              onClick={() => setEditTestModal({ open: false, data: null })}
+            >
+              <X size={24} />
+            </button>
+            <h3 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '20px' }}>
+              Sửa bài test: {editTestModal.data.test_id}
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Tên bài kiểm tra</label>
+                <input 
+                  type="text" 
+                  value={editTestModal.data.title || ''}
+                  onChange={e => setEditTestModal({ ...editTestModal, data: { ...editTestModal.data, title: e.target.value } })}
+                  style={{ width: '100%' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Mascot (icon + tên)</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <input 
+                    type="text" 
+                    value={editTestModal.data.mascot?.icon || ''}
+                    placeholder="bee hoặc book"
+                    onChange={e => setEditTestModal({ 
+                      ...editTestModal, 
+                      data: { ...editTestModal.data, mascot: { ...editTestModal.data.mascot, icon: e.target.value } }
+                    })}
+                    style={{ width: '100%' }}
+                  />
+                  <input 
+                    type="text" 
+                    value={editTestModal.data.mascot?.name || ''}
+                    placeholder="Tên mascot"
+                    onChange={e => setEditTestModal({ 
+                      ...editTestModal, 
+                      data: { ...editTestModal.data, mascot: { ...editTestModal.data.mascot, name: e.target.value } }
+                    })}
+                    style={{ width: '100%' }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Chiến lược thi</label>
+                <select 
+                  value={editTestModal.data.adaptive_config?.strategy || 'level_sequential'}
+                  onChange={e => setEditTestModal({ 
+                    ...editTestModal, 
+                    data: { ...editTestModal.data, adaptive_config: { ...editTestModal.data.adaptive_config, strategy: e.target.value } }
+                  })}
+                  style={{ width: '100%' }}
+                >
+                  <option value="level_sequential">Tuyến tính theo level</option>
+                  <option value="adaptive">Thích ứng (Adaptive)</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Số câu hỏi mỗi level</label>
+                {editTestModal.data.levels && editTestModal.data.levels.map(lvl => {
+                  const qpl = editTestModal.data.adaptive_config?.questions_per_level || {};
+                  return (
+                    <div key={lvl.level_id} style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: '700', minWidth: '100px' }}>{lvl.label}</span>
+                      <input 
+                        type="number" 
+                        min={1}
+                        max={20}
+                        value={qpl[lvl.level_id] || 5}
+                        onChange={e => {
+                          const newQpl = { ...qpl, [lvl.level_id]: parseInt(e.target.value) || 5 };
+                          setEditTestModal({ 
+                            ...editTestModal, 
+                            data: { ...editTestModal.data, adaptive_config: { ...editTestModal.data.adaptive_config, questions_per_level: newQpl } }
+                          });
+                        }}
+                        style={{ width: '60px' }}
+                      />
+                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>câu</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
+                <button 
+                  className="btn btn-outline"
+                  onClick={() => setEditTestModal({ open: false, data: null })}
+                >
+                  Hủy
+                </button>
+                <button 
+                  className="btn btn-primary"
+                  onClick={() => handleUpdateTest(editTestModal.data.id, editTestModal.data)}
+                >
+                  Lưu lại
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================================
+          MODALS: ADD QUESTION TO PLACEMENT TEST
+          ========================================================== */}
+      {showAddQuestionModal && selectedTest && (
+        <div className="modal-overlay">
+          <div className="modal-card animate-fade-in" style={{ maxWidth: '820px', maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}>
+            <button 
+              className="modal-close-btn" 
+              onClick={() => setShowAddQuestionModal(false)}
+            >
+              <X size={24} />
+            </button>
+            <h3 style={{ fontSize: '20px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px' }}>
+              Chọn câu hỏi cho bài test
+            </h3>
+
+            {/* Filters */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+              <input 
+                type="text"
+                placeholder="Tìm kiếm câu hỏi..."
+                value={addQuestionSearch}
+                onChange={e => setAddQuestionSearch(e.target.value)}
+                style={{ flex: 1, minWidth: '200px', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px' }}
+              />
+              <select 
+                value={addQuestionSkillFilter}
+                onChange={e => setAddQuestionSkillFilter(e.target.value)}
+                style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', fontWeight: '600' }}
+              >
+                <option value="">Tất cả kỹ năng</option>
+                {[...new Set(questions.map(q => q.skill_id))].sort().map(sid => (
+                  <option key={sid} value={sid}>{sid}</option>
+                ))}
+              </select>
+              <select 
+                value={addQuestionDiffFilter}
+                onChange={e => setAddQuestionDiffFilter(e.target.value)}
+                style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', fontWeight: '600' }}
+              >
+                <option value="">Tất cả độ khó</option>
+                <option value="easy">Dễ</option>
+                <option value="medium">Trung bình</option>
+                <option value="hard">Khó</option>
+              </select>
+            </div>
+
+            {/* Current test question IDs */}
+            {(() => {
+              const currentIds = new Set(testQuestions.map(q => q.id));
+              const filtered = questions.filter(q => {
+                if (addQuestionSearch) {
+                  const s = addQuestionSearch.toLowerCase();
+                  if (!q.prompt?.text?.toLowerCase().includes(s) && 
+                      !q.skill_name?.toLowerCase().includes(s) &&
+                      !q.skill_id?.toLowerCase().includes(s) &&
+                      !q.question_id?.toLowerCase().includes(s)) return false;
+                }
+                if (addQuestionSkillFilter && q.skill_id !== addQuestionSkillFilter) return false;
+                if (addQuestionDiffFilter && q.difficulty !== addQuestionDiffFilter) return false;
+                return true;
+              });
+              const selectedIds = new Set(filtered.filter(q => currentIds.has(q.id)).map(q => q.id));
+
+              return (
+                <>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                    Đang chọn <strong style={{ color: 'var(--primary)' }}>{currentIds.size}</strong> câu hỏi | Hiển thị <strong>{filtered.length}</strong> câu
+                  </div>
+
+                  {/* Question list with checkboxes */}
+                  <div style={{ flex: 1, overflowY: 'auto', border: '1px solid var(--border)', borderRadius: '8px' }}>
+                    <table className="custom-table" style={{ margin: 0 }}>
+                      <thead>
+                        <tr>
+                          <th style={{ width: '40px', textAlign: 'center' }}>
+                            <input 
+                              type="checkbox"
+                              checked={filtered.length > 0 && filtered.every(q => currentIds.has(q.id))}
+                              onChange={e => {
+                                if (e.target.checked) {
+                                  const allIds = [...currentIds, ...filtered.map(q => q.id)];
+                                  handleSaveTestQuestions(selectedTest.id, [...new Set(allIds)]);
+                                } else {
+                                  const keepIds = [...currentIds].filter(id => !filtered.some(q => q.id === id));
+                                  handleSaveTestQuestions(selectedTest.id, keepIds);
+                                }
+                              }}
+                            />
+                          </th>
+                          <th style={{ width: '90px' }}>Mã câu</th>
+                          <th>Câu hỏi</th>
+                          <th style={{ width: '120px' }}>Kỹ năng</th>
+                          <th style={{ width: '80px' }}>Độ khó</th>
+                          <th style={{ width: '60px' }}>Đáp án</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filtered.map(q => {
+                          const isInTest = currentIds.has(q.id);
+                          return (
+                            <tr 
+                              key={q.id}
+                              style={{ 
+                                background: isInTest ? 'rgba(79, 69, 229, 0.04)' : 'transparent',
+                                cursor: 'pointer'
+                              }}
+                              onClick={() => {
+                                let newIds;
+                                if (isInTest) {
+                                  newIds = [...currentIds].filter(id => id !== q.id);
+                                } else {
+                                  newIds = [...currentIds, q.id];
+                                }
+                                handleSaveTestQuestions(selectedTest.id, newIds);
+                              }}
+                            >
+                              <td style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                                <input 
+                                  type="checkbox"
+                                  checked={isInTest}
+                                  onChange={() => {
+                                    let newIds;
+                                    if (isInTest) {
+                                      newIds = [...currentIds].filter(id => id !== q.id);
+                                    } else {
+                                      newIds = [...currentIds, q.id];
+                                    }
+                                    handleSaveTestQuestions(selectedTest.id, newIds);
+                                  }}
+                                />
+                              </td>
+                              <td>
+                                <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: '700', color: 'var(--primary)' }}>
+                                  {q.question_id}
+                                </span>
+                              </td>
+                              <td>
+                                <div style={{ maxWidth: '300px' }}>
+                                  <div style={{ fontSize: '12px', fontWeight: '600', marginBottom: '2px' }}>
+                                    {q.prompt?.text || '—'}
+                                  </div>
+                                  <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>
+                                    {q.options?.map(o => `${o.option_id}) ${o.label}`).join('  |  ')}
+                                  </div>
+                                </div>
+                              </td>
+                              <td>
+                                <span className="badge badge-primary" style={{ fontSize: '10px' }}>{q.skill_id}</span>
+                              </td>
+                              <td>
+                                <span className={`badge ${q.difficulty === 'easy' ? 'badge-success' : q.difficulty === 'hard' ? 'badge-danger' : 'badge-secondary'}`}>
+                                  {q.difficulty === 'easy' ? 'Dễ' : q.difficulty === 'hard' ? 'Khó' : 'TB'}
+                                </span>
+                              </td>
+                              <td style={{ fontWeight: '800', color: '#27c26c', textAlign: 'center' }}>
+                                {q.correct_option_id}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        {filtered.length === 0 && (
+                          <tr>
+                            <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
+                              Không tìm thấy câu hỏi nào.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              );
+            })()}
+
+            {/* Footer */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
+              <button 
+                className="btn btn-outline"
+                onClick={() => setShowAddQuestionModal(false)}
+              >
+                Đóng
+              </button>
+            </div>
           </div>
         </div>
       )}

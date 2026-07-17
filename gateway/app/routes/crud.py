@@ -1,4 +1,4 @@
-"""CRUD routes for Roles, Students, Teachers, Rankings, and Survey Evaluations."""
+"""CRUD routes for Roles, Students, Teachers, Rankings, Questions, Placement Tests, and Test Results."""
 from datetime import datetime
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -7,7 +7,10 @@ from sqlalchemy import select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.connector import get_session
-from db.models import Role, Student, Teacher, Ranking, SurveyEvaluation
+from db.models import (
+    Role, Student, Teacher, Ranking,
+    Question, PlacementTest, PlacementTestQuestion, StudentTestResult,
+)
 from app.auth import get_current_user, require_role
 
 router = APIRouter(prefix="/api", tags=["CRUD Operations"])
@@ -27,24 +30,6 @@ class RoleCreate(RoleBase):
 
 class RoleResponse(RoleBase):
     id: int
-    class Config:
-        from_attributes = True
-
-
-# Survey Evaluation Schemas
-class SurveyBase(BaseModel):
-    years_studying_english: int
-    learning_environment: Optional[str] = None
-    self_assessment_level: Optional[str] = None
-    learning_goal: Optional[str] = None
-
-class SurveyCreate(SurveyBase):
-    student_id: int
-
-class SurveyResponse(SurveyBase):
-    id: int
-    student_id: int
-    created_at: datetime
     class Config:
         from_attributes = True
 
@@ -89,7 +74,7 @@ class StudentResponse(StudentBase):
     id: int
     created_at: datetime
     ranking: Optional[RankingResponse] = None
-    surveys: List[SurveyResponse] = []
+    test_results: List["TestResultResponse"] = []
     class Config:
         from_attributes = True
 
@@ -112,6 +97,59 @@ class TeacherUpdate(BaseModel):
 
 class TeacherResponse(TeacherBase):
     id: int
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+
+# Question Schemas
+class QuestionResponse(BaseModel):
+    id: int
+    question_id: str
+    type: str
+    instruction_label: str
+    skill_id: str
+    skill_name: str
+    difficulty: str
+    purpose: str
+    prompt: Optional[dict] = None
+    options: Optional[list] = None
+    correct_option_id: str
+    explanation: Optional[str] = None
+    class Config:
+        from_attributes = True
+
+
+# Placement Test Schemas
+class PlacementTestResponse(BaseModel):
+    id: int
+    test_id: str
+    title: str
+    mascot: Optional[dict] = None
+    steps: Optional[list] = None
+    levels: Optional[list] = None
+    adaptive_config: Optional[dict] = None
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+
+# Test Result Schemas
+class TestResultResponse(BaseModel):
+    id: int
+    student_id: int
+    test_id: int
+    answers: Optional[list] = None
+    score: int
+    max_score: int
+    percentage: float
+    result_level: str
+    cefr: str
+    time_total_sec: int
+    mastery: Optional[dict] = None
+    gaps: Optional[list] = None
+    recommendations: Optional[list] = None
+    test_date: datetime
     created_at: datetime
     class Config:
         from_attributes = True
@@ -175,8 +213,8 @@ async def get_students(
     for s in students:
         rank_res = await db.execute(select(Ranking).where(Ranking.student_id == s.id))
         ranking_obj = rank_res.scalar_one_or_none()
-        survey_res = await db.execute(select(SurveyEvaluation).where(SurveyEvaluation.student_id == s.id))
-        surveys_obj = list(survey_res.scalars().all())
+        tr_res = await db.execute(select(StudentTestResult).where(StudentTestResult.student_id == s.id))
+        test_results_obj = list(tr_res.scalars().all())
         
         student_list.append({
             "id": s.id,
@@ -186,7 +224,7 @@ async def get_students(
             "role_id": s.role_id,
             "created_at": s.created_at,
             "ranking": ranking_obj,
-            "surveys": surveys_obj
+            "test_results": test_results_obj,
         })
     return student_list
 
@@ -208,8 +246,8 @@ async def get_student(
     rank_res = await db.execute(select(Ranking).where(Ranking.student_id == student.id))
     ranking_obj = rank_res.scalar_one_or_none()
     
-    survey_res = await db.execute(select(SurveyEvaluation).where(SurveyEvaluation.student_id == student.id))
-    surveys_obj = list(survey_res.scalars().all())
+    tr_res = await db.execute(select(StudentTestResult).where(StudentTestResult.student_id == student.id))
+    test_results_obj = list(tr_res.scalars().all())
     
     return {
         "id": student.id,
@@ -219,7 +257,7 @@ async def get_student(
         "role_id": student.role_id,
         "created_at": student.created_at,
         "ranking": ranking_obj,
-        "surveys": surveys_obj
+        "test_results": test_results_obj,
     }
 
 @router.post("/students", response_model=StudentResponse, status_code=status.HTTP_201_CREATED)
@@ -256,7 +294,7 @@ async def create_student(
         "role_id": db_student.role_id,
         "created_at": db_student.created_at,
         "ranking": ranking_obj,
-        "surveys": []
+        "test_results": [],
     }
 
 @router.put("/students/{student_id}", response_model=StudentResponse)
@@ -281,8 +319,8 @@ async def update_student(
     # Reload relationships
     rank_res = await db.execute(select(Ranking).where(Ranking.student_id == student.id))
     ranking_obj = rank_res.scalar_one_or_none()
-    survey_res = await db.execute(select(SurveyEvaluation).where(SurveyEvaluation.student_id == student.id))
-    surveys_obj = list(survey_res.scalars().all())
+    tr_res = await db.execute(select(StudentTestResult).where(StudentTestResult.student_id == student.id))
+    test_results_obj = list(tr_res.scalars().all())
     
     return {
         "id": student.id,
@@ -292,7 +330,7 @@ async def update_student(
         "role_id": student.role_id,
         "created_at": student.created_at,
         "ranking": ranking_obj,
-        "surveys": surveys_obj
+        "test_results": test_results_obj,
     }
 
 @router.delete("/students/{student_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -478,57 +516,265 @@ async def delete_ranking(
 
 
 # =====================================================================
-# API ENDPOINTS: SURVEY EVALUATIONS (Khảo sát)
+# API ENDPOINTS: QUESTIONS (Ngân hàng câu hỏi)
 # =====================================================================
 
-@router.get("/surveys", response_model=List[SurveyResponse])
-async def get_surveys(
+@router.get("/questions", response_model=List[QuestionResponse])
+async def get_questions(
+    skill_id: Optional[str] = None,
+    difficulty: Optional[str] = None,
     db: AsyncSession = Depends(get_session),
     _user: dict = Depends(get_current_user),
 ):
-    result = await db.execute(select(SurveyEvaluation))
+    query = select(Question)
+    if skill_id:
+        query = query.where(Question.skill_id == skill_id)
+    if difficulty:
+        query = query.where(Question.difficulty == difficulty)
+    result = await db.execute(query)
     return result.scalars().all()
 
-@router.get("/surveys/{survey_id}", response_model=SurveyResponse)
-async def get_survey(
-    survey_id: int,
+@router.get("/questions/{question_id}", response_model=QuestionResponse)
+async def get_question(
+    question_id: int,
     db: AsyncSession = Depends(get_session),
     _user: dict = Depends(get_current_user),
 ):
-    result = await db.execute(select(SurveyEvaluation).where(SurveyEvaluation.id == survey_id))
-    survey = result.scalar_one_or_none()
-    if not survey:
-        raise HTTPException(status_code=404, detail="Survey evaluation not found")
-    return survey
+    result = await db.execute(select(Question).where(Question.id == question_id))
+    question = result.scalar_one_or_none()
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+    return question
 
-@router.post("/surveys", response_model=SurveyResponse, status_code=status.HTTP_201_CREATED)
-async def create_survey(
-    survey: SurveyCreate,
+
+# Question Update/Delete Schemas
+class QuestionUpdate(BaseModel):
+    question_id: Optional[str] = None
+    type: Optional[str] = None
+    instruction_label: Optional[str] = None
+    skill_id: Optional[str] = None
+    skill_name: Optional[str] = None
+    difficulty: Optional[str] = None
+    purpose: Optional[str] = None
+    prompt: Optional[dict] = None
+    options: Optional[list] = None
+    correct_option_id: Optional[str] = None
+    explanation: Optional[str] = None
+
+
+@router.put("/questions/{question_id}", response_model=QuestionResponse)
+async def update_question(
+    question_id: int,
+    data: QuestionUpdate,
     db: AsyncSession = Depends(get_session),
-    _user: dict = Depends(get_current_user),
+    _admin: dict = Depends(require_role("admin")),
 ):
-    # Check if student exists
-    std_res = await db.execute(select(Student).where(Student.id == survey.student_id))
-    if not std_res.scalar_one_or_none():
-        raise HTTPException(status_code=404, detail="Student not found")
-        
-    db_survey = SurveyEvaluation(
-        student_id=survey.student_id,
-        years_studying_english=survey.years_studying_english,
-        learning_environment=survey.learning_environment,
-        self_assessment_level=survey.self_assessment_level,
-        learning_goal=survey.learning_goal
-    )
-    db.add(db_survey)
+    result = await db.execute(select(Question).where(Question.id == question_id))
+    question = result.scalar_one_or_none()
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+
+    update_data = data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(question, key, value)
+
     await db.commit()
-    await db.refresh(db_survey)
-    return db_survey
+    await db.refresh(question)
+    return question
 
-@router.get("/surveys/student/{student_id}", response_model=List[SurveyResponse])
-async def get_student_surveys(
+
+@router.delete("/questions/{question_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_question(
+    question_id: int,
+    db: AsyncSession = Depends(get_session),
+    _admin: dict = Depends(require_role("admin")),
+):
+    result = await db.execute(select(Question).where(Question.id == question_id))
+    question = result.scalar_one_or_none()
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+    # Delete related placement_test_questions first
+    await db.execute(delete(PlacementTestQuestion).where(PlacementTestQuestion.question_id == question_id))
+    await db.delete(question)
+    await db.commit()
+    return None
+
+
+# =====================================================================
+# API ENDPOINTS: PLACEMENT TESTS
+# =====================================================================
+
+@router.get("/placement-tests", response_model=List[PlacementTestResponse])
+async def get_placement_tests(
+    db: AsyncSession = Depends(get_session),
+    _user: dict = Depends(get_current_user),
+):
+    result = await db.execute(select(PlacementTest))
+    return result.scalars().all()
+
+@router.get("/placement-tests/{test_id}", response_model=PlacementTestResponse)
+async def get_placement_test(
+    test_id: int,
+    db: AsyncSession = Depends(get_session),
+    _user: dict = Depends(get_current_user),
+):
+    result = await db.execute(select(PlacementTest).where(PlacementTest.id == test_id))
+    test = result.scalar_one_or_none()
+    if not test:
+        raise HTTPException(status_code=404, detail="Placement test not found")
+    return test
+
+@router.get("/placement-tests/{test_id}/questions", response_model=List[QuestionResponse])
+async def get_placement_test_questions(
+    test_id: int,
+    db: AsyncSession = Depends(get_session),
+    _user: dict = Depends(get_current_user),
+):
+    # Get test
+    test_res = await db.execute(select(PlacementTest).where(PlacementTest.id == test_id))
+    test = test_res.scalar_one_or_none()
+    if not test:
+        raise HTTPException(status_code=404, detail="Placement test not found")
+    
+    # Get linked questions in order
+    links = await db.execute(
+        select(PlacementTestQuestion)
+        .where(PlacementTestQuestion.test_id == test_id)
+        .order_by(PlacementTestQuestion.order_num)
+    )
+    link_list = links.scalars().all()
+    
+    questions = []
+    for link in link_list:
+        q_res = await db.execute(select(Question).where(Question.id == link.question_id))
+        q = q_res.scalar_one_or_none()
+        if q:
+            questions.append(q)
+    return questions
+
+
+# Placement Test Update/Delete Schemas
+class PlacementTestUpdate(BaseModel):
+    title: Optional[str] = None
+    mascot: Optional[dict] = None
+    steps: Optional[list] = None
+    levels: Optional[list] = None
+    adaptive_config: Optional[dict] = None
+
+
+@router.put("/placement-tests/{test_id}", response_model=PlacementTestResponse)
+async def update_placement_test(
+    test_id: int,
+    data: PlacementTestUpdate,
+    db: AsyncSession = Depends(get_session),
+    _admin: dict = Depends(require_role("admin")),
+):
+    result = await db.execute(select(PlacementTest).where(PlacementTest.id == test_id))
+    test = result.scalar_one_or_none()
+    if not test:
+        raise HTTPException(status_code=404, detail="Placement test not found")
+
+    update_data = data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(test, key, value)
+
+    await db.commit()
+    await db.refresh(test)
+    return test
+
+
+@router.delete("/placement-tests/{test_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_placement_test(
+    test_id: int,
+    db: AsyncSession = Depends(get_session),
+    _admin: dict = Depends(require_role("admin")),
+):
+    result = await db.execute(select(PlacementTest).where(PlacementTest.id == test_id))
+    test = result.scalar_one_or_none()
+    if not test:
+        raise HTTPException(status_code=404, detail="Placement test not found")
+    # Delete related links first
+    await db.execute(delete(PlacementTestQuestion).where(PlacementTestQuestion.test_id == test_id))
+    await db.delete(test)
+    await db.commit()
+    return None
+
+
+@router.put("/placement-tests/{test_id}/questions", response_model=List[QuestionResponse])
+async def update_placement_test_questions(
+    test_id: int,
+    question_ids: List[int],
+    db: AsyncSession = Depends(get_session),
+    _admin: dict = Depends(require_role("admin")),
+):
+    """Replace all questions in a placement test with a new ordered list."""
+    result = await db.execute(select(PlacementTest).where(PlacementTest.id == test_id))
+    test = result.scalar_one_or_none()
+    if not test:
+        raise HTTPException(status_code=404, detail="Placement test not found")
+
+    # Delete old links
+    await db.execute(delete(PlacementTestQuestion).where(PlacementTestQuestion.test_id == test_id))
+
+    # Create new links
+    for idx, q_id in enumerate(question_ids):
+        link = PlacementTestQuestion(test_id=test_id, question_id=q_id, order_num=idx + 1)
+        db.add(link)
+
+    await db.commit()
+
+    # Return updated questions
+    links = await db.execute(
+        select(PlacementTestQuestion)
+        .where(PlacementTestQuestion.test_id == test_id)
+        .order_by(PlacementTestQuestion.order_num)
+    )
+    questions = []
+    for link in links.scalars().all():
+        q_res = await db.execute(select(Question).where(Question.id == link.question_id))
+        q = q_res.scalar_one_or_none()
+        if q:
+            questions.append(q)
+    return questions
+
+
+# =====================================================================
+# API ENDPOINTS: TEST RESULTS (Kết quả bài kiểm tra)
+# =====================================================================
+
+@router.get("/test-results", response_model=List[TestResultResponse])
+async def get_test_results(
+    student_id: Optional[int] = None,
+    db: AsyncSession = Depends(get_session),
+    _user: dict = Depends(get_current_user),
+):
+    query = select(StudentTestResult)
+    if student_id:
+        query = query.where(StudentTestResult.student_id == student_id)
+    result = await db.execute(query.order_by(StudentTestResult.test_date.desc()))
+    return result.scalars().all()
+
+@router.get("/test-results/{result_id}", response_model=TestResultResponse)
+async def get_test_result(
+    result_id: int,
+    db: AsyncSession = Depends(get_session),
+    _user: dict = Depends(get_current_user),
+):
+    result = await db.execute(select(StudentTestResult).where(StudentTestResult.id == result_id))
+    test_result = result.scalar_one_or_none()
+    if not test_result:
+        raise HTTPException(status_code=404, detail="Test result not found")
+    return test_result
+
+@router.get("/test-results/student/{student_id}", response_model=List[TestResultResponse])
+async def get_student_test_results(
     student_id: int,
     db: AsyncSession = Depends(get_session),
     _user: dict = Depends(get_current_user),
 ):
-    result = await db.execute(select(SurveyEvaluation).where(SurveyEvaluation.student_id == student_id))
+    result = await db.execute(
+        select(StudentTestResult)
+        .where(StudentTestResult.student_id == student_id)
+        .order_by(StudentTestResult.test_date.desc())
+    )
     return list(result.scalars().all())

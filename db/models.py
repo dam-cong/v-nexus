@@ -1,7 +1,7 @@
 """SQLAlchemy ORM Models representing the database schema."""
 from datetime import datetime
 from typing import Optional
-from sqlalchemy import DateTime, Integer, String, Text, ForeignKey, func
+from sqlalchemy import DateTime, Integer, String, Text, ForeignKey, JSON, UniqueConstraint, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -59,7 +59,7 @@ class Student(Base):
     # Relationships
     role: Mapped["Role"] = relationship("Role", back_populates="students")
     ranking: Mapped[Optional["Ranking"]] = relationship("Ranking", back_populates="student", cascade="all, delete-orphan")
-    surveys: Mapped[list["SurveyEvaluation"]] = relationship("SurveyEvaluation", back_populates="student", cascade="all, delete-orphan")
+    test_results: Mapped[list["StudentTestResult"]] = relationship("StudentTestResult", back_populates="student", cascade="all, delete-orphan")
 
 
 class Ranking(Base):
@@ -75,16 +75,77 @@ class Ranking(Base):
     student: Mapped["Student"] = relationship("Student", back_populates="ranking")
 
 
-class SurveyEvaluation(Base):
-    __tablename__ = "survey_evaluations"
+class Question(Base):
+    __tablename__ = "questions"
+    __table_args__ = (UniqueConstraint("question_id", name="uq_question_id"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    student_id: Mapped[int] = mapped_column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
-    years_studying_english: Mapped[int] = mapped_column(Integer, default=0)
-    learning_environment: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    self_assessment_level: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    learning_goal: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    question_id: Mapped[str] = mapped_column(String(50), nullable=False)
+    type: Mapped[str] = mapped_column(String(50), nullable=False)
+    instruction_label: Mapped[str] = mapped_column(String(50), nullable=False)
+    skill_id: Mapped[str] = mapped_column(String(50), nullable=False)
+    skill_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    difficulty: Mapped[str] = mapped_column(String(20), nullable=False)
+    purpose: Mapped[str] = mapped_column(String(50), nullable=False)
+    prompt: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    options: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+    correct_option_id: Mapped[str] = mapped_column(String(10), nullable=False)
+    explanation: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # Relationships
+    placement_links: Mapped[list["PlacementTestQuestion"]] = relationship("PlacementTestQuestion", back_populates="question")
+
+
+class PlacementTest(Base):
+    __tablename__ = "placement_tests"
+    __table_args__ = (UniqueConstraint("test_id", name="uq_placement_test_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    test_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    mascot: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    steps: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+    levels: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+    adaptive_config: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     # Relationships
-    student: Mapped["Student"] = relationship("Student", back_populates="surveys")
+    question_links: Mapped[list["PlacementTestQuestion"]] = relationship("PlacementTestQuestion", back_populates="test")
+    test_results: Mapped[list["StudentTestResult"]] = relationship("StudentTestResult", back_populates="test")
+
+
+class PlacementTestQuestion(Base):
+    __tablename__ = "placement_test_questions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    test_id: Mapped[int] = mapped_column(Integer, ForeignKey("placement_tests.id", ondelete="CASCADE"), nullable=False)
+    question_id: Mapped[int] = mapped_column(Integer, ForeignKey("questions.id", ondelete="CASCADE"), nullable=False)
+    order_num: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    # Relationships
+    test: Mapped["PlacementTest"] = relationship("PlacementTest", back_populates="question_links")
+    question: Mapped["Question"] = relationship("Question", back_populates="placement_links")
+
+
+class StudentTestResult(Base):
+    __tablename__ = "student_test_results"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    student_id: Mapped[int] = mapped_column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+    test_id: Mapped[int] = mapped_column(Integer, ForeignKey("placement_tests.id"), nullable=False)
+    answers: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+    score: Mapped[int] = mapped_column(Integer, default=0)
+    max_score: Mapped[int] = mapped_column(Integer, default=0)
+    percentage: Mapped[float] = mapped_column(Integer, default=0)
+    result_level: Mapped[str] = mapped_column(String(50), nullable=False)
+    cefr: Mapped[str] = mapped_column(String(10), nullable=False)
+    time_total_sec: Mapped[int] = mapped_column(Integer, default=0)
+    mastery: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    gaps: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+    recommendations: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+    test_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    # Relationships
+    student: Mapped["Student"] = relationship("Student", back_populates="test_results")
+    test: Mapped["PlacementTest"] = relationship("PlacementTest", back_populates="test_results")

@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy import select
 
 from db.models import Base, Role
-from db.seed import seed_data
+from db.seed import seed_data, seed_questions, seed_placement_tests, seed_test_results
 
 DATABASE_URL = os.environ.get(
     "DATABASE_URL", "postgresql+asyncpg://vnexus:vnexus@localhost:5432/vnexus"
@@ -44,3 +44,16 @@ async def init_db() -> None:
     async with SessionLocal() as session:
         async with session.begin():
             await seed_data(session)
+
+    # 4. Seed questions, placement tests, and test results
+    async with SessionLocal() as session:
+        async with session.begin():
+            await seed_questions(session)
+
+    async with SessionLocal() as session:
+        async with session.begin():
+            await seed_placement_tests(session)
+
+    async with SessionLocal() as session:
+        async with session.begin():
+            await seed_test_results(session)
