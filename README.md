@@ -1,8 +1,15 @@
-# V-Nexus — VAIC 2026
+# V-Nexus Tutor — VAIC 2026
+
+*"Mỗi học sinh một lộ trình, mỗi giáo viên một trợ lý" / "Close every learning gap, one
+root cause at a time"* _(tagline đề xuất, có thể đổi)_
 
 Đội thi Vietnam AI Innovation Challenge 2026 (48h hackathon, 17–19/7/2026, FPT Tower).
-Chủ đề đăng ký: **Đổi mới sáng tạo & Năng suất doanh nghiệp vừa và nhỏ (SME)** — cập
-nhật lại khi đề bài chính thức công bố lúc 11:00 ngày 17/7/2026.
+**Gia sư thích ứng thu hẹp khoảng cách năng lực trong lớp học** (Giáo dục phổ thông —
+Adaptive Learning). Xem phân tích chi tiết ở
+[docs/PHAN_TICH_DE_ADAPTIVE_TUTORING.md](docs/PHAN_TICH_DE_ADAPTIVE_TUTORING.md).
+
+_(Đề 8 — Vbee lecture video — không còn theo đuổi, giữ lại ở
+[docs/PHAN_TICH_DE_8.md](docs/PHAN_TICH_DE_8.md) làm tài liệu tham khảo.)_
 
 ## Kiến trúc
 
