@@ -6,10 +6,10 @@ Mục tiêu của kế hoạch là triển khai một MVP có thể chứng minh
 **chẩn đoán → truy nguyên nhân → tạo lộ trình → luyện tập → đánh giá lại → hỗ trợ giáo
 viên**.
 
-Phạm vi MVP được khóa ở môn Toán lớp 6–7, có thể truy ngược kiến thức tiên quyết từ lớp
-5, với mạch minh họa **Phân số → Tỉ lệ/Phần trăm → Biểu thức/Phương trình**. Sản phẩm
-cần có dashboard học sinh, dashboard giáo viên và khả năng thực hiện các hoạt động cốt
-lõi trong điều kiện offline hoặc mạng yếu.
+Phạm vi MVP được khóa ở môn Tiếng Anh cho học sinh chủ yếu lớp 3–4, với quan hệ kiến
+thức tiên quyết xuyên hai khối và mạch minh họa **Từ vựng theo chủ đề → Mẫu câu cơ bản
+→ Đọc hiểu đoạn ngắn**. Sản phẩm cần có dashboard học sinh, dashboard giáo viên và khả
+năng thực hiện các hoạt động cốt lõi trong điều kiện offline hoặc mạng yếu.
 
 Trạng thái source hiện tại mới là khung chạy thử và model `chat_log` mẫu. Vì vậy mọi
 chức năng dưới đây là **kế hoạch triển khai/nghiệm thu**, trừ khi có bằng chứng riêng cho
@@ -39,11 +39,11 @@ môn học, khối lớp, chủ đề, kỹ năng và yêu cầu cần đạt.
 
 #### Tác nhân
 
-Quản trị viên, người quản lý nội dung, chuyên gia môn Toán.
+Quản trị viên, người quản lý nội dung, chuyên gia môn Tiếng Anh tiểu học.
 
 #### Dữ liệu cần chuẩn bị
 
-- Yêu cầu cần đạt GDPT 2018 trong mạch Toán lớp 5–7 của demo.
+- Yêu cầu cần đạt GDPT 2018 trong mạch Tiếng Anh lớp 3–4 của demo.
 - Danh sách chủ đề, kỹ năng, mô tả, khối lớp tham chiếu và mã nội bộ.
 - Quy tắc đặt tên, trạng thái biên soạn/kiểm duyệt/phê duyệt.
 
@@ -83,7 +83,7 @@ nền xuyên khối lớp.
 
 #### Tác nhân
 
-Chuyên gia môn Toán, người quản lý nội dung; giáo viên tham gia phản biện.
+Chuyên gia môn Tiếng Anh tiểu học, người quản lý nội dung; giáo viên tham gia phản biện.
 
 #### Dữ liệu cần chuẩn bị
 
@@ -93,8 +93,8 @@ họa cho từng quan hệ.
 #### Luồng xử lý đề xuất
 
 1. Xác định quan hệ tiên quyết cho từng target skill trong demo.
-2. Bổ sung quan hệ xuyên lớp 5–7 khi có căn cứ.
-3. Kiểm tra đường đi từ phân số tới tỉ lệ/phần trăm và biểu thức/phương trình.
+2. Bổ sung quan hệ xuyên lớp 3–4 khi có căn cứ.
+3. Kiểm tra đường đi từ từ vựng theo chủ đề tới mẫu câu cơ bản và đọc hiểu đoạn ngắn.
 4. Phát hiện quan hệ vòng, quan hệ thiếu và nhánh không sử dụng.
 5. Chuyên gia/giáo viên duyệt và công bố phiên bản.
 
@@ -362,8 +362,8 @@ Target skill, Knowledge Graph, ngân hàng câu hỏi.
 
 #### Tiêu chí hoàn thành
 
-Kịch bản phương trình có phân số truy được hợp lý về phép tính/quy đồng; mọi bước có
-bằng chứng hoặc lý do kiểm tra.
+Kịch bản đọc hiểu đoạn ngắn truy được hợp lý về mẫu câu cơ bản và từ vựng theo chủ đề;
+mọi bước có bằng chứng hoặc lý do kiểm tra.
 
 ### 3.9. Xác định lỗ hổng nguyên nhân
 
@@ -447,8 +447,8 @@ Root-cause gap, Knowledge Graph, ngân hàng nội dung/câu hỏi.
 
 #### Tiêu chí hoàn thành
 
-Lộ trình demo có đúng chuỗi quy đồng → phép tính phân số → phương trình và không chứa
-bước đã được xác nhận thành thạo.
+Lộ trình demo có đúng chuỗi từ vựng theo chủ đề → mẫu câu cơ bản → đọc hiểu đoạn ngắn
+và không chứa bước đã được xác nhận thành thạo.
 
 ### 3.11. Học sinh thực hiện lộ trình
 
@@ -1059,7 +1059,7 @@ truy cập/thiếu dữ liệu.
 - Xác định root-cause gap hoặc yêu cầu kiểm tra thêm.
 - Hiển thị kết luận kèm bằng chứng.
 
-**Điều kiện kết thúc:** Kịch bản phương trình có phân số chạy xuyên suốt và phân biệt rõ
+**Điều kiện kết thúc:** Kịch bản đọc hiểu đoạn ngắn chạy xuyên suốt và phân biệt rõ
 target/root cause.
 
 ### Giai đoạn 3 – Cá nhân hóa việc học
@@ -1070,8 +1070,8 @@ target/root cause.
 - Cập nhật mức thành thạo và điều chỉnh lộ trình.
 - Hoàn thiện dashboard học sinh.
 
-**Điều kiện kết thúc:** Học sinh đi được từ quy đồng tới target skill mà không học lại
-phần đã đạt.
+**Điều kiện kết thúc:** Học sinh đi được từ từ vựng theo chủ đề tới target skill mà
+không học lại phần đã đạt.
 
 ### Giai đoạn 4 – Hỗ trợ giáo viên
 
@@ -1149,42 +1149,44 @@ giai đoạn, không chờ tới cuối mới bổ sung.
 
 - Dashboard phụ huynh.
 - Bot hỏi đáp/chatbot nâng cao.
-- Mở rộng nhiều môn học.
+- Mở rộng Tiếng Anh sang các khối lớp ngoài lớp 3–4.
+- Mở rộng sang các môn học khác.
 - Sinh câu hỏi bằng AI có kiểm duyệt.
-- Tiếng Anh K–12 và placement test bốn kỹ năng.
-- ASR/chấm nói.
-- Phân tích CV học viên.
+- Placement test bốn kỹ năng ở giai đoạn phù hợp.
+- ASR hỗ trợ luyện phát âm và đánh giá kỹ năng nói có kiểm duyệt.
 
 ## 7. End-to-End Acceptance Scenario
 
 ### Tiền điều kiện
 
-- Mạch kỹ năng lớp 5–7 và quan hệ tiên quyết đã được chuyên gia phê duyệt.
-- Có câu hỏi/nội dung đã duyệt cho quy đồng, phép tính phân số và phương trình.
+- Mạch kỹ năng Tiếng Anh lớp 3–4 và quan hệ tiên quyết đã được chuyên gia phê duyệt.
+- Có câu hỏi/nội dung đã duyệt cho từ vựng theo chủ đề, mẫu câu cơ bản và đọc hiểu đoạn
+  ngắn.
 - Lớp demo, giáo viên và học sinh mẫu đã được tạo đúng quyền.
 - Thiết bị học sinh đã tải gói bài cần thiết.
 
 ### Kịch bản nghiệm thu
 
-1. Giáo viên đăng nhập, chọn đúng lớp và giao bài chẩn đoán về phương trình có phân số.
+1. Giáo viên đăng nhập, chọn đúng lớp và giao bài chẩn đoán đọc hiểu một đoạn văn ngắn
+   về chủ đề quen thuộc.
 2. Học sinh thấy bài trên dashboard cá nhân và bắt đầu làm.
 3. Trong lúc làm, kết nối bị ngắt; câu trả lời, thời gian, lần thử và gợi ý vẫn được lưu.
-4. Học sinh làm sai câu phương trình. Hệ thống xác định giải phương trình là target
-   skill và tiếp tục kiểm tra phép tính/quy đồng phân số.
-5. Khi đủ bằng chứng, hệ thống đề xuất quy đồng phân số là root-cause skill, chỉ rõ khối
-   lớp tham chiếu, mức thành thạo, độ tin cậy, câu trả lời làm bằng chứng và các kỹ năng
-   bị ảnh hưởng. Nếu cố ý giảm số bằng chứng dưới mức yêu cầu, hệ thống phải trả “cần
-   kiểm tra thêm” thay vì kết luận chắc chắn.
-6. Hệ thống tạo lộ trình **quy đồng → phép tính phân số → phương trình**, bỏ qua một kỹ
-   năng đã được dữ liệu nghiệm thu đánh dấu thành thạo.
+4. Học sinh làm sai câu đọc hiểu. Hệ thống xác định đọc hiểu đoạn ngắn là target skill
+   và tiếp tục kiểm tra mẫu câu cơ bản cùng từ vựng theo chủ đề.
+5. Khi đủ bằng chứng, hệ thống đề xuất từ vựng theo chủ đề lớp 3 là root-cause skill,
+   chỉ rõ khối lớp tham chiếu, mức thành thạo, độ tin cậy, câu trả lời làm bằng chứng và
+   các kỹ năng bị ảnh hưởng. Nếu cố ý giảm số bằng chứng dưới mức yêu cầu, hệ thống phải
+   trả “cần kiểm tra thêm” thay vì kết luận chắc chắn.
+6. Hệ thống tạo lộ trình **từ vựng theo chủ đề → mẫu câu cơ bản → đọc hiểu đoạn ngắn**,
+   bỏ qua một kỹ năng đã được dữ liệu nghiệm thu đánh dấu thành thạo.
 7. Học sinh xem ví dụ, luyện tập, nhận phản hồi theo dạng lỗi và làm kiểm tra lại.
 8. Khi học sinh chưa đạt ở lần đầu, lộ trình được điều chỉnh hoặc báo cần hỗ trợ; khi có
    đủ bằng chứng đạt, học sinh chuyển bước và quay lại target skill.
 9. Kết nối được khôi phục. Dữ liệu đồng bộ tự động; thử lại đồng bộ không tạo câu trả
    lời hoặc tiến độ trùng.
-10. Dashboard giáo viên cập nhật học sinh vào nhóm cần hỗ trợ về phân số, hiển thị lý
-    do ưu tiên. Nếu dữ liệu nghiệm thu có nhiều học sinh cùng gap, hệ thống đề xuất phụ
-    đạo nhóm hoặc dạy lại; nếu chỉ một em, hệ thống đề xuất hỗ trợ cá nhân.
+10. Dashboard giáo viên cập nhật học sinh vào nhóm cần hỗ trợ về từ vựng theo chủ đề,
+    hiển thị lý do ưu tiên. Nếu dữ liệu nghiệm thu có nhiều học sinh cùng gap, hệ thống
+    đề xuất phụ đạo nhóm hoặc dạy lại; nếu chỉ một em, hệ thống đề xuất hỗ trợ cá nhân.
 11. Giáo viên điều chỉnh nhóm, ghi nhận một hoạt động dạy lại và giao bài kiểm tra sau
     can thiệp.
 12. Kết quả trước/sau được hiển thị cùng kỹ năng. Giáo viên xác nhận đóng gap khi đạt
