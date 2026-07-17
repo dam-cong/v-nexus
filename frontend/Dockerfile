@@ -1,7 +1,7 @@
-FROM python:3.11-slim
+FROM node:22-alpine
 WORKDIR /app
-COPY frontend/requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
-COPY frontend/streamlit_app.py .
+COPY package*.json ./
+RUN npm install
+COPY . .
 EXPOSE 8501
-CMD ["streamlit", "run", "streamlit_app.py", "--server.address=0.0.0.0", "--server.port=8501"]
+CMD ["npm", "run", "dev"]
