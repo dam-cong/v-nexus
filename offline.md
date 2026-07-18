@@ -1,4 +1,4 @@
-# Đề xuất phương pháp chạy Offline cho V-Nexus — Tầng Lộ trình học tập cá nhân hoá
+# Đề xuất phương pháp chạy Offline cho V-NEXUS SCHOOL — Tầng Lộ trình học tập cá nhân hoá
 
 > Áp dụng cho toàn bộ pipeline đã thiết kế: BKT Engine (đã offline sẵn) + tầng diễn giải lộ trình học tập đã tối ưu prompt (bao gồm cá nhân hoá theo mastery/gap và theo phong cách học tập). Tài liệu này tập trung vào cách đưa **lớp LLM** trong pipeline chạy được hoàn toàn không cần kết nối internet/API cloud.
 

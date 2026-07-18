@@ -50,7 +50,7 @@ không thay thế giáo viên.
 
 ## Giải pháp đề xuất
 
-**Kiến trúc:** vẫn map vào khung V-Nexus, nhưng vai trò LLM chuyển từ "runtime mọi
+**Kiến trúc:** vẫn map vào khung V-NEXUS SCHOOL, nhưng vai trò LLM chuyển từ "runtime mọi
 request" sang "soạn nội dung trước + hỗ trợ phân tích", do ràng buộc offline. Domain
 Adapter mới: `domain/adaptive_tutor_adapter.py`.
 

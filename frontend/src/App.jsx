@@ -38,8 +38,9 @@ import StudentHistory from './StudentHistory';
 import StudentRoadmap from './StudentRoadmap';
 import BeautifulRoadmap from './BeautifulRoadmap';
 import useOnlineStatus from './offline/useOnlineStatus';
-import { saveQuestions, savePlacementTests, saveTestQuestions, clearOfflineData, getQuestions as getOfflineQuestions, getPlacementTests as getOfflineTests } from './offline/db.js';
-import { Download, WifiOff, Wifi } from 'lucide-react';
+import { saveQuestions, savePlacementTests, saveTestQuestions, clearOfflineData, getQuestions as getOfflineQuestions, getPlacementTests as getOfflineTests, seedFromStaticData } from './offline/db.js';
+import { OfflineError } from './api';
+import { WifiOff, Wifi } from 'lucide-react';
 import './App.css';
 
 // Base API URL
@@ -94,10 +95,6 @@ function DashboardApp({ user, logout }) {
 
   // Offline state
   const isOnline = useOnlineStatus();
-  const [downloading, setDownloading] = useState(false);
-  const [offlineReady, setOfflineReady] = useState(() => {
-    try { return !!localStorage.getItem('vnexus_offline_ready'); } catch { return false; }
-  });
 
   // Search queries
   const [studentSearch, setStudentSearch] = useState('');
@@ -141,63 +138,7 @@ function DashboardApp({ user, logout }) {
   });
 
   // ── Offline download handler ──────────────────────────────────────────────
-  const handleDownloadApp = async () => {
-    if (downloading) return;
-    setDownloading(true);
-    try {
-      // 1. Wait for service worker if available (skip in dev mode)
-      if ('serviceWorker' in navigator) {
-        const reg = await navigator.serviceWorker.getRegistration().catch(() => null);
-        if (reg) {
-          await navigator.serviceWorker.ready;
-        } else {
-          // No SW registered yet — register manually
-          try { await navigator.serviceWorker.register('/sw.js'); } catch (_) { /* dev mode may fail */ }
-        }
-      }
-
-      // 2. Fetch questions + tests from API
-      const [qRes, ptRes] = await Promise.all([
-        apiFetch('/api/questions'),
-        apiFetch('/api/placement-tests'),
-      ]);
-      if (!qRes.ok || !ptRes.ok) throw new Error('Không thể tải dữ liệu');
-      const allQuestions = await qRes.json();
-      const tests = await ptRes.json();
-
-      // 3. Save to IndexedDB
-      await saveQuestions(allQuestions);
-      await savePlacementTests(tests);
-
-      // 4. Fetch questions for each test and save
-      for (const test of tests) {
-        try {
-          const tqRes = await apiFetch(`/api/placement-tests/${test.id}/questions`);
-          if (tqRes.ok) {
-            const tqData = await tqRes.json();
-            await saveTestQuestions(test.id, tqData);
-          }
-        } catch (e) { /* skip individual test errors */ }
-      }
-
-      // 5. Mark ready
-      localStorage.setItem('vnexus_offline_ready', new Date().toISOString());
-      setOfflineReady(true);
-      triggerNotification('Đã tải xong! Bây giờ em có thể dùng offline.');
-    } catch (e) {
-      console.error('Download failed:', e);
-      triggerNotification('Tải dữ liệu offline thất bại, thử lại sau.', 'error');
-    } finally {
-      setDownloading(false);
-    }
-  };
-
-  const handleClearOffline = async () => {
-    await clearOfflineData();
-    localStorage.removeItem('vnexus_offline_ready');
-    setOfflineReady(false);
-    triggerNotification('Đã xóa dữ liệu offline.');
-  };
+  // (removed — offline mode uses live-site SW cache, not zip download)
 
   // Fetch all data
   const fetchStudents = async () => {
@@ -453,6 +394,18 @@ function DashboardApp({ user, logout }) {
     setLoading(false);
   };
 
+  // ── Seed IndexedDB from /data on mount (for offline use) ──────────────
+  useEffect(() => {
+    (async () => {
+      const seeded = await seedFromStaticData();
+      if (seeded) {
+        console.log('[offline] IndexedDB seeded from /data');
+        fetchQuestions();
+        fetchPlacementTests();
+      }
+    })();
+  }, []);
+
   useEffect(() => {
     if (user) {
       if (user.role === 'hoc_sinh') {
@@ -700,7 +653,7 @@ function DashboardApp({ user, logout }) {
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-logo">
           <div className="sidebar-logo-icon">V</div>
-          <span>V-Nexus Tutor</span>
+          <span>V-NEXUS SCHOOL</span>
         </div>
         
         <div className="sidebar-menu">
@@ -807,8 +760,8 @@ function DashboardApp({ user, logout }) {
         </div>
 
         <div className="sidebar-footer">
-          <p>V-Nexus Tutor</p>
-          <p>Adaptive Platform v1.0</p>
+          <p>V-NEXUS SCHOOL</p>
+          <p>AI-powered Adaptive Learning Platform</p>
         </div>
       </aside>
 
@@ -895,31 +848,9 @@ function DashboardApp({ user, logout }) {
                   <Wifi size={14} /> Online
                 </span>
               ) : (
-                <span className="offline-badge" title="Đang offline — dữ liệu đã tải vẫn sử dụng được">
+                <span className="offline-badge" title="Đang offline — dữ liệu vẫn sử dụng được">
                   <WifiOff size={14} /> Offline
                 </span>
-              )}
-              {user?.role === 'hoc_sinh' && (
-                offlineReady ? (
-                  <button
-                    className="icon-btn offline-ready"
-                    onClick={handleClearOffline}
-                    title="Đã sẵn sàng offline — bấm để xóa"
-                  >
-                    <Download size={18} />
-                  </button>
-                ) : (
-                  <button
-                    className="icon-btn"
-                    onClick={handleDownloadApp}
-                    disabled={downloading}
-                    title={downloading ? 'Đang tải...' : 'Tải app để dùng offline'}
-                  >
-                    {downloading
-                      ? <span className="download-spinner" />
-                      : <Download size={18} />}
-                  </button>
-                )
               )}
               <button className="icon-btn"><Bell size={18} /></button>
               <button className="icon-btn"><Settings size={18} /></button>

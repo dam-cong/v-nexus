@@ -3,6 +3,13 @@ import { getToken, setToken, removeToken, getUser, setUser } from '../api';
 
 const AuthContext = createContext(null);
 
+const OFFLINE_DEMO_USER = {
+  id: 0,
+  name: 'Học sinh (offline)',
+  email: 'offline@vnexus.vn',
+  role: 'hoc_sinh',
+};
+
 export function AuthProvider({ children }) {
   const [user, setUserData] = useState(() => getUser());
   const [token, setTokenState] = useState(() => getToken());
@@ -31,6 +38,14 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const loginOfflineDemo = () => {
+    const demoToken = 'offline-demo-token';
+    setToken(demoToken);
+    setUser(OFFLINE_DEMO_USER);
+    setTokenState(demoToken);
+    setUserData(OFFLINE_DEMO_USER);
+  };
+
   const logout = () => {
     removeToken();
     setTokenState(null);
@@ -42,6 +57,7 @@ export function AuthProvider({ children }) {
     token,
     loading,
     login,
+    loginOfflineDemo,
     logout,
     isAuthenticated: !!token && !!user,
   };

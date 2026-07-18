@@ -1,4 +1,4 @@
-# Timeline & phân bổ công việc — V-Nexus Tutor (17–19/7/2026)
+# Timeline & phân bổ công việc — V-NEXUS SCHOOL (17–19/7/2026)
 
 ## Team
 

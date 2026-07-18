@@ -1,12 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
+import { LogIn, Mail, Lock, AlertCircle, WifiOff } from 'lucide-react';
 
 export default function Login() {
-  const { login, loading } = useAuth();
+  const { login, loginOfflineDemo, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const goOnline = () => setIsOffline(false);
+    const goOffline = () => setIsOffline(true);
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
+    return () => {
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,6 +28,10 @@ export default function Login() {
     } catch (err) {
       setError(err.message);
     }
+  };
+
+  const handleOfflineLogin = () => {
+    loginOfflineDemo();
   };
 
   return (
@@ -54,8 +70,11 @@ export default function Login() {
             V
           </div>
           <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#303972', margin: 0 }}>
-            V-Nexus Tutor
+            V-NEXUS SCHOOL
           </h1>
+          <p style={{ fontSize: '13px', color: '#6c5ce7', fontWeight: '600', marginTop: '4px' }}>
+            AI-powered Adaptive Learning Platform
+          </p>
           <p style={{ fontSize: '14px', color: '#a0a3bd', marginTop: '8px' }}>
             Đăng nhập vào hệ thống
           </p>
@@ -159,6 +178,33 @@ export default function Login() {
             {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
         </form>
+
+        {/* Offline mode button */}
+        {isOffline && (
+          <button
+            onClick={handleOfflineLogin}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '14px',
+              background: '#f8f7ff',
+              color: '#4d44b5',
+              border: '2px solid #c1bbeb',
+              borderRadius: '12px',
+              fontSize: '15px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              marginTop: '12px',
+              width: '100%',
+            }}
+          >
+            <WifiOff size={18} />
+            Dùng offline (học sinh)
+          </button>
+        )}
 
         {/* Demo accounts */}
         <div style={{ marginTop: '28px', padding: '16px', background: '#f8f7ff', borderRadius: '12px' }}>

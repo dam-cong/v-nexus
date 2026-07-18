@@ -1,5 +1,12 @@
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 
+export class OfflineError extends Error {
+  constructor(message = 'Không có kết nối mạng') {
+    super(message);
+    this.name = 'OfflineError';
+  }
+}
+
 export function getToken() {
   return localStorage.getItem("vnexus_token");
 }
@@ -27,6 +34,9 @@ export function setUser(user) {
 }
 
 export async function apiFetch(path, options = {}) {
+  if (!navigator.onLine) {
+    throw new OfflineError();
+  }
   const token = getToken();
   const headers = {
     "Content-Type": "application/json",

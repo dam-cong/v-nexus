@@ -1,4 +1,4 @@
-# V-Nexus Tutor — Kế hoạch triển khai nghiệp vụ
+# V-NEXUS SCHOOL — Kế hoạch triển khai nghiệp vụ
 
 ## 1. Implementation Objectives
 

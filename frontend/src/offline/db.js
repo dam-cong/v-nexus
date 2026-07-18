@@ -105,4 +105,47 @@ export async function clearOfflineData() {
   }
 }
 
+// ── Seed from static /data/ (for offline zip first-run) ─────────────────────
+
+export async function seedFromStaticData() {
+  const db = await getDb();
+  const existing = await db.count(STORES.QUESTIONS);
+  if (existing > 0) return false;
+
+  try {
+    const [qRes, ptRes] = await Promise.all([
+      fetch('/data/questions.json'),
+      fetch('/data/placement-tests.json'),
+    ]);
+    if (!qRes.ok || !ptRes.ok) return false;
+
+    const questions = await qRes.json();
+    const tests = await ptRes.json();
+
+    const txQ = db.transaction(STORES.QUESTIONS, 'readwrite');
+    for (const q of questions) await txQ.store.put(q);
+    await txQ.done;
+
+    const txPT = db.transaction(STORES.PLACEMENT_TESTS, 'readwrite');
+    for (const t of tests) await txPT.store.put(t);
+    await txPT.done;
+
+    for (const t of tests) {
+      try {
+        const tqRes = await fetch(`/data/test-questions/${t.id}.json`);
+        if (tqRes.ok) {
+          const tqData = await tqRes.json();
+          const txTQ = db.transaction(STORES.TEST_QUESTIONS, 'readwrite');
+          await txTQ.store.put({ id: t.id, questions: tqData });
+          await txTQ.done;
+        }
+      } catch (_) { /* skip */ }
+    }
+
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
 export { STORES };
