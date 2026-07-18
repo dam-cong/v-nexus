@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { BookOpen, Check, Lightbulb, HelpCircle, Star, Sparkles, Activity } from 'lucide-react';
 import './BeautifulRoadmap.css';
 
@@ -237,7 +237,7 @@ function JsonRoadmap({ plan, completedItems, toggleItem }) {
   );
 }
 
-export default function BeautifulRoadmap({ planText, studentKey = 'default_student' }) {
+export default function BeautifulRoadmap({ planText, studentKey = 'default_student', onCompleteChange }) {
   const [completedItems, setCompletedItems] = useState({});
 
   useEffect(() => {
@@ -260,13 +260,57 @@ export default function BeautifulRoadmap({ planText, studentKey = 'default_stude
 
   const jsonPlanRaw = tryParseJsonPlan(planText);
   const jsonPlan = normalizeJsonPlan(jsonPlanRaw);
+  const parsed = !jsonPlan ? parseRoadmap(planText) : null;
+
+  const totalItemKeys = useMemo(() => {
+    const keys = [];
+    if (jsonPlan) {
+      jsonPlan.steps?.forEach((step) => {
+        const items = [
+          step.encouragement ? `Khích lệ: ${step.encouragement}` : null,
+          step.practice_tip ? `Luyện tập: ${step.practice_tip}` : null,
+          step.home_tip ? `Tại nhà: ${step.home_tip}` : null,
+        ].filter(Boolean);
+        items.forEach((text, subIdx) => {
+          keys.push(`${step.step_order}_${step.skill_name}_${subIdx}_${text}`);
+        });
+      });
+    } else if (parsed) {
+      parsed.sections.forEach(section => {
+        if (section.type === 'roadmap') {
+          let currentStep = null;
+          section.items.forEach((item, idx) => {
+            if (item.type === 'numbered') {
+              if (currentStep) {
+                currentStep.subItems.forEach(sub => keys.push(`${currentStep.title}_${sub}`));
+              }
+              currentStep = { title: item.text, subItems: [] };
+            } else if (item.type === 'bullet' || item.type === 'paragraph') {
+              if (currentStep) currentStep.subItems.push(item.text);
+            }
+          });
+          if (currentStep) {
+            currentStep.subItems.forEach(sub => keys.push(`${currentStep.title}_${sub}`));
+          }
+        }
+      });
+    }
+    return keys;
+  }, [jsonPlan, parsed]);
+
+  useEffect(() => {
+    if (onCompleteChange && totalItemKeys.length > 0) {
+      const checkedCount = totalItemKeys.filter(k => completedItems[k]).length;
+      const isComplete = checkedCount === totalItemKeys.length;
+      onCompleteChange(isComplete);
+    }
+  }, [completedItems, totalItemKeys, onCompleteChange]);
+
   if (jsonPlan) {
     return <JsonRoadmap plan={jsonPlan} completedItems={completedItems} toggleItem={toggleItem} />;
   }
 
-  const parsed = parseRoadmap(planText);
-
-  if (!parsed || (parsed.sections.length === 0 && !parsed.intro)) {
+  if (!jsonPlan && (!parsed || (parsed.sections.length === 0 && !parsed.intro))) {
     return (
       <div className="history-training-plan" style={{ whiteSpace: 'pre-wrap' }}>
         {planText}

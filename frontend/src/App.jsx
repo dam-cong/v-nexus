@@ -36,6 +36,7 @@ import Login from './pages/Login';
 import StudentSurvey from './StudentSurvey';
 import StudentHistory from './StudentHistory';
 import StudentRoadmap from './StudentRoadmap';
+import StudentDashboard from './StudentDashboard';
 import BeautifulRoadmap from './BeautifulRoadmap';
 import useOnlineStatus from './offline/useOnlineStatus';
 import { saveQuestions, savePlacementTests, saveTestQuestions, clearOfflineData, getQuestions as getOfflineQuestions, getPlacementTests as getOfflineTests } from './offline/db.js';
@@ -463,6 +464,15 @@ function DashboardApp({ user, logout }) {
       }
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user && user.role === 'hoc_sinh') {
+      const hasPlan = (studentTestResults && studentTestResults.length > 0) || (studentProfile && studentProfile.training_plan);
+      if (hasPlan) {
+        setStudentActiveTab('student-dashboard');
+      }
+    }
+  }, [studentTestResults, studentProfile, user]);
 
   // Refresh roadmap badges after completing a quick-check
   useEffect(() => {
@@ -978,34 +988,13 @@ function DashboardApp({ user, logout }) {
                 <StudentSurvey user={user} onTabChange={setStudentActiveTab} />
               )}
               {studentActiveTab === 'student-dashboard' && (
-                <div className="animate-fade-in">
-                  <div className="stats-grid">
-                    <div className="stat-card">
-                      <div className="stat-icon" style={{ background: '#e6e4f6', color: '#4d44b5' }}>
-                        <GraduationCap />
-                      </div>
-                      <div className="stat-info">
-                        <span className="stat-label">Học sinh</span>
-                        <span className="stat-val">{user?.name || 'N/A'}</span>
-                      </div>
-                    </div>
-                    <div className="stat-card">
-                      <div className="stat-icon" style={{ background: '#ffdbd1', color: '#a43c20' }}>
-                        <Trophy />
-                      </div>
-                      <div className="stat-info">
-                        <span className="stat-label">Trình độ</span>
-                        <span className="stat-val">Beginner</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                    <p>Chào mừng {user?.name}! Hãy bắt đầu với bài khảo sát đầu vào.</p>
-                    <button className="btn btn-primary" onClick={() => setStudentActiveTab('survey')}>
-                      Bắt đầu khảo sát
-                    </button>
-                  </div>
-                </div>
+                <StudentDashboard
+                  user={user}
+                  studentProfile={studentProfile}
+                  results={studentTestResults}
+                  onTabChange={setStudentActiveTab}
+                  view="overview"
+                />
               )}
               {studentActiveTab === 'roadmap' && (
                 <StudentRoadmap
@@ -1013,12 +1002,17 @@ function DashboardApp({ user, logout }) {
                   questions={questions}
                   studentProfile={studentProfile}
                   onStartSurvey={() => setStudentActiveTab('survey')}
+                  onTabChange={setStudentActiveTab}
                 />
               )}
               {studentActiveTab === 'progress' && (
-                <div className="animate-fade-in" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                  <p>Tính năng Tiến bộ đang được phát triển.</p>
-                </div>
+                <StudentDashboard
+                  user={user}
+                  studentProfile={studentProfile}
+                  results={studentTestResults}
+                  onTabChange={setStudentActiveTab}
+                  view="progress"
+                />
               )}
               {studentActiveTab === 'history' && (
                 <StudentHistory
