@@ -726,7 +726,7 @@ function ScreenReview({ questions, answers, marked, onBack, onSubmit }) {
   );
 }
 
-function ScreenResults({ result, onRestart, onTabChange }) {
+function ScreenResults({ result, onRestart, onTabChange, user }) {
   if (!result) return null;
   const masteryArr = Object.entries(result.mastery || {}).map(([id, m]) => ({
     id, ...m,
@@ -942,7 +942,7 @@ export default function StudentSurvey({ user, onTabChange }) {
         />
       )}
       {screen === 'results' && (
-        <ScreenResults result={result} onRestart={handleRestart} onTabChange={onTabChange} />
+        <ScreenResults result={result} onRestart={handleRestart} onTabChange={onTabChange} user={user} />
       )}
     </div>
   );
