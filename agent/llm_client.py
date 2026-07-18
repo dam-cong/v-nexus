@@ -52,7 +52,6 @@ def create_message_fpt(*, system: str, messages: list[dict], tools: list[dict] =
         messages=[{"role": "system", "content": system}, *messages],
         tools=openai_tools,
         tool_choice="auto" if openai_tools else None,
-        max_tokens=2048,
         temperature=0.3,
     )
     choice = completion.choices[0].message

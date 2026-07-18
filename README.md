@@ -79,6 +79,10 @@ thay khoảng trắng bằng gạch nối nếu máy bạn dùng bản còn lạ
 - Gateway API / Swagger docs: http://localhost:8000/docs
 - MCP Server mẫu: http://localhost:8500/mcp
 
+**Tài khoản đăng nhập mặc định (đã khởi tạo sẵn khi chạy):**
+- **Giáo viên:** `teacher1@vnexus.vn` / Mật khẩu: `123456`
+- **Học sinh:** `hs01@vnexus.vn` / Mật khẩu: `123456`
+
 **Dừng hệ thống:**
 ```bash
 docker-compose down

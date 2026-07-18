@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { apiFetch } from './api';
 import './StudentSurvey.css';
+import BeautifulRoadmap from './BeautifulRoadmap';
 
 const ICON_MAP = {
   check_circle: CheckCircle,
@@ -781,7 +782,7 @@ function ScreenResults({ result, onRestart }) {
       {result.training_plan && (
         <div className="survey-results-section">
           <h3>Kế hoạch học tập cá nhân hóa (AI)</h3>
-          <div className="history-training-plan">{result.training_plan}</div>
+          <BeautifulRoadmap planText={result.training_plan} studentKey={user ? `result_${user.id}_${result.id}` : `result_${result.id}`} />
         </div>
       )}
 
