@@ -9,7 +9,7 @@ module.exports = {
   numbersToExpressions: false,
   renameGlobals: false,
   selfDefending: false,
-  simplify: true,
+  simplify: false,
   splitStrings: false,
   stringArray: true,
   stringArrayCallsTransform: false,

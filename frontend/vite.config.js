@@ -38,7 +38,7 @@ export default defineConfig({
             urlPattern: ({ url, request }) => url.pathname.startsWith('/api/')
               && request.method === 'GET'
               && !url.pathname.includes('/questions'),
-            handler: 'StaleWhileRevalidate',
+            handler: 'NetworkFirst',
             options: {
               cacheName: 'api-cache',
               expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 },

@@ -180,7 +180,15 @@ function RoadmapCard({ result, isLatest, onQuickCheck, onStartSurvey }) {
       </p>
 
       {result.training_plan ? (
-        <BeautifulRoadmap planText={result.training_plan} studentKey={`result_${result.id}`} onCompleteChange={handleCompletionChange} />
+        result.is_roadmap_approved ? (
+          <BeautifulRoadmap planText={result.training_plan} studentKey={`result_${result.id}`} onCompleteChange={handleCompletionChange} />
+        ) : (
+          <div className="roadmap-pending" style={{ padding: '24px', textAlign: 'center', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', marginTop: '16px' }}>
+            <Sparkles size={32} style={{ color: '#f59e0b', margin: '0 auto 12px' }} />
+            <h4 style={{ color: '#1e293b', fontSize: '16px', marginBottom: '8px' }}>Lộ trình đang chờ phê duyệt</h4>
+            <p style={{ color: '#64748b', fontSize: '14px', margin: 0 }}>Giáo viên của em đang xem xét và sẽ xác nhận lộ trình này sớm nhất có thể.</p>
+          </div>
+        )
       ) : (
         <p className="roadmap-empty-plan">Bài này chưa có kế hoạch AI.</p>
       )}

@@ -801,21 +801,7 @@ function ScreenResults({ result, onRestart, onTabChange, user, isGeneratingPlan 
         </div>
       )}
 
-      {isGeneratingPlan ? (
-        <div className="survey-results-section" style={{ textAlign: 'center', padding: '40px' }}>
-          <div className="survey-loading-spinner" style={{ margin: '0 auto 16px' }}></div>
-          <h3>Đang phân tích dữ liệu và tạo lộ trình học tập cá nhân hóa...</h3>
-          <p style={{ color: 'var(--text-muted)' }}>Quá trình này có thể mất khoảng 10-20 giây do AI đang suy nghĩ. Vui lòng không đóng trang.</p>
-        </div>
-      ) : result.training_plan ? (
-        <div className="survey-results-section">
-          <h3>Kế hoạch học tập cá nhân hóa (AI)</h3>
-          <BeautifulRoadmap planText={result.training_plan} studentKey={user ? `result_${user.id}_${result.id}` : `result_${result.id}`} />
-        </div>
-      ) : null}
-
-      {!isGeneratingPlan && (
-        <div className="survey-actions" style={{ justifyContent: 'center', flexWrap: 'wrap', gap: '12px' }}>
+      <div className="survey-actions" style={{ justifyContent: 'center', flexWrap: 'wrap', gap: '12px' }}>
           <button className="survey-btn survey-btn-primary" onClick={() => onTabChange && onTabChange('roadmap')}>
             <Icon name="sparkles" size={20} />
             <span>Xem lộ trình của em</span>
@@ -824,8 +810,7 @@ function ScreenResults({ result, onRestart, onTabChange, user, isGeneratingPlan 
             <span>Làm lại bài test</span>
             <Icon name="replay" size={20} />
           </button>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

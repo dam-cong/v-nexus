@@ -65,6 +65,8 @@ class StudentBase(BaseModel):
     learning_environment: Optional[str] = None
     self_assessment_level: Optional[str] = None
     learning_goal: Optional[str] = None
+    primary_teacher_id: Optional[int] = None
+    parent_id: Optional[int] = None
 
 class StudentCreate(StudentBase):
     password: Optional[str] = None
@@ -80,6 +82,8 @@ class StudentUpdate(BaseModel):
     self_assessment_level: Optional[str] = None
     learning_goal: Optional[str] = None
     training_plan: Optional[str] = None
+    primary_teacher_id: Optional[int] = None
+    parent_id: Optional[int] = None
 
 class StudentResponse(StudentBase):
     id: int
@@ -110,6 +114,34 @@ class TeacherUpdate(BaseModel):
 
 class TeacherResponse(TeacherBase):
     id: int
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+
+# Parent Schemas
+class ParentBase(BaseModel):
+    name: str
+    email: EmailStr
+    phone_number: Optional[str] = None
+    role_id: Optional[int] = 4
+
+class ParentCreate(ParentBase):
+    password: Optional[str] = None
+
+class ParentResponse(ParentBase):
+    id: int
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+
+# Teacher Evaluation Schemas
+class TeacherEvaluationResponse(BaseModel):
+    id: int
+    student_id: int
+    teacher_id: int
+    comment: str
     created_at: datetime
     class Config:
         from_attributes = True
@@ -163,6 +195,7 @@ class TestResultResponse(BaseModel):
     gaps: Optional[list] = None
     recommendations: Optional[list] = None
     training_plan: Optional[str] = None
+    is_roadmap_approved: bool = False
     roadmap_completed: bool = False
     quick_check_passed: bool = False
     test_date: datetime
@@ -308,6 +341,8 @@ async def get_student(
         "name": student.name,
         "email": student.email,
         "grade": profile.grade if profile else None,
+        "primary_teacher_id": profile.primary_teacher_id if profile else None,
+        "parent_id": profile.parent_id if profile else None,
         "role_id": student.role_id,
         "years_studying_english": profile.years_studying_english if profile else None,
         "learning_environment": profile.learning_environment if profile else None,
@@ -336,7 +371,12 @@ async def create_student(
     await db.commit()
     await db.refresh(db_user)
 
-    db_profile = Student(user_id=db_user.id, grade=student.grade)
+    db_profile = Student(
+        user_id=db_user.id,
+        grade=student.grade,
+        primary_teacher_id=student.primary_teacher_id,
+        parent_id=student.parent_id
+    )
     db.add(db_profile)
 
     db_ranking = Ranking(user_id=db_user.id, score=0, level="Beginner")
@@ -352,6 +392,8 @@ async def create_student(
         "name": db_user.name,
         "email": db_user.email,
         "grade": db_profile.grade,
+        "primary_teacher_id": db_profile.primary_teacher_id,
+        "parent_id": db_profile.parent_id,
         "role_id": db_user.role_id,
         "created_at": db_user.created_at,
         "ranking": ranking_obj,
@@ -382,15 +424,24 @@ async def update_student(
     if new_password:
         user.hashed_password = hash_password(new_password)
 
-    # grade -> profile
+    # grade/relations -> profile
     p_res = await db.execute(select(Student).where(Student.user_id == user.id))
     profile = p_res.scalar_one_or_none()
-    if "grade" in update_data:
-        if profile:
+    if profile:
+        if "grade" in update_data:
             profile.grade = update_data["grade"]
-        else:
-            profile = Student(user_id=user.id, grade=update_data["grade"])
-            db.add(profile)
+        if "primary_teacher_id" in update_data:
+            profile.primary_teacher_id = update_data["primary_teacher_id"]
+        if "parent_id" in update_data:
+            profile.parent_id = update_data["parent_id"]
+    else:
+        profile = Student(
+            user_id=user.id, 
+            grade=update_data.get("grade"),
+            primary_teacher_id=update_data.get("primary_teacher_id"),
+            parent_id=update_data.get("parent_id")
+        )
+        db.add(profile)
 
     await db.commit()
     await db.refresh(user)
@@ -405,6 +456,8 @@ async def update_student(
         "name": user.name,
         "email": user.email,
         "grade": profile.grade if profile else None,
+        "primary_teacher_id": profile.primary_teacher_id if profile else None,
+        "parent_id": profile.parent_id if profile else None,
         "role_id": user.role_id,
         "created_at": user.created_at,
         "ranking": ranking_obj,
@@ -469,6 +522,28 @@ async def get_teachers(
             "created_at": u.created_at,
         })
     return teacher_list
+
+@router.get("/parents", response_model=List[ParentResponse])
+async def get_parents(
+    db: AsyncSession = Depends(get_session),
+    _user: dict = Depends(get_current_user),
+):
+    result = await db.execute(select(User).where(User.role_id == 4))
+    users = result.scalars().all()
+    
+    parent_list = []
+    for u in users:
+        p_res = await db.execute(select(Parent).where(Parent.user_id == u.id))
+        profile = p_res.scalar_one_or_none()
+        parent_list.append({
+            "id": u.id,
+            "name": u.name,
+            "email": u.email,
+            "phone_number": profile.phone_number if profile else None,
+            "role_id": u.role_id,
+            "created_at": u.created_at,
+        })
+    return parent_list
 
 @router.get("/teachers/{teacher_id}", response_model=TeacherResponse)
 async def get_teacher(
@@ -1161,3 +1236,85 @@ async def submit_placement_test(
     await db.commit()
     await db.refresh(test_result)
     return test_result
+
+
+# =====================================================================
+# NEW ENDPOINTS FOR TEACHER-STUDENT-PARENT & APPROVAL
+# =====================================================================
+
+@router.post("/test-results/{result_id}/approve", response_model=TestResultResponse)
+async def approve_roadmap(
+    result_id: int,
+    db: AsyncSession = Depends(get_session),
+    user: dict = Depends(require_role("giao_vien")), # Only teachers (or admins) can approve
+):
+    result = await db.execute(select(StudentTestResult).where(StudentTestResult.id == result_id))
+    test_result = result.scalar_one_or_none()
+    if not test_result:
+        raise HTTPException(status_code=404, detail="Test result not found")
+    
+    test_result.is_roadmap_approved = True
+    await db.commit()
+    await db.refresh(test_result)
+    return test_result
+
+@router.get("/teachers/{teacher_user_id}/students", response_model=List[StudentResponse])
+async def get_teacher_students(
+    teacher_user_id: int,
+    db: AsyncSession = Depends(get_session),
+    user: dict = Depends(get_current_user),
+):
+    # Find teacher id from user id
+    t_res = await db.execute(select(Teacher).where(Teacher.user_id == teacher_user_id))
+    teacher = t_res.scalar_one_or_none()
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher profile not found")
+        
+    result = await db.execute(select(Student).where(Student.primary_teacher_id == teacher.id))
+    return list(result.scalars().all())
+
+@router.get("/parents/{parent_user_id}/students", response_model=List[StudentResponse])
+async def get_parent_students(
+    parent_user_id: int,
+    db: AsyncSession = Depends(get_session),
+    user: dict = Depends(get_current_user),
+):
+    # Find parent id from user id
+    p_res = await db.execute(select(Parent).where(Parent.user_id == parent_user_id))
+    parent = p_res.scalar_one_or_none()
+    if not parent:
+        raise HTTPException(status_code=404, detail="Parent profile not found")
+        
+    result = await db.execute(select(Student).where(Student.parent_id == parent.id))
+    return list(result.scalars().all())
+
+@router.post("/students/{student_id}/evaluations", response_model=TeacherEvaluationResponse)
+async def create_teacher_evaluation(
+    student_id: int,
+    comment: str,
+    db: AsyncSession = Depends(get_session),
+    user: dict = Depends(require_role("giao_vien")),
+):
+    t_res = await db.execute(select(Teacher).where(Teacher.user_id == user["id"]))
+    teacher = t_res.scalar_one_or_none()
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher profile not found")
+        
+    eval_entry = TeacherEvaluation(student_id=student_id, teacher_id=teacher.id, comment=comment)
+    db.add(eval_entry)
+    await db.commit()
+    await db.refresh(eval_entry)
+    return eval_entry
+
+@router.get("/students/{student_id}/evaluations", response_model=List[TeacherEvaluationResponse])
+async def get_student_evaluations(
+    student_id: int,
+    db: AsyncSession = Depends(get_session),
+    user: dict = Depends(get_current_user),
+):
+    result = await db.execute(
+        select(TeacherEvaluation)
+        .where(TeacherEvaluation.student_id == student_id)
+        .order_by(TeacherEvaluation.created_at.desc())
+    )
+    return list(result.scalars().all())
