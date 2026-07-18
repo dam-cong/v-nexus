@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, CheckCircle2, Circle, BookOpen, ClipboardCheck, X, CheckCircle, XCircle } from 'lucide-react';
 import { apiFetch } from './api';
+import BeautifulRoadmap from './BeautifulRoadmap';
 
 const LEVEL_LABELS = {
   starter: 'Mới bắt đầu',
@@ -157,7 +158,7 @@ function RoadmapCard({ result, isLatest, onQuickCheck }) {
       </p>
 
       {result.training_plan ? (
-        <div className="history-training-plan">{result.training_plan}</div>
+        <BeautifulRoadmap planText={result.training_plan} studentKey={`result_${result.id}`} />
       ) : (
         <p className="roadmap-empty-plan">Bài này chưa có kế hoạch AI.</p>
       )}
@@ -172,7 +173,7 @@ function RoadmapCard({ result, isLatest, onQuickCheck }) {
   );
 }
 
-export default function StudentRoadmap({ results, questions, onStartSurvey, onQuickCheck }) {
+export default function StudentRoadmap({ results, questions, onStartSurvey, onQuickCheck, studentProfile }) {
   const [filter, setFilter] = useState('all');
   const [activeResult, setActiveResult] = useState(null);
 
@@ -197,7 +198,9 @@ export default function StudentRoadmap({ results, questions, onStartSurvey, onQu
     }
   };
 
-  if (list.length === 0) {
+  const hasSurveyPlan = !!(studentProfile && studentProfile.training_plan);
+
+  if (list.length === 0 && !hasSurveyPlan) {
     return (
       <div className="student-roadmap animate-fade-in">
         <div className="roadmap-empty">
@@ -217,7 +220,7 @@ export default function StudentRoadmap({ results, questions, onStartSurvey, onQu
     <div className="student-roadmap animate-fade-in">
       <div className="roadmap-toolbar">
         <p className="roadmap-subtitle">
-          Tổng hợp kế hoạch học tập cá nhân hóa từ {withPlan.length} bài đánh giá của em.
+          Tổng hợp kế hoạch học tập cá nhân hóa từ {withPlan.length + (hasSurveyPlan ? 1 : 0)} lộ trình của em.
         </p>
         <div className="roadmap-filter">
           <button className={`chip ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>Tất cả</button>
@@ -226,22 +229,58 @@ export default function StudentRoadmap({ results, questions, onStartSurvey, onQu
         </div>
       </div>
 
-      {visible.length === 0 ? (
-        <div className="roadmap-empty">
-          <p>Không có bài nào trong bộ lọc này.</p>
-        </div>
-      ) : (
-        <div className="roadmap-list">
-          {visible.map((r, i) => (
+      <div className="roadmap-list">
+        {hasSurveyPlan && filter !== 'completed' && filter !== 'todo' && (
+          <div className="roadmap-card latest" style={{ borderLeft: '4px solid #8b5cf6' }}>
+            <div className="roadmap-card-head">
+              <div>
+                <span className="roadmap-card-level" style={{ background: '#f5f3ff', color: '#7c3aed', fontWeight: 'bold' }}>Lộ trình khảo sát đầu vào</span>
+                <span className="roadmap-card-cefr" style={{ background: '#f3f4f6', color: '#374151' }}>
+                  {studentProfile.self_assessment_level || 'A1'}
+                </span>
+              </div>
+              <div className="roadmap-card-badge">
+                <span className="roadmap-badge done" style={{ background: '#f5f3ff', color: '#7c3aed' }}>
+                  <Sparkles size={16} /> Lộ trình định hướng
+                </span>
+              </div>
+            </div>
+            <p className="roadmap-card-date">
+              <BookOpen size={14} style={{ verticalAlign: 'middle', marginRight: 4 }} /> 
+              <span>Môi trường: {
+                studentProfile.learning_environment === 'school' ? 'Chỉ học ở trường' :
+                studentProfile.learning_environment === 'center' ? 'Học ở trung tâm' :
+                studentProfile.learning_environment === 'self_study' ? 'Tự học qua mạng' :
+                studentProfile.learning_environment || 'Chưa rõ'
+              }</span>
+              {studentProfile.years_studying_english !== null && (
+                <span style={{ marginLeft: 12 }}>| Kinh nghiệm: {studentProfile.years_studying_english} năm</span>
+              )}
+            </p>
+            {studentProfile.learning_goal && (
+              <p style={{ fontSize: '13px', margin: '4px 0 12px 0', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                Mục tiêu: {studentProfile.learning_goal}
+              </p>
+            )}
+            <BeautifulRoadmap planText={studentProfile.training_plan} studentKey={`survey_${studentProfile.id}`} />
+          </div>
+        )}
+
+        {visible.length === 0 && !hasSurveyPlan ? (
+          <div className="roadmap-empty">
+            <p>Không có bài nào trong bộ lọc này.</p>
+          </div>
+        ) : (
+          visible.map((r, i) => (
             <RoadmapCard
               key={r.id}
               result={r}
               isLatest={i === 0}
               onQuickCheck={handleQuickCheck}
             />
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
 
       {activeResult && (
         <QuickCheckModal result={activeResult} onClose={() => setActiveResult(null)} onDone={handleDone} />
