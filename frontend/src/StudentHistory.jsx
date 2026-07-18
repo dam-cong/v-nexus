@@ -88,29 +88,68 @@ function ResultDetail({ result, questions, onBack }) {
           </div>
         </div>
 
-        {result.gaps?.length > 0 && (
-          <div className="survey-results-section">
-            <h3>Lỗ hổng kiến thức</h3>
-            <div className="survey-gaps-list">
-              {result.gaps.map((g, i) => (
-                <div key={i} className={`survey-gap-item ${g.severity}`}>
-                  <AlertTriangle size={18} />
-                  <div>
-                    <span className="survey-gap-skill">{SKILL_LABELS[g.skill_id] || g.skill_id}</span>
-                    <span className="survey-gap-reason">{g.reason}</span>
-                  </div>
-                  <span className={`survey-gap-severity ${g.severity}`}>
-                    {g.severity === 'high' ? 'Mức cao' : 'Mức trung bình'}
-                  </span>
-                </div>
-              ))}
+        {/* ===== 2 SECTION QUAN TRỌNG NHẤT ===== */}
+        <div className="detail-highlight-grid">
+          {/* Lỗ hổng kiến thức */}
+          <div className="detail-highlight-card detail-gaps">
+            <div className="detail-highlight-header">
+              <div className="detail-highlight-icon gaps">
+                <AlertTriangle size={22} />
+              </div>
+              <div>
+                <h3>Lỗ hổng kiến thức</h3>
+                <p className="detail-highlight-sub">{result.gaps?.length || 0} vấn đề cần khắc phục</p>
+              </div>
             </div>
+            {result.gaps?.length > 0 ? (
+              <div className="detail-gaps-list">
+                {result.gaps.map((g, i) => (
+                  <div key={i} className={`detail-gap-item ${g.severity}`}>
+                    <div className="detail-gap-left">
+                      <span className="detail-gap-skill">{SKILL_LABELS[g.skill_id] || g.skill_id}</span>
+                      <span className="detail-gap-reason">{g.reason}</span>
+                    </div>
+                    <span className={`detail-gap-severity ${g.severity}`}>
+                      {g.severity === 'high' ? 'Ưu tiên cao' : 'Trung bình'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="detail-highlight-empty">
+                <p>Không phát hiện lỗ hổng nào. Tiếp tục phát huy!</p>
+              </div>
+            )}
           </div>
-        )}
 
+          {/* Kế hoạch đào tạo cá nhân hóa */}
+          <div className="detail-highlight-card detail-plan">
+            <div className="detail-highlight-header">
+              <div className="detail-highlight-icon plan">
+                <Lightbulb size={22} />
+              </div>
+              <div>
+                <h3>Kế hoạch đào tạo cá nhân hóa</h3>
+                <p className="detail-highlight-sub">AI phân tích và gợi ý học tập</p>
+              </div>
+            </div>
+            {result.training_plan ? (
+              <div className="detail-plan-content">{result.training_plan}</div>
+            ) : (
+              <div className="detail-highlight-empty">
+                <p>Chưa có kế hoạch. Hãy hoàn thành bài khảo sát để nhận kế hoạch từ AI.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Kỹ năng cần ôn */}
         {result.recommendations?.length > 0 && (
           <div className="survey-results-section">
-            <h3>Kỹ năng cần ôn (BKT)</h3>
+            <h3>
+              <Lightbulb size={18} style={{ verticalAlign: '-3px', marginRight: 6, color: '#4d44b5' }} />
+              Kỹ năng cần ôn (BKT)
+            </h3>
             <div className="survey-rec-list">
               {result.recommendations.map((r, i) => (
                 <div key={i} className="survey-rec-item">
@@ -125,16 +164,7 @@ function ResultDetail({ result, questions, onBack }) {
           </div>
         )}
 
-        {result.training_plan && (
-          <div className="survey-results-section">
-            <h3>
-              <Lightbulb size={18} style={{ verticalAlign: '-3px', marginRight: 6, color: '#a43c20' }} />
-              Kế hoạch đào tạo cá nhân hóa (AI)
-            </h3>
-            <div className="history-training-plan">{result.training_plan}</div>
-          </div>
-        )}
-
+        {/* Mastery */}
         {masteryArr.length > 0 && (
           <div className="survey-results-section">
             <h3>Mastery theo kỹ năng</h3>
@@ -163,9 +193,10 @@ function ResultDetail({ result, questions, onBack }) {
           </div>
         )}
 
+        {/* Chi tiết câu trả lời */}
         {answers.length > 0 && (
           <div className="survey-results-section">
-            <h3>Câu đã trả lời ({answers.length})</h3>
+            <h3>Chi tiết câu trả lời ({answers.length})</h3>
             <table className="survey-table answers-table">
               <thead>
                 <tr>
@@ -180,12 +211,15 @@ function ResultDetail({ result, questions, onBack }) {
               <tbody>
                 {answers.map((a, i) => {
                   const q = qMap[a.question_id];
+                  const promptText = typeof q?.prompt === 'string'
+                    ? q.prompt
+                    : (q?.prompt?.text || q?.prompt?.audio_transcript || a.question_id);
                   const selectedOpt = q?.options?.find((o) => o.option_id === a.selected);
                   const correctOpt = q?.options?.find((o) => o.option_id === q.correct_option_id);
                   return (
                     <tr key={a.question_id || i} className={a.correct ? 'row-correct' : 'row-wrong'}>
                       <td>{i + 1}</td>
-                      <td>{q?.prompt?.text || a.question_id}</td>
+                      <td>{promptText}</td>
                       <td>{selectedOpt?.label || (a.selected ?? '—')}</td>
                       <td>{correctOpt?.label || q?.correct_option_id || '—'}</td>
                       <td>

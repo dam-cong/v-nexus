@@ -1,0 +1,896 @@
+{
+  "bank_id": "en-academy-stars-3-4-qb",
+  "version": "1.0.0",
+  "source": "knowledge-graph.json (en-academy-stars-3-4-kg)",
+  "description": "Ngan hang cau hoi Tieng Anh tieu hoc (Lop 3-4) theo chuong trinh Academy Stars. Moi cau gan skill_id khop Knowledge Graph de dung lam evidence cho BKT.",
+  "total_questions": 42,
+  "skills_covered": [
+    "as3.u1.l3", "as3.u2.l3", "as3.u3.l3", "as3.u4.l3",
+    "as3.u5.l3", "as3.u6.l3", "as3.u7.l3", "as3.u8.l3",
+    "as3.u9.l3", "as3.u10.l3", "as4.u1.l3", "as4.u2.l3", "as4.u3.l3"
+  ],
+  "questions": [
+    {
+      "question_id": "qb_001",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u1.l3",
+      "skill_name": "Present Simple vs Present Continuous",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "I ___ to school every day.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "go", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "goes", "icon": null, "error_tag": "wrong_subject_verb_agreement" },
+        { "option_id": "c", "label": "going", "icon": null, "error_tag": "uses_gerund_instead_of_base_form" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Moi ngay chi hanh dong lap lai -> dung Present Simple. Chu 'I' dong tu giu nguyen dang 'go'."
+    },
+    {
+      "question_id": "qb_002",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u1.l3",
+      "skill_name": "Present Simple vs Present Continuous",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Look! The children ___ in the garden.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "play", "icon": null, "error_tag": "uses_simple_instead_of_continuous" },
+        { "option_id": "b", "label": "are playing", "icon": null, "error_tag": null },
+        { "option_id": "c", "label": "plays", "icon": null, "error_tag": "wrong_subject_verb_agreement" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "'Look!' bao hieu hanh dong dang dien ra -> dung Present Continuous (are playing)."
+    },
+    {
+      "question_id": "qb_003",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u1.l3",
+      "skill_name": "Present Simple vs Present Continuous",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "She usually ___ breakfast at 7, but now she ___ toast.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "eats ... is eating", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "eat ... eating", "icon": null, "error_tag": "missing_third_person_s" },
+        { "option_id": "c", "label": "is eating ... eats", "icon": null, "error_tag": "swaps_simple_and_continuous" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Usually' -> Present Simple (eats); 'now' -> Present Continuous (is eating)."
+    },
+    {
+      "question_id": "qb_004",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u2.l3",
+      "skill_name": "Adverbs of Frequency",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "I ___ brush my teeth before bed.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "always", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "never", "icon": null, "error_tag": "opposite_meaning" },
+        { "option_id": "c", "label": "yesterday", "icon": null, "error_tag": "uses_time_word_not_frequency" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Danh rang truoc khi di ngu la thoi quen tot -> 'always' (luon luon) phu hop nhat."
+    },
+    {
+      "question_id": "qb_005",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u2.l3",
+      "skill_name": "Adverbs of Frequency",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "My sister ___ watches TV because she prefers reading.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "always", "icon": null, "error_tag": "opposite_meaning" },
+        { "option_id": "b", "label": "sometimes", "icon": null, "error_tag": "weak_frequency" },
+        { "option_id": "c", "label": "hardly ever", "icon": null, "error_tag": null }
+      ],
+      "correct_option_id": "c",
+      "explanation": "Chi ay thich doc sach hon xem TV -> tan suat thap nhat: 'hardly ever' (gan nhu khong bao gio)."
+    },
+    {
+      "question_id": "qb_006",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u2.l3",
+      "skill_name": "Adverbs of Frequency",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "How ___ do you play football? - Three times a week.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "much", "icon": null, "error_tag": "uses_quantity_not_frequency" },
+        { "option_id": "b", "label": "often", "icon": null, "error_tag": null },
+        { "option_id": "c", "label": "long", "icon": null, "error_tag": "uses_duration_not_frequency" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "Tra loi 'three times a week' -> hoi ve tan suat -> 'How often'."
+    },
+    {
+      "question_id": "qb_007",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u3.l3",
+      "skill_name": "To Be (Present and Past)",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "They ___ happy yesterday.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "are", "icon": null, "error_tag": "uses_present_instead_of_past" },
+        { "option_id": "b", "label": "was", "icon": null, "error_tag": "wrong_singular_plural" },
+        { "option_id": "c", "label": "were", "icon": null, "error_tag": null }
+      ],
+      "correct_option_id": "c",
+      "explanation": "'Yesterday' -> qua khu. 'They' (so nhieu) dung 'were'."
+    },
+    {
+      "question_id": "qb_008",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u3.l3",
+      "skill_name": "To Be (Present and Past)",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "___ there a library near your house? - Yes, there ___.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "Are ... are", "icon": null, "error_tag": "plural_for_singular" },
+        { "option_id": "b", "label": "Was ... was", "icon": null, "error_tag": "uses_past_for_present" },
+        { "option_id": "c", "label": "Is ... is", "icon": null, "error_tag": null }
+      ],
+      "correct_option_id": "c",
+      "explanation": "Cau hoi hien tai ve su ton tai: 'Is there...?' -> tra loi 'Yes, there is.'"
+    },
+    {
+      "question_id": "qb_009",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u3.l3",
+      "skill_name": "To Be (Present and Past)",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "The students ___ in the classroom now, but they ___ at the playground yesterday.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "are ... are", "icon": null, "error_tag": "uses_present_twice" },
+        { "option_id": "b", "label": "are ... were", "icon": null, "error_tag": null },
+        { "option_id": "c", "label": "were ... were", "icon": null, "error_tag": "uses_past_twice" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "'Now' -> hien tai (are); 'yesterday' -> qua khu (were). 'Students' la so nhieu."
+    },
+    {
+      "question_id": "qb_010",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u4.l3",
+      "skill_name": "Some/Any with Countable/Uncountable Nouns",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "I have ___ apples in my bag.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "some", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "any", "icon": null, "error_tag": "uses_any_in_affirmative" },
+        { "option_id": "c", "label": "a", "icon": null, "error_tag": "uses_article_with_plural" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Cau khang dinh, 'apples' la danh tu dem duoc so nhieu -> dung 'some'."
+    },
+    {
+      "question_id": "qb_011",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u4.l3",
+      "skill_name": "Some/Any with Countable/Uncountable Nouns",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Would you like ___ water? - No, thank you.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "some", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "any", "icon": null, "error_tag": "uses_any_in_offer" },
+        { "option_id": "c", "label": "a", "icon": null, "error_tag": "uses_article_with_uncountable" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Cau offer (moi): 'Would you like...?' dung 'some' vi khong phi cau phu dinh."
+    },
+    {
+      "question_id": "qb_012",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u4.l3",
+      "skill_name": "Some/Any with Countable/Uncountable Nouns",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "There aren't ___ oranges on the table. Can you bring ___?",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "some ... any", "icon": null, "error_tag": "swaps_some_and_any" },
+        { "option_id": "b", "label": "any ... some", "icon": null, "error_tag": null },
+        { "option_id": "c", "label": "any ... any", "icon": null, "error_tag": "uses_any_in_request" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "Cau phu dinh 'aren't' -> 'any'; cau yeu cau/offer thu hai -> 'some'."
+    },
+    {
+      "question_id": "qb_013",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u5.l3",
+      "skill_name": "Past Simple Regular Verbs",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "We ___ (watch) a movie last night.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "watched", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "watch", "icon": null, "error_tag": "no_past_tense_marker" },
+        { "option_id": "c", "label": "watching", "icon": null, "error_tag": "uses_gerund" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Last night' -> qua khu. 'Watch' la dong tu quy tac -> them -ed -> 'watched'."
+    },
+    {
+      "question_id": "qb_014",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u5.l3",
+      "skill_name": "Past Simple Regular Verbs",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "She ___ (play) piano at the concert yesterday.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "plays", "icon": null, "error_tag": "uses_present_for_past" },
+        { "option_id": "b", "label": "played", "icon": null, "error_tag": null },
+        { "option_id": "c", "label": "play", "icon": null, "error_tag": "no_tense_marker" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "'Yesterday' -> qua khu. 'Play' la dong tu quy tac -> 'played'."
+    },
+    {
+      "question_id": "qb_015",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u5.l3",
+      "skill_name": "Past Simple Regular Verbs",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "They ___ (study) English and ___ (listen) to music last Sunday.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "studied ... listened", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "study ... listen", "icon": null, "error_tag": "no_past_tense" },
+        { "option_id": "c", "label": "studied ... listen", "icon": null, "error_tag": "inconsistent_tense" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Ca hai dong tu deu o qua khu vi 'last Sunday'. 'Study' -> 'studied', 'listen' -> 'listened'."
+    },
+    {
+      "question_id": "qb_016",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u6.l3",
+      "skill_name": "Comparatives",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "An elephant is ___ than a mouse.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "bigger", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "biggest", "icon": null, "error_tag": "uses_superlative_not_comparative" },
+        { "option_id": "c", "label": "more big", "icon": null, "error_tag": "wrong_comparative_form" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "So sanh 2 doi tuong -> dang comparative. 'Big' ngan -> them -er -> 'bigger'."
+    },
+    {
+      "question_id": "qb_017",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u6.l3",
+      "skill_name": "Comparatives",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "This book is ___ interesting than that one.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "more", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "most", "icon": null, "error_tag": "uses_superlative" },
+        { "option_id": "c", "label": "very", "icon": null, "error_tag": "uses_degree_not_comparison" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Interesting' la tu dai (2 syllable+) -> dung 'more' truoc tu de tao comparative."
+    },
+    {
+      "question_id": "qb_018",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u6.l3",
+      "skill_name": "Comparatives",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "My sister is ___ (tall) than me, but I am ___ (good) at sports.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "taller ... better", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "more tall ... more good", "icon": null, "error_tag": "wrong_comparative_forms" },
+        { "option_id": "c", "label": "taller ... more good", "icon": null, "error_tag": "inconsistent_irregular" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Tall' -> 'taller'; 'good' la ngoai le -> 'better'. Cau ket hop 2 comparative."
+    },
+    {
+      "question_id": "qb_019",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u7.l3",
+      "skill_name": "Past Simple Irregular Verbs",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Yesterday I ___ to the zoo.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "going", "icon": null, "error_tag": "confuses_gerund_with_past" },
+        { "option_id": "b", "label": "go", "icon": null, "error_tag": "uses_present_for_past" },
+        { "option_id": "c", "label": "went", "icon": null, "error_tag": null }
+      ],
+      "correct_option_id": "c",
+      "explanation": "'Yesterday' -> qua khu. 'Go' la dong tu bat quy tac -> 'went'."
+    },
+    {
+      "question_id": "qb_020",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u7.l3",
+      "skill_name": "Past Simple Irregular Verbs",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "She ___ (see) a beautiful bird in the garden this morning.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "seed", "icon": null, "error_tag": "creates_regular_form" },
+        { "option_id": "b", "label": "saw", "icon": null, "error_tag": null },
+        { "option_id": "c", "label": "see", "icon": null, "error_tag": "no_past_tense" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "'See' la dong tu bat quy tac -> qua khu la 'saw', khong phai 'seed'."
+    },
+    {
+      "question_id": "qb_021",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u7.l3",
+      "skill_name": "Past Simple Irregular Verbs",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "We ___ (eat) pizza and ___ (drink) juice at the party last night.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "eat ... drink", "icon": null, "error_tag": "no_past_tense" },
+        { "option_id": "b", "label": "eated ... drinked", "icon": null, "error_tag": "applies_regular_to_irregular" },
+        { "option_id": "c", "label": "ate ... drank", "icon": null, "error_tag": null }
+      ],
+      "correct_option_id": "c",
+      "explanation": "'Eat' -> 'ate', 'drink' -> 'drank'. Ca hai deu la dong tu bat quy tac."
+    },
+    {
+      "question_id": "qb_022",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u8.l3",
+      "skill_name": "There Was / There Were",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "There ___ a cat under the table.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "was", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "were", "icon": null, "error_tag": "wrong_singular_plural" },
+        { "option_id": "c", "label": "is", "icon": null, "error_tag": "uses_present_for_past" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'A cat' la so it -> dung 'was'."
+    },
+    {
+      "question_id": "qb_023",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u8.l3",
+      "skill_name": "There Was / There Were",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "There ___ many students in the classroom yesterday.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "was", "icon": null, "error_tag": "wrong_singular_plural" },
+        { "option_id": "b", "label": "were", "icon": null, "error_tag": null },
+        { "option_id": "c", "label": "are", "icon": null, "error_tag": "uses_present_for_past" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "'Many students' la so nhieu -> dung 'were'. 'Yesterday' -> qua khu."
+    },
+    {
+      "question_id": "qb_024",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u8.l3",
+      "skill_name": "There Was / There Were",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "___ there any cookies left? - No, there ___.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "Was ... wasn't", "icon": null, "error_tag": "singular_for_uncountable_quantity" },
+        { "option_id": "b", "label": "Were ... weren't", "icon": null, "error_tag": null },
+        { "option_id": "c", "label": "Were ... wasn't", "icon": null, "error_tag": "inconsistent_number" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "'Any cookies' la so nhieu -> 'Were there...?' va 'No, there weren't.'"
+    },
+    {
+      "question_id": "qb_025",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u9.l3",
+      "skill_name": "Have to / Don't Have to",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "You ___ wear a uniform at school.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "have to", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "don't have to", "icon": null, "error_tag": "opposite_obligation" },
+        { "option_id": "c", "label": "can", "icon": null, "error_tag": "uses_ability_not_obligation" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Mac dong phuc la bat buoc -> 'have to'."
+    },
+    {
+      "question_id": "qb_026",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u9.l3",
+      "skill_name": "Have to / Don't Have to",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "It's a holiday tomorrow. You ___ get up early.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "have to", "icon": null, "error_tag": "wrong_obligation" },
+        { "option_id": "b", "label": "don't have to", "icon": null, "error_tag": null },
+        { "option_id": "c", "label": "mustn't", "icon": null, "error_tag": "confuses_no_obligation_with_prohibition" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "Ngay nghi -> khong bat buoc phai day som -> 'don't have to' (khong can thiet)."
+    },
+    {
+      "question_id": "qb_027",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u9.l3",
+      "skill_name": "Have to / Don't Have to",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "She ___ (not have to) bring lunch because the school provides free meals.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "has to", "icon": null, "error_tag": "opposite_meaning" },
+        { "option_id": "b", "label": "doesn't have to", "icon": null, "error_tag": null },
+        { "option_id": "c", "label": "mustn't", "icon": null, "error_tag": "confuses_no_obligation_with_prohibition" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "Truong cung cap com mien phi -> khong can mang -> 'doesn't have to' (so 3 nguoi)."
+    },
+    {
+      "question_id": "qb_028",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u10.l3",
+      "skill_name": "Going To (Future Plans)",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "We ___ visit our grandmother this weekend.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "are going to", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "goes to", "icon": null, "error_tag": "wrong_subject_and_tense" },
+        { "option_id": "c", "label": "going to", "icon": null, "error_tag": "missing_auxiliary" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Ke hoach tuong lai -> dung 'be + going to'. 'We' -> 'are going to'."
+    },
+    {
+      "question_id": "qb_029",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u10.l3",
+      "skill_name": "Going To (Future Plans)",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Look at those clouds. It ___ rain.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "is going to", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "will going to", "icon": null, "error_tag": "double_future_marker" },
+        { "option_id": "c", "label": "goes to", "icon": null, "error_tag": "wrong_tense" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Du doan dua tren bang chung (may dam) -> 'is going to' (se)."
+    },
+    {
+      "question_id": "qb_030",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u10.l3",
+      "skill_name": "Going To (Future Plans)",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "What ___ you ___ (do) tomorrow? - I ___ (play) football with my friends.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "are ... going to do ... am going to play", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "do ... going to do ... play", "icon": null, "error_tag": "wrong_question_and_answer_tense" },
+        { "option_id": "c", "label": "are ... do ... am going to play", "icon": null, "error_tag": "incomplete_future_form" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Cau hoi: 'What are you going to do...?' Tra loi: 'I am going to play...'"
+    },
+    {
+      "question_id": "qb_031",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u1.l3",
+      "skill_name": "Past Simple Question Forms",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "___ you go to school yesterday?",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "Do", "icon": null, "error_tag": "uses_present_for_past" },
+        { "option_id": "b", "label": "Did", "icon": null, "error_tag": null },
+        { "option_id": "c", "label": "Are", "icon": null, "error_tag": "wrong_tense_and_auxiliary" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "'Yesterday' -> qua khu. Cau hoi voi 'did' + dang goc cua dong tu."
+    },
+    {
+      "question_id": "qb_032",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u1.l3",
+      "skill_name": "Past Simple Question Forms",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Where ___ she ___ (live) before she moved here?",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "did ... live", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "does ... live", "icon": null, "error_tag": "uses_present_for_past" },
+        { "option_id": "c", "label": "did ... lived", "icon": null, "error_tag": "double_past_tense" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Cau hoi qua khu: 'Where did + S + dong tu goc?' Dong tu giu dang goc, khong them -ed."
+    },
+    {
+      "question_id": "qb_033",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u1.l3",
+      "skill_name": "Past Simple Question Forms",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "___ your father ___ (buy) a new car? - No, he ___.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "Did ... buy ... didn't", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "Did ... bought ... didn't", "icon": null, "error_tag": "double_past_tense" },
+        { "option_id": "c", "label": "Does ... buy ... doesn't", "icon": null, "error_tag": "uses_present_for_past" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Cau hoi: 'Did + S + dong tu goc?' Tra loi: 'No, he didn't.'"
+    },
+    {
+      "question_id": "qb_034",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u2.l3",
+      "skill_name": "Verbs with To + Infinitive",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "I want ___ (go) to the park.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "to go", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "go", "icon": null, "error_tag": "missing_to_infinitive" },
+        { "option_id": "c", "label": "going", "icon": null, "error_tag": "uses_gerund_after_want" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Want' luon dung truoc 'to + V' -> 'want to go'."
+    },
+    {
+      "question_id": "qb_035",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u2.l3",
+      "skill_name": "Verbs with To + Infinitive",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "She needs ___ (finish) her homework before dinner.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "to finish", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "finishing", "icon": null, "error_tag": "uses_gerund_after_need" },
+        { "option_id": "c", "label": "finish", "icon": null, "error_tag": "missing_to_infinitive" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Needs' + 'to + V' -> 'needs to finish'."
+    },
+    {
+      "question_id": "qb_036",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u2.l3",
+      "skill_name": "Verbs with To + Infinitive",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "He decided ___ (not watch) TV and ___ (read) a book instead.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "not to watch ... to read", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "to not watch ... read", "icon": null, "error_tag": "inconsistent_infinitive_form" },
+        { "option_id": "c", "label": "not watching ... reading", "icon": null, "error_tag": "uses_gerund" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Decided' + 'to + V'. Phu dinh: 'not to + V'. Ca hai vế deu dung to-infinitive."
+    },
+    {
+      "question_id": "qb_037",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u3.l3",
+      "skill_name": "Must / Mustn't",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "You ___ eat too much candy. It's bad for your teeth.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "must", "icon": null, "error_tag": "opposite_prohibition" },
+        { "option_id": "b", "label": "mustn't", "icon": null, "error_tag": null },
+        { "option_id": "c", "label": "don't have to", "icon": null, "error_tag": "confuses_prohibition_with_no_obligation" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "Anh kha nhieu keo tot cho rang -> cam -> 'mustn't' (khong duoc)."
+    },
+    {
+      "question_id": "qb_038",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u3.l3",
+      "skill_name": "Must / Mustn't",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "We ___ be quiet in the library.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "must", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "mustn't", "icon": null, "error_tag": "opposite_obligation" },
+        { "option_id": "c", "label": "don't have to", "icon": null, "error_tag": "confuses_obligation_with_no_obligation" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Thu vien phai im lang -> bat buoc -> 'must'."
+    },
+    {
+      "question_id": "qb_039",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u3.l3",
+      "skill_name": "Must / Mustn't",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "You ___ touch the wet paint, and you ___ wear shoes in the gym.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        { "option_id": "a", "label": "mustn't ... must", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "must ... mustn't", "icon": null, "error_tag": "swaps_prohibition_and_obligation" },
+        { "option_id": "c", "label": "mustn't ... mustn't", "icon": null, "error_tag": "double_prohibition" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Cam cham son (mustn't); bat buoc mang giay (must)."
+    },
+    {
+      "question_id": "qb_040",
+      "type": "listen_choice",
+      "instruction_label": "NGHE & CHON",
+      "skill_id": "as3.u1.l1",
+      "skill_name": "School Vocabulary",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "What subject do you study with numbers?",
+        "audio_url": "audio/qb_040.mp3",
+        "audio_transcript": "What subject do you study with numbers?"
+      },
+      "options": [
+        { "option_id": "a", "label": "music", "icon": null, "error_tag": "wrong_school_subject" },
+        { "option_id": "b", "label": "maths", "icon": null, "error_tag": null },
+        { "option_id": "c", "label": "art", "icon": null, "error_tag": "wrong_school_subject" }
+      ],
+      "correct_option_id": "b",
+      "explanation": "Mon hoc dung voi so la 'maths' (toan hoc)."
+    },
+    {
+      "question_id": "qb_041",
+      "type": "listen_choice",
+      "instruction_label": "NGHE & CHON",
+      "skill_id": "as3.u3.l1",
+      "skill_name": "Places Around Town",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Where do you go to borrow books?",
+        "audio_url": "audio/qb_041.mp3",
+        "audio_transcript": "Where do you go to borrow books?"
+      },
+      "options": [
+        { "option_id": "a", "label": "hospital", "icon": null, "error_tag": "wrong_place" },
+        { "option_id": "b", "label": "cinema", "icon": null, "error_tag": "wrong_place" },
+        { "option_id": "c", "label": "library", "icon": null, "error_tag": null }
+      ],
+      "correct_option_id": "c",
+      "explanation": "Noi muon sach la 'library' (thu vien)."
+    },
+    {
+      "question_id": "qb_042",
+      "type": "listen_choice",
+      "instruction_label": "NGHE & CHON",
+      "skill_id": "as3.u4.l1",
+      "skill_name": "Food and Tableware",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Which one is a vegetable?",
+        "audio_url": "audio/qb_042.mp3",
+        "audio_transcript": "Which one is a vegetable?"
+      },
+      "options": [
+        { "option_id": "a", "label": "spinach", "icon": null, "error_tag": null },
+        { "option_id": "b", "label": "biscuit", "icon": null, "error_tag": "not_vegetable" },
+        { "option_id": "c", "label": "cheese", "icon": null, "error_tag": "not_vegetable" }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Spinach' (rau binh minh) la rau. 'Biscuit' la banh, 'cheese' la pho mai."
+    }
+  ]
+}

@@ -27,7 +27,8 @@ import {
   AlertTriangle,
   Lightbulb,
   Menu,
-  Key
+  Key,
+  UserCog
 } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { apiFetch } from './api';
@@ -55,6 +56,8 @@ function DashboardApp({ user, logout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+  const [userRoleFilter, setUserRoleFilter] = useState('all');
   const [rankings, setRankings] = useState([]);
   const [testResults, setTestResults] = useState([]);
   const [questions, setQuestions] = useState([]);
@@ -158,6 +161,33 @@ function DashboardApp({ user, logout }) {
       }
     } catch (err) {
       console.error("Error fetching teachers:", err);
+    }
+  };
+
+  const fetchAllUsers = async () => {
+    try {
+      const res = await apiFetch('/api/auth/users');
+      if (res.ok) {
+        const data = await res.json();
+        setAllUsers(data);
+      }
+    } catch (err) {
+      console.error("Error fetching all users:", err);
+    }
+  };
+
+  const deleteUserById = async (id, name) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa người dùng "${name}"?`)) return;
+    try {
+      const res = await apiFetch(`/api/auth/users/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setAllUsers(allUsers.filter(u => u.id !== id));
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.detail || 'Xóa người dùng thất bại');
+      }
+    } catch (err) {
+      console.error("Error deleting user:", err);
     }
   };
 
@@ -707,7 +737,15 @@ function DashboardApp({ user, logout }) {
           {(user?.role === 'admin' || user?.role === 'giao_vien') && (
             <button
               className={`menu-item ${activeTab === 'users' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('users'); setUserSubTab('students'); fetchStudents(); setSidebarOpen(false); }}
+              onClick={() => {
+                setActiveTab('users');
+                if (user?.role === 'admin') {
+                  setUserSubTab('all'); setUserRoleFilter('all'); fetchAllUsers();
+                } else {
+                  setUserSubTab('students'); fetchStudents();
+                }
+                setSidebarOpen(false);
+              }}
             >
               <Users size={20} />
               <span>Người dùng</span>
@@ -770,6 +808,7 @@ function DashboardApp({ user, logout }) {
               ) : (
                 <>
                   {activeTab === 'dashboard' && 'Tổng quan'}
+                  {activeTab === 'users' && userSubTab === 'all' && 'Tất cả người dùng'}
                   {activeTab === 'users' && userSubTab === 'students' && 'Danh sách Học sinh'}
                   {activeTab === 'users' && userSubTab === 'teachers' && 'Danh sách Giáo viên'}
                   {activeTab === 'leaderboard' && 'Bảng xếp hạng'}
@@ -784,7 +823,7 @@ function DashboardApp({ user, logout }) {
           
           <div className="header-right">
             {/* Conditional Search bar in Header */}
-            {activeTab === 'users' && userSubTab === 'students' && (
+          {activeTab === 'users' && userSubTab === 'students' && (
               <div className="header-search-filter" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div className="search-bar">
                 <Search size={18} />
@@ -1165,23 +1204,122 @@ function DashboardApp({ user, logout }) {
           {activeTab === 'users' && (
             <div className="animate-fade-in">
               <div className="subtab-bar">
-                <button
-                  className={`subtab-btn ${userSubTab === 'students' ? 'active' : ''}`}
-                  onClick={() => { setUserSubTab('students'); fetchStudents(); }}
-                >
-                  <GraduationCap size={16} />
-                  Học sinh
-                </button>
+                {user?.role === 'admin' && (
+                  <button
+                    className={`subtab-btn ${userSubTab === 'all' ? 'active' : ''}`}
+                    onClick={() => { setUserSubTab('all'); setUserRoleFilter('all'); fetchAllUsers(); }}
+                  >
+                    <Users size={16} />
+                    Tất cả
+                  </button>
+                )}
+                {user?.role === 'admin' && (
+                  <button
+                    className={`subtab-btn ${userSubTab === 'students' ? 'active' : ''}`}
+                    onClick={() => { setUserSubTab('students'); fetchStudents(); }}
+                  >
+                    <GraduationCap size={16} />
+                    Học sinh
+                  </button>
+                )}
                 {user?.role === 'admin' && (
                   <button
                     className={`subtab-btn ${userSubTab === 'teachers' ? 'active' : ''}`}
                     onClick={() => { setUserSubTab('teachers'); fetchTeachers(); }}
                   >
-                    <Users size={16} />
+                    <UserCog size={16} />
                     Giáo viên
                   </button>
                 )}
               </div>
+            </div>
+          )}
+
+          {activeTab === 'users' && userSubTab === 'all' && (
+            <div className="animate-fade-in panel table-panel">
+              <div className="table-header-bar">
+                <h3 className="table-title">Tất cả người dùng</h3>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <select
+                    className="filter-select"
+                    value={userRoleFilter}
+                    onChange={(e) => setUserRoleFilter(e.target.value)}
+                  >
+                    <option value="all">Tất cả vai trò</option>
+                    <option value="hoc_sinh">Học sinh</option>
+                    <option value="giao_vien">Giáo viên</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+              </div>
+
+              {loading && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Đang tải dữ liệu...</div>}
+
+              {!loading && allUsers.filter(u => userRoleFilter === 'all' || u.role === userRoleFilter).length === 0 ? (
+                <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                  <Users size={48} style={{ opacity: '0.4', marginBottom: '16px' }} />
+                  <p>Không tìm thấy người dùng nào.</p>
+                </div>
+              ) : (
+                <div className="table-container">
+                  <table className="custom-table">
+                    <thead>
+                      <tr>
+                        <th>Người dùng</th>
+                        <th>Email</th>
+                        <th>Vai trò</th>
+                        <th>Khối / Môn</th>
+                        <th>Ngày tạo</th>
+                        <th style={{ width: '120px', textAlign: 'center' }}>Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allUsers
+                        .filter(u => userRoleFilter === 'all' || u.role === userRoleFilter)
+                        .map(u => (
+                        <tr key={u.id}>
+                          <td>
+                            <div className="student-meta">
+                              <div className="avatar-circle" style={{ background: getAvatarColor(u.name) }}>
+                                {u.name.charAt(0).toUpperCase()}
+                              </div>
+                              <span className="meta-name">{u.name}</span>
+                            </div>
+                          </td>
+                          <td style={{ color: 'var(--text-muted)' }}>{u.email}</td>
+                          <td>
+                            {u.role === 'hoc_sinh' && <span className="badge badge-primary">Học sinh</span>}
+                            {u.role === 'giao_vien' && <span className="badge badge-secondary">Giáo viên</span>}
+                            {u.role === 'admin' && <span className="badge badge-success">Admin</span>}
+                          </td>
+                          <td>
+                            {u.role === 'hoc_sinh' && <span className="badge badge-primary">{u.grade || 'Lớp 6'}</span>}
+                            {u.role === 'giao_vien' && <span className="badge badge-secondary">{u.subject || 'Tiếng Anh'}</span>}
+                            {u.role === 'admin' && <span className="badge">—</span>}
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>
+                              <Clock size={12} />
+                              <span>{u.created_at ? new Date(u.created_at).toLocaleDateString('vi-VN') : '—'}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="action-group">
+                              <button
+                                className="action-btn action-btn-delete"
+                                title="Xóa"
+                                onClick={() => deleteUserById(u.id, u.name)}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 
@@ -1413,11 +1551,11 @@ function DashboardApp({ user, logout }) {
                   {/* 2nd place */}
                   {podiumStudents[1] && (
                     <div className="podium-column">
-                      <div className="podium-avatar" style={{ background: getAvatarColor(getStudentName(podiumStudents[1].student_id)) }}>
-                        {getStudentName(podiumStudents[1].student_id).charAt(0).toUpperCase()}
+                      <div className="podium-avatar" style={{ background: getAvatarColor(getStudentName(podiumStudents[1].user_id)) }}>
+                        {getStudentName(podiumStudents[1].user_id).charAt(0).toUpperCase()}
                         <div className="podium-medal silver-medal">2</div>
                       </div>
-                      <div className="podium-name">{getStudentName(podiumStudents[1].student_id)}</div>
+                      <div className="podium-name">{getStudentName(podiumStudents[1].user_id)}</div>
                       <div className="podium-score">{podiumStudents[1].score} pts</div>
                       <div className="podium-block podium-block-2">2</div>
                     </div>
@@ -1426,11 +1564,11 @@ function DashboardApp({ user, logout }) {
                   {/* 1st place */}
                   {podiumStudents[0] && (
                     <div className="podium-column">
-                      <div className="podium-avatar" style={{ background: getAvatarColor(getStudentName(podiumStudents[0].student_id)) }}>
-                        {getStudentName(podiumStudents[0].student_id).charAt(0).toUpperCase()}
+                      <div className="podium-avatar" style={{ background: getAvatarColor(getStudentName(podiumStudents[0].user_id)) }}>
+                        {getStudentName(podiumStudents[0].user_id).charAt(0).toUpperCase()}
                         <div className="podium-medal gold-medal">1</div>
                       </div>
-                      <div className="podium-name" style={{ fontSize: '16px', fontWeight: '800' }}>{getStudentName(podiumStudents[0].student_id)}</div>
+                      <div className="podium-name" style={{ fontSize: '16px', fontWeight: '800' }}>{getStudentName(podiumStudents[0].user_id)}</div>
                       <div className="podium-score" style={{ fontSize: '13px' }}>{podiumStudents[0].score} pts</div>
                       <div className="podium-block podium-block-1">1</div>
                     </div>
@@ -1439,11 +1577,11 @@ function DashboardApp({ user, logout }) {
                   {/* 3rd place */}
                   {podiumStudents[2] && (
                     <div className="podium-column">
-                      <div className="podium-avatar" style={{ background: getAvatarColor(getStudentName(podiumStudents[2].student_id)) }}>
-                        {getStudentName(podiumStudents[2].student_id).charAt(0).toUpperCase()}
+                      <div className="podium-avatar" style={{ background: getAvatarColor(getStudentName(podiumStudents[2].user_id)) }}>
+                        {getStudentName(podiumStudents[2].user_id).charAt(0).toUpperCase()}
                         <div className="podium-medal bronze-medal">3</div>
                       </div>
-                      <div className="podium-name">{getStudentName(podiumStudents[2].student_id)}</div>
+                      <div className="podium-name">{getStudentName(podiumStudents[2].user_id)}</div>
                       <div className="podium-score">{podiumStudents[2].score} pts</div>
                       <div className="podium-block podium-block-3">3</div>
                     </div>
@@ -1472,16 +1610,16 @@ function DashboardApp({ user, logout }) {
                         </td>
                         <td>
                           <div className="student-meta">
-                            <div className="avatar-circle" style={{ background: getAvatarColor(getStudentName(rank.student_id)) }}>
-                              {getStudentName(rank.student_id).charAt(0).toUpperCase()}
+                            <div className="avatar-circle" style={{ background: getAvatarColor(getStudentName(rank.user_id)) }}>
+                              {getStudentName(rank.user_id).charAt(0).toUpperCase()}
                             </div>
                             <div>
-                              <div className="meta-name">{getStudentName(rank.student_id)}</div>
-                              <div className="meta-email">{getStudentEmail(rank.student_id)}</div>
+                              <div className="meta-name">{getStudentName(rank.user_id)}</div>
+                              <div className="meta-email">{getStudentEmail(rank.user_id)}</div>
                             </div>
                           </div>
                         </td>
-                        <td>{getStudentGrade(rank.student_id) || 'Lớp 6'}</td>
+                        <td>{getStudentGrade(rank.user_id) || 'Lớp 6'}</td>
                         <td>
                           <span className={`badge ${rank.level === 'Expert' ? 'badge-success' : rank.level === 'Intermediate' ? 'badge-secondary' : (rank.level === 'Beginner' || rank.level === 'Starter') ? 'badge-danger' : 'badge-primary'}`}>
                             {rank.level}
@@ -1697,12 +1835,12 @@ function DashboardApp({ user, logout }) {
                               <tr key={result.id}>
                                 <td>
                                   <div className="student-meta">
-                                    <div className="avatar-circle" style={{ background: getAvatarColor(getStudentName(result.student_id)) }}>
-                                      {getStudentName(result.student_id).charAt(0).toUpperCase()}
+                                    <div className="avatar-circle" style={{ background: getAvatarColor(getStudentName(result.user_id)) }}>
+                                      {getStudentName(result.user_id).charAt(0).toUpperCase()}
                                     </div>
                                     <div>
-                                      <div className="meta-name">{getStudentName(result.student_id)}</div>
-                                      <div className="meta-email">{getStudentEmail(result.student_id)}</div>
+                                      <div className="meta-name">{getStudentName(result.user_id)}</div>
+                                      <div className="meta-email">{getStudentEmail(result.user_id)}</div>
                                     </div>
                                   </div>
                                 </td>
@@ -1769,7 +1907,7 @@ function DashboardApp({ user, logout }) {
                         ← Quay lại
                       </button>
                       <h3 className="table-title" style={{ margin: 0, flex: 1 }}>
-                        Kết quả: {getStudentName(selectedResult.student_id)}
+                        Kết quả: {getStudentName(selectedResult.user_id)}
                       </h3>
                     </div>
                   </div>

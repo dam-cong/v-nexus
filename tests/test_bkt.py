@@ -39,20 +39,20 @@ def test_wrong_decreases():
 
 
 def test_root_cause_tracing():
-    # Học sinh làm sai as3.u8.l3 (There was/were) do yếu gốc as3.u3.l3 (To Be)
-    mastery = compute_mastery(_mk_answers("as3.u8.l3", 0, 3))
-    # To Be (as3.u3.l3) là tiên quyết, giả định cũng yếu (default prior)
+    # Học sinh làm sai G3U09-PAT (What colour is it?) do yếu gốc G3U09-VOC (từ vựng màu sắc)
+    mastery = compute_mastery(_mk_answers("G3U09-PAT", 0, 3))
+    # G3U09-VOC là tiên quyết, giả định cũng yếu (default prior)
     gaps = diagnose_gaps(mastery)
     gap_ids = {g["skill_id"] for g in gaps}
-    assert "as3.u8.l3" in gap_ids
-    # truy ngược phải chỉ ra as3.u3.l3 là gốc (vì prior < ROOT_THRESHOLD)
-    assert "as3.u3.l3" in gap_ids
+    assert "G3U09-PAT" in gap_ids
+    # truy ngược phải chỉ ra G3U09-VOC là gốc (vì prior < ROOT_THRESHOLD)
+    assert "G3U09-VOC" in gap_ids
 
 
 def test_no_gap_when_mastered():
-    mastery = compute_mastery(_mk_answers("as3.u1.l3", 10, 0))
+    mastery = compute_mastery(_mk_answers("G3U04-VOC", 10, 0))
     gaps = diagnose_gaps(mastery)
-    assert all(g["skill_id"] != "as3.u1.l3" for g in gaps)
+    assert all(g["skill_id"] != "G3U04-VOC" for g in gaps)
 
 
 def test_unknown_skill_fallback():
@@ -62,8 +62,8 @@ def test_unknown_skill_fallback():
 
 
 def test_trace_root_causes_empty_when_ok():
-    mastery = {"as3.u8.l3": {"probability": 0.9}}
-    assert trace_root_causes("as3.u8.l3", mastery) == []
+    mastery = {"G3U09-PAT": {"probability": 0.9}}
+    assert trace_root_causes("G3U09-PAT", mastery) == []
 
 
 if __name__ == "__main__":
