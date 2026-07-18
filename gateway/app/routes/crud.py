@@ -195,6 +195,10 @@ class TestResultResponse(BaseModel):
     gaps: Optional[list] = None
     recommendations: Optional[list] = None
     training_plan: Optional[str] = None
+    alternative_plans: Optional[dict] = None
+    roadmap_completed: bool = False
+    quick_check_passed: bool = False
+    test_date: datetime
     is_roadmap_approved: Optional[bool] = False
     roadmap_completed: Optional[bool] = False
     quick_check_passed: Optional[bool] = False
@@ -231,6 +235,7 @@ class TestResultSubmit(BaseModel):
     gaps: Optional[list] = None
     recommendations: Optional[list] = None
     training_plan: Optional[str] = None
+    alternative_plans: Optional[dict] = None
     test_date: Optional[str] = None
 
 
@@ -1054,6 +1059,80 @@ async def mark_test_result_complete(
     return test_result
 
 
+class SelectAlternativePathSubmit(BaseModel):
+    path_key: str  # "path_1_back_to_roots", "path_2_pacing_density", or "path_3_alternative_modality"
+
+
+@router.post("/test-results/{result_id}/select-alternative-path", response_model=TestResultResponse)
+async def select_alternative_path(
+    result_id: int,
+    body: SelectAlternativePathSubmit,
+    db: AsyncSession = Depends(get_session),
+    user: dict = Depends(get_current_user),
+):
+    """Giáo viên chọn 1 trong 3 lộ trình thay thế cho học sinh.
+    
+    Lộ trình được chọn sẽ được chuyển đổi cấu trúc và cập nhật thành training_plan chính thức.
+    """
+    # 1. Kiểm tra phân quyền: Chỉ giáo viên hoặc quản trị viên mới có quyền chọn lộ trình
+    if user.get("role") == "hoc_sinh":
+        raise HTTPException(
+            status_code=403, 
+            detail="Chỉ giáo viên hoặc quản trị viên mới có quyền chọn lộ trình thay thế cho học sinh."
+        )
+
+    # 2. Truy vấn kết quả bài kiểm tra
+    result = await db.execute(select(StudentTestResult).where(StudentTestResult.id == result_id))
+    test_result = result.scalar_one_or_none()
+    if not test_result:
+        raise HTTPException(status_code=404, detail="Test result not found")
+
+    # 3. Kiểm tra sự tồn tại của alternative_plans
+    if not test_result.alternative_plans or "alternative_paths" not in test_result.alternative_plans:
+        raise HTTPException(
+            status_code=400, 
+            detail="Bài kiểm tra này chưa kích hoạt hoặc không có sẵn lộ trình thay thế để lựa chọn."
+        )
+
+    paths = test_result.alternative_plans["alternative_paths"]
+    if body.path_key not in paths:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Mã lộ trình '{body.path_key}' không hợp lệ. Phải là một trong: {list(paths.keys())}"
+        )
+
+    selected_path = paths[body.path_key]
+
+    # 4. Chuyển đổi lộ trình thay thế thành định dạng training_plan chuẩn của hệ thống
+    from domain.knowledge_graph import get_skill_name
+    
+    steps = []
+    for i, step in enumerate(selected_path.get("action_steps", [])):
+        skill_id = step.get("skill_id", "")
+        steps.append({
+            "step_order": step.get("step_number") or (i + 1),
+            "skill_name": get_skill_name(skill_id) if skill_id else "Kỹ năng chưa xác định",
+            "encouragement": f"Lộ trình tối ưu do Giáo viên chỉ định: {selected_path.get('primary_difference', '')}",
+            "practice_tip": step.get("action_description", ""),
+            "home_tip": f"Dành khoảng {step.get('estimated_duration_mins', 20)} phút luyện tập mỗi ngày."
+        })
+
+    formatted_plan = {
+        "summary": f"Lộ trình học tập thay thế chiến lược '{body.path_key}' do Giáo viên chỉ định. Lý do sư phạm: {selected_path.get('reasoning_cot', '')}",
+        "steps": steps,
+        "closing": f"Lộ trình kỳ vọng đạt: {selected_path.get('expected_outcome', '')}. Hãy kiên trì học tập nhé!"
+    }
+
+    import json
+    test_result.training_plan = json.dumps(formatted_plan, ensure_ascii=False)
+    
+    # 5. Lưu vào CSDL
+    await db.commit()
+    await db.refresh(test_result)
+    
+    return test_result
+
+
 @router.get("/test-results/{result_id}/quick-check-questions")
 async def get_quick_check_questions(
     result_id: int,
@@ -1198,6 +1277,59 @@ async def submit_placement_test(
         print(f"[LLM] training plan generation failed: {e}")
         training_plan = None
 
+    # Query các lần làm bài trước đó của học sinh cho cùng test_id
+    from sqlalchemy import select
+    previous_attempts_result = await db.execute(
+        select(StudentTestResult)
+        .where(StudentTestResult.user_id == student_id)
+        .where(StudentTestResult.test_id == test_id)
+        .order_by(StudentTestResult.test_date.desc())
+    )
+    previous_attempts = list(previous_attempts_result.scalars().all())
+
+    # --- Tách riêng tính toán điều kiện kích hoạt đề xuất lộ trình mới ---
+    alternative_plans = None
+
+    if len(previous_attempts) >= 2:
+        last_attempt = previous_attempts[0]
+        
+        # 1. Bộ lọc thời gian tối thiểu >= 10 phút (600 giây)
+        time_gap_sec = (test_date - last_attempt.test_date).total_seconds()
+        is_time_gap_ok = time_gap_sec >= 600
+        
+        # 2. Bộ lọc tỷ lệ hoàn thành >= 80%
+        total_questions = 1
+        try:
+            from sqlalchemy import func
+            from db.models import PlacementTestQuestion
+            q_count_res = await db.execute(
+                select(func.count(PlacementTestQuestion.id))
+                .where(PlacementTestQuestion.test_id == test_id)
+            )
+            total_questions = q_count_res.scalar() or 1
+        except Exception:
+            total_questions = max(len(body.answers or []), len(last_attempt.answers or []), 1)
+            
+        completion_rate = len(body.answers or []) / total_questions
+        is_completion_rate_ok = completion_rate >= 0.8
+        
+        # 3. Chưa đạt kết quả tốt (<50%): điểm phần trăm dưới 50
+        is_score_low = body.percentage < 50.0
+        
+        if is_time_gap_ok and is_completion_rate_ok and is_score_low:
+            try:
+                from tools.plan_tool import generate_alternative_plans
+                alternative_plans = generate_alternative_plans(
+                    gaps=gaps or [],
+                    mastery=mastery or {},
+                    student_name=user.get("name", ""),
+                    level=body.cefr,
+                    old_plan=training_plan
+                )
+            except Exception as e:
+                print(f"[LLM Alternative Plan] error: {e}")
+                alternative_plans = None
+
     test_result = StudentTestResult(
         user_id=student_id,
         test_id=test_id,
@@ -1212,6 +1344,7 @@ async def submit_placement_test(
         gaps=gaps,
         recommendations=body.recommendations,
         training_plan=training_plan,
+        alternative_plans=alternative_plans,
         test_date=test_date,
     )
     db.add(test_result)

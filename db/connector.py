@@ -138,6 +138,12 @@ async def init_db() -> None:
         await conn.execute(
             text(
                 "ALTER TABLE student_test_results "
+                "ADD COLUMN IF NOT EXISTS alternative_plans JSON;"
+            )
+        )
+        await conn.execute(
+            text(
+                "ALTER TABLE student_test_results "
                 "ADD COLUMN IF NOT EXISTS roadmap_completed BOOLEAN DEFAULT FALSE;"
             )
         )

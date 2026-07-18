@@ -178,6 +178,7 @@ class StudentTestResult(Base):
     gaps: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     recommendations: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     training_plan: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    alternative_plans: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     is_roadmap_approved: Mapped[bool] = mapped_column(Boolean, default=False)
     roadmap_completed: Mapped[bool] = mapped_column(Boolean, default=False)
     quick_check_passed: Mapped[bool] = mapped_column(Boolean, default=False)

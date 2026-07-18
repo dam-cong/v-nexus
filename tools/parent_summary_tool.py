@@ -10,7 +10,7 @@
 """
 import json
 
-from agent.llm_client import create_message_fpt
+from agent.llm_client import call_llm
 from tools.base import Tool
 
 
@@ -132,7 +132,7 @@ def parent_student_summary(student_name: str, parent_name: str, authorized: bool
     )
 
     try:
-        resp = create_message_fpt(
+        resp = call_llm(
             system=_SYSTEM_PROMPT,
             messages=[{"role": "user", "content": user_msg}],
             tools=None,
