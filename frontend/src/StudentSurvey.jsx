@@ -77,6 +77,15 @@ function computeResult(answers, questions) {
     const selected = answers[q.question_id] || null;
     const correct = selected === q.correct_option_id;
     if (correct) score += 1;
+
+    const skillId = q.skill_id;
+    if (mastery[skillId]) {
+      if (correct) {
+        mastery[skillId].correct += 1;
+      }
+      mastery[skillId].probability = mastery[skillId].correct / mastery[skillId].total;
+    }
+
     const opt = q.options?.find(o => o.option_id === selected);
     answersArr.push({
       question_id: q.question_id,
@@ -368,7 +377,6 @@ function ScreenLevelSelect({ tests, selectedTestId, onSelectTest, onNext, onBack
       </div>
 
       <div className="survey-actions">
-        <button className="survey-btn survey-btn-outline" onClick={onBack}>Quay lại</button>
         <button className="survey-btn survey-btn-primary" onClick={onNext} disabled={!selectedTestId}>Tiếp tục</button>
       </div>
     </div>
@@ -554,13 +562,13 @@ function ScreenTestTaking({ questions, answers, setAnswers, currentIdx, setCurre
                 {lastCorrect
                   ? `Tuyệt vời! Em đã trả lời đúng câu hỏi về ${q?.skill_name || 'kiến thức này'}.`
                   : (() => {
-                      const correctOpt = q?.options?.find(o => o.option_id === q.correct_option_id);
-                      const wrongOpt = q?.options?.find(o => o.option_id === answers[q.question_id]);
-                      const errTag = wrongOpt?.error_tag || '';
-                      let hint = `Đáp án đúng là "${correctOpt?.label || ''}".`;
-                      if (errTag) hint += ` Lỗi: ${errTag.replace(/_/g, ' ')}.`;
-                      return hint;
-                    })()
+                    const correctOpt = q?.options?.find(o => o.option_id === q.correct_option_id);
+                    const wrongOpt = q?.options?.find(o => o.option_id === answers[q.question_id]);
+                    const errTag = wrongOpt?.error_tag || '';
+                    let hint = `Đáp án đúng là "${correctOpt?.label || ''}".`;
+                    if (errTag) hint += ` Lỗi: ${errTag.replace(/_/g, ' ')}.`;
+                    return hint;
+                  })()
                 }
               </p>
               <div className="survey-feedback-quote">
@@ -715,7 +723,7 @@ function ScreenReview({ questions, answers, marked, onBack, onSubmit }) {
   );
 }
 
-function ScreenResults({ result, onRestart, onTabChange }) {
+function ScreenResults({ result, onRestart, onTabChange, user, isGeneratingPlan }) {
   if (!result) return null;
   const masteryArr = Object.entries(result.mastery || {}).map(([id, m]) => ({
     id, ...m,
@@ -800,29 +808,37 @@ function ScreenResults({ result, onRestart, onTabChange }) {
         </div>
       )}
 
-      {result.training_plan && (
+      {isGeneratingPlan ? (
+        <div className="survey-results-section" style={{ textAlign: 'center', padding: '40px' }}>
+          <div className="survey-loading-spinner" style={{ margin: '0 auto 16px' }}></div>
+          <h3>Đang phân tích dữ liệu và tạo lộ trình học tập cá nhân hóa...</h3>
+          <p style={{ color: 'var(--text-muted)' }}>Quá trình này có thể mất khoảng 10-20 giây do AI đang suy nghĩ. Vui lòng không đóng trang.</p>
+        </div>
+      ) : result.training_plan ? (
         <div className="survey-results-section">
           <h3>Kế hoạch học tập cá nhân hóa (AI)</h3>
           <BeautifulRoadmap planText={result.training_plan} studentKey={user ? `result_${user.id}_${result.id}` : `result_${result.id}`} />
         </div>
-      )}
+      ) : null}
 
-      <div className="survey-actions" style={{ justifyContent: 'center', flexWrap: 'wrap', gap: '12px' }}>
-        <button className="survey-btn survey-btn-primary" onClick={() => onTabChange && onTabChange('roadmap')}>
-          <Icon name="sparkles" size={20} />
-          <span>Xem lộ trình của em</span>
-        </button>
-        <button className="survey-btn survey-btn-primary" onClick={onRestart}>
-          <span>Làm lại bài test</span>
-          <Icon name="replay" size={20} />
-        </button>
-      </div>
+      {!isGeneratingPlan && (
+        <div className="survey-actions" style={{ justifyContent: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          <button className="survey-btn survey-btn-primary" onClick={() => onTabChange && onTabChange('roadmap')}>
+            <Icon name="sparkles" size={20} />
+            <span>Xem lộ trình của em</span>
+          </button>
+          <button className="survey-btn survey-btn-primary" onClick={onRestart}>
+            <span>Làm lại bài test</span>
+            <Icon name="replay" size={20} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
 export default function StudentSurvey({ user, onTabChange }) {
-  const [screen, setScreen] = useState('landing');
+  const [screen, setScreen] = useState('level-select');
   const { tests, loading: testsLoading } = usePlacementTests();
   const [selectedTest, setSelectedTest] = useState(null);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -830,28 +846,30 @@ export default function StudentSurvey({ user, onTabChange }) {
   const [marked, setMarked] = useState(new Set());
   const [result, setResult] = useState(null);
   const { questions, loading: questionsLoading } = useTestQuestions(selectedTest?.id);
+  const [startTime, setStartTime] = useState(0);
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const loading = testsLoading || (selectedTest?.id && questionsLoading);
 
   const handleStart = () => setScreen('level-select');
   const handleLevelNext = () => setScreen('instructions');
-  const handleInstructionsNext = () => { setCurrentIdx(0); setScreen('testing'); };
+  const handleInstructionsNext = () => {
+    setCurrentIdx(0);
+    setStartTime(Date.now());
+    setScreen('testing');
+  };
   const handleTestingDone = () => setScreen('review');
   const handleReviewBack = () => setScreen('testing');
 
   const handleSubmit = useCallback(async () => {
     if (!selectedTest?.id) return;
+
+    const elapsedSec = Math.floor((Date.now() - startTime) / 1000);
     const res = computeResult(answers, questions);
+    res.time_total_sec = elapsedSec; // Override with real time
+
     setResult(res);
     setScreen('results');
-
-    // If offline: save to IndexedDB + generate offline plan
-    if (!navigator.onLine) {
-      const offlinePlan = generate_offline_plan(res.mastery, res.gaps, '');
-      const enriched = { ...res, training_plan: JSON.stringify(offlinePlan) };
-      setResult(enriched);
-      try { await savePendingResult(enriched); } catch (e) { console.error('IndexedDB save failed:', e); }
-      return;
-    }
+    setIsGeneratingPlan(true);
 
     try {
       const submitRes = await apiFetch(`/api/placement-tests/${selectedTest.id}/submit`, {
@@ -873,17 +891,19 @@ export default function StudentSurvey({ user, onTabChange }) {
       });
       if (submitRes.ok) {
         const saved = await submitRes.json();
-        if (saved && saved.training_plan) {
-          setResult(prev => ({ ...prev, training_plan: saved.training_plan }));
+        if (saved) {
+          setResult(saved);
         }
       }
     } catch (e) {
       console.error('Failed to submit result:', e);
+    } finally {
+      setIsGeneratingPlan(false);
     }
-  }, [answers, questions, selectedTest]);
+  }, [answers, questions, selectedTest, startTime]);
 
   const handleRestart = () => {
-    setScreen('landing');
+    setScreen('level-select');
     setSelectedTest(null);
     setCurrentIdx(0);
     setAnswers({});
@@ -940,7 +960,13 @@ export default function StudentSurvey({ user, onTabChange }) {
         />
       )}
       {screen === 'results' && (
-        <ScreenResults result={result} onRestart={handleRestart} onTabChange={onTabChange} />
+        <ScreenResults
+          result={result}
+          onRestart={handleRestart}
+          onTabChange={onTabChange}
+          user={user}
+          isGeneratingPlan={isGeneratingPlan}
+        />
       )}
     </div>
   );
