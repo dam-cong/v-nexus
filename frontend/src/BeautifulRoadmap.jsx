@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { BookOpen, Check, Award, Lightbulb, HelpCircle, Star, Sparkles, Activity } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { BookOpen, Check, Lightbulb, HelpCircle, Star, Sparkles, Activity } from 'lucide-react';
 import './BeautifulRoadmap.css';
 
 // Simple bold markdown parser: replace **text** with <strong>text</strong>
@@ -107,6 +107,136 @@ export function parseRoadmap(text) {
   };
 }
 
+function tryParseJsonPlan(planText) {
+  if (!planText) return null;
+  if (typeof planText === 'object') return planText;
+  if (typeof planText !== 'string') return null;
+  const trimmed = planText.trim();
+  if (!trimmed) return null;
+  if (!(trimmed.startsWith('{') || trimmed.startsWith('['))) return null;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return null;
+  }
+}
+
+function normalizeJsonPlan(plan) {
+  if (!plan || typeof plan !== 'object') return null;
+  const steps = Array.isArray(plan.steps) ? plan.steps : [];
+  if (steps.length === 0 && !plan.summary && !plan.closing) return null;
+  const normalizedSteps = steps
+    .map((s, idx) => {
+      const stepOrder = Number.isFinite(Number(s.step_order)) ? Number(s.step_order) : (idx + 1);
+      const skillName = typeof s.skill_name === 'string' ? s.skill_name : `Bước ${stepOrder}`;
+      const skillId = typeof s.skill_id === 'string' ? s.skill_id : null;
+      const encouragement = typeof s.encouragement === 'string' ? s.encouragement : null;
+      const practiceTip = typeof s.practice_tip === 'string' ? s.practice_tip : null;
+      const homeTip = typeof s.home_tip === 'string' ? s.home_tip : null;
+      return { step_order: stepOrder, skill_name: skillName, skill_id: skillId, encouragement, practice_tip: practiceTip, home_tip: homeTip };
+    })
+    .sort((a, b) => a.step_order - b.step_order);
+
+  return {
+    summary: typeof plan.summary === 'string' ? plan.summary : '',
+    closing: typeof plan.closing === 'string' ? plan.closing : '',
+    steps: normalizedSteps,
+  };
+}
+
+function JsonRoadmap({ plan, completedItems, toggleItem }) {
+  const hasContent = !!plan.summary || !!plan.closing || (plan.steps && plan.steps.length > 0);
+  if (!hasContent) return null;
+
+  return (
+    <div className="roadmap-container">
+      {plan.summary && (
+        <div className="roadmap-intro-card">
+          <div className="roadmap-intro-avatar">
+            <Sparkles size={24} />
+          </div>
+          <p className="roadmap-intro-text">{renderFormattedText(plan.summary)}</p>
+        </div>
+      )}
+
+      {plan.steps?.length > 0 && (
+        <div className="roadmap-section-timeline">
+          <h4 className="roadmap-section-title timeline">
+            <BookOpen size={20} color="var(--roadmap-primary)" />
+            <span>Lộ trình gợi ý</span>
+          </h4>
+
+          <div className="roadmap-timeline">
+            <div className="roadmap-timeline-line"></div>
+            {plan.steps.map((step, idx) => {
+              const badgeClass = idx < 3 ? 'phase-green' : 'phase-blue';
+              const badgeText = idx < 3 ? 'Ưu tiên cao' : 'Giai đoạn tiếp theo';
+
+              const items = [
+                step.encouragement ? `Khích lệ: ${step.encouragement}` : null,
+                step.practice_tip ? `Luyện tập: ${step.practice_tip}` : null,
+                step.home_tip ? `Tại nhà: ${step.home_tip}` : null,
+              ].filter(Boolean);
+
+              return (
+                <div key={`${step.step_order}_${step.skill_id || step.skill_name}`} className="roadmap-timeline-node">
+                  <div className="roadmap-timeline-dot">{idx + 1}</div>
+                  <div className="roadmap-timeline-card">
+                    <div className="roadmap-card-header">
+                      <h5 className="roadmap-card-title">
+                        {renderFormattedText(step.skill_name)}
+                      </h5>
+                      <span className={`roadmap-card-badge ${badgeClass}`}>{badgeText}</span>
+                    </div>
+
+                    {items.length > 0 && (
+                      <div className="roadmap-exercises-list">
+                        {items.map((text, subIdx) => {
+                          const itemKey = `${step.step_order}_${step.skill_name}_${subIdx}_${text}`;
+                          const isDone = !!completedItems[itemKey];
+                          return (
+                            <div
+                              key={itemKey}
+                              className={`roadmap-exercise-item ${isDone ? 'completed' : ''}`}
+                              onClick={() => toggleItem(itemKey)}
+                            >
+                              <div className="roadmap-checkbox-container">
+                                {isDone && <Check size={12} color="white" />}
+                              </div>
+                              <span className="roadmap-exercise-text">{renderFormattedText(text)}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {plan.closing && (
+        <div className="roadmap-section-tips">
+          <h4 className="roadmap-section-title tips">
+            <Lightbulb size={20} color="var(--roadmap-warning)" />
+            <span>Lời nhắn</span>
+          </h4>
+          <div className="roadmap-tips-grid">
+            <div className="roadmap-tip-card">
+              <div className="roadmap-tip-icon">
+                <Star size={16} />
+              </div>
+              <p className="roadmap-tip-text">{renderFormattedText(plan.closing)}</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function BeautifulRoadmap({ planText, studentKey = 'default_student' }) {
   const [completedItems, setCompletedItems] = useState({});
 
@@ -127,6 +257,12 @@ export default function BeautifulRoadmap({ planText, studentKey = 'default_stude
       localStorage.setItem(`roadmap_progress_${studentKey}`, JSON.stringify(newCompleted));
     }
   };
+
+  const jsonPlanRaw = tryParseJsonPlan(planText);
+  const jsonPlan = normalizeJsonPlan(jsonPlanRaw);
+  if (jsonPlan) {
+    return <JsonRoadmap plan={jsonPlan} completedItems={completedItems} toggleItem={toggleItem} />;
+  }
 
   const parsed = parseRoadmap(planText);
 

@@ -125,15 +125,6 @@ function DashboardApp({ user, logout }) {
   };
 
   // Form states
-  const [surveyForm, setSurveyForm] = useState({
-    name: '',
-    email: '',
-    grade: 'Lớp 6',
-    years_studying_english: 1,
-    learning_environment: 'school',
-    self_assessment_level: 'A1',
-    learning_goal: ''
-  });
 
   const [studentForm, setStudentForm] = useState({
     name: '',
@@ -487,55 +478,6 @@ function DashboardApp({ user, logout }) {
   };
 
   // Survey Form Submission
-  const handleSurveySubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Create Student (survey data stored as part of student profile)
-      const studentRes = await apiFetch('/api/students', {
-        method: 'POST',
-        body: JSON.stringify({
-          name: surveyForm.name,
-          email: surveyForm.email,
-          grade: surveyForm.grade,
-          years_studying_english: parseInt(surveyForm.years_studying_english, 10),
-          learning_environment: surveyForm.learning_environment,
-          self_assessment_level: surveyForm.self_assessment_level,
-          learning_goal: surveyForm.learning_goal,
-          role_id: 1
-        })
-      });
-
-      if (!studentRes.ok) {
-        const errorDetail = await studentRes.json();
-        throw new Error(errorDetail.detail || "Không thể tạo tài khoản học sinh");
-      }
-
-      triggerNotification("Học sinh đã được tạo thành công! Hãy cho học sinh làm bài kiểm tra trình độ.");
-      
-      // Reset survey form
-      setSurveyForm({
-        name: '',
-        email: '',
-        grade: 'Lớp 6',
-        years_studying_english: 1,
-        learning_environment: 'school',
-        self_assessment_level: 'A1',
-        learning_goal: ''
-      });
-
-      // Reload lists and switch tab
-      await loadAllData();
-      setActiveTab('students');
-
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Student CRUD
   const handleStudentSubmit = async (e) => {
@@ -891,7 +833,6 @@ function DashboardApp({ user, logout }) {
                   {activeTab === 'users' && userSubTab === 'students' && 'Danh sách Học sinh'}
                   {activeTab === 'users' && userSubTab === 'teachers' && 'Danh sách Giáo viên'}
                   {activeTab === 'leaderboard' && 'Bảng xếp hạng'}
-                  {activeTab === 'assessment' && assessmentSubTab === 'survey' && 'Khảo sát đầu vào'}
                   {activeTab === 'assessment' && assessmentSubTab === 'test-results' && 'Kết quả kiểm tra trình độ'}
                   {activeTab === 'assessment' && assessmentSubTab === 'placement-tests' && 'Danh sách bài test'}
                   {activeTab === 'questions' && 'Ngân hàng câu hỏi'}
@@ -1769,13 +1710,6 @@ function DashboardApp({ user, logout }) {
             <div className="animate-fade-in">
               <div className="subtab-bar">
                 <button
-                  className={`subtab-btn ${assessmentSubTab === 'survey' ? 'active' : ''}`}
-                  onClick={() => setAssessmentSubTab('survey')}
-                >
-                  <BookOpen size={16} />
-                  Khảo sát
-                </button>
-                <button
                   className={`subtab-btn ${assessmentSubTab === 'test-results' ? 'active' : ''}`}
                   onClick={() => { setAssessmentSubTab('test-results'); fetchTestResults(); fetchStudents(); }}
                 >
@@ -1790,116 +1724,6 @@ function DashboardApp({ user, logout }) {
                   Bài test
                 </button>
               </div>
-            </div>
-          )}
-
-          {activeTab === 'assessment' && assessmentSubTab === 'survey' && (
-            <div className="animate-fade-in panel survey-card">
-              <div className="survey-top">
-                <BookOpen size={48} />
-                <h2>Khảo sát Năng lực Đầu vào</h2>
-                <p>Cung cấp các thông tin cơ bản để AI cá nhân hóa lộ trình học tiếng Anh cho bạn</p>
-              </div>
-
-              {error && (
-                <div style={{ background: 'var(--danger-bg)', border: '1px solid var(--danger)', color: 'var(--danger)', padding: '14px', borderRadius: '12px', marginBottom: '24px', fontSize: '14px', fontWeight: '600' }}>
-                  {error}
-                </div>
-              )}
-
-              <form onSubmit={handleSurveySubmit} className="form-grid-layout">
-                <div className="form-span-full">
-                  <label>Họ và Tên Học viên</label>
-                  <input 
-                    type="text" 
-                    placeholder="Ví dụ: Nguyễn Văn A" 
-                    value={surveyForm.name}
-                    onChange={e => setSurveyForm({...surveyForm, name: e.target.value})}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label>Địa chỉ Email</label>
-                  <input 
-                    type="email" 
-                    placeholder="student@example.com" 
-                    value={surveyForm.email}
-                    onChange={e => setSurveyForm({...surveyForm, email: e.target.value})}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label>Khối lớp</label>
-                  <select 
-                    value={surveyForm.grade}
-                    onChange={e => setSurveyForm({...surveyForm, grade: e.target.value})}
-                  >
-                    <option value="Lớp 6">Lớp 6</option>
-                    <option value="Lớp 7">Lớp 7</option>
-                    <option value="Lớp 8">Lớp 8</option>
-                    <option value="Lớp 9">Lớp 9</option>
-                    <option value="Lớp 10">Lớp 10</option>
-                    <option value="Lớp 11">Lớp 11</option>
-                    <option value="Lớp 12">Lớp 12</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label>Số năm học Tiếng Anh</label>
-                  <input 
-                    type="number" 
-                    min="0"
-                    value={surveyForm.years_studying_english}
-                    onChange={e => setSurveyForm({...surveyForm, years_studying_english: e.target.value})}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label>Môi trường học tập</label>
-                  <select 
-                    value={surveyForm.learning_environment}
-                    onChange={e => setSurveyForm({...surveyForm, learning_environment: e.target.value})}
-                  >
-                    <option value="school">Chỉ học ở trường</option>
-                    <option value="center">Học ở trung tâm</option>
-                    <option value="self_study">Tự học qua mạng</option>
-                  </select>
-                </div>
-
-                <div className="form-span-full">
-                  <label>Tự đánh giá trình độ hiện tại</label>
-                  <select 
-                    value={surveyForm.self_assessment_level}
-                    onChange={e => setSurveyForm({...surveyForm, self_assessment_level: e.target.value})}
-                  >
-                    <option value="A1">A1 (Mới bắt đầu - Beginner)</option>
-                    <option value="A2">A2 (Cơ bản - Elementary)</option>
-                    <option value="B1">B1 (Trung cấp - Intermediate)</option>
-                    <option value="B2">B2 (Trên trung cấp)</option>
-                    <option value="C1">C1 (Cao cấp - Advanced)</option>
-                  </select>
-                </div>
-
-                <div className="form-span-full">
-                  <label>Mục tiêu học tập của bạn</label>
-                  <textarea 
-                    rows="3" 
-                    placeholder="Ví dụ: Đạt điểm thi học kỳ tốt, rèn luyện kỹ năng nghe nói..."
-                    value={surveyForm.learning_goal}
-                    onChange={e => setSurveyForm({...surveyForm, learning_goal: e.target.value})}
-                  ></textarea>
-                </div>
-
-                <div className="form-span-full" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
-                  <button type="submit" className="btn btn-primary" style={{ padding: '14px 40px' }} disabled={loading}>
-                    {loading ? "Đang xử lý..." : "Nộp khảo sát & Bắt đầu"}
-                    <ArrowRight size={16} />
-                  </button>
-                </div>
-              </form>
             </div>
           )}
 
