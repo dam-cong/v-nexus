@@ -1117,6 +1117,7 @@ async def submit_placement_test(
             mastery=mastery or {},
             student_name=user.get("name", ""),
             level=body.cefr,
+            audience="student",
         )
     except Exception as e:
         print(f"[LLM] training plan generation failed: {e}")
