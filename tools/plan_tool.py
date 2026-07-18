@@ -14,7 +14,7 @@
 import json
 import re
 
-from agent.llm_client import create_message_fpt
+from agent.llm_client import call_llm
 from domain.bkt import generate_learning_steps, format_steps_for_llm, get_input_skill_ids
 from tools.base import Tool
 
@@ -323,9 +323,9 @@ def generate_training_plan(gaps: list, mastery: dict = None, student_name: str =
     # --- Bước 3: Tạo input có cấu trúc ---
     user_msg = _format_steps_for_user_msg(mastery, gaps, student_name, level, audience)
 
-    # --- Bước 4: Gọi LLM (FPT) ---
+    # --- Bước 4: Gọi LLM (FPT hoặc Ollama) ---
     try:
-        resp = create_message_fpt(
+        resp = call_llm(
             system=system_prompt,
             messages=[{"role": "user", "content": user_msg}],
             tools=None,
@@ -430,12 +430,12 @@ def generate_training_plan_from_survey(
     )
     
     try:
-        resp = create_message_fpt(
-            system=SURVEY_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_msg}],
-            tools=None,
-        )
-        return resp.get("text") or "(Hệ thống chưa sinh được lộ trình. Vui lòng thử lại.)"
+            resp = call_llm(
+                system=SURVEY_SYSTEM_PROMPT,
+                messages=[{"role": "user", "content": user_msg}],
+                tools=None,
+            )
+            return resp.get("text") or "(Hệ thống chưa sinh được lộ trình. Vui lòng thử lại.)"
     except Exception as e:
         return (
             f"[Lộ trình tạm thời - LLM chưa khả dụng: {e}]\n"

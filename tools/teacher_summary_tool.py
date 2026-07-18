@@ -9,7 +9,7 @@
 """
 import json
 
-from agent.llm_client import create_message_fpt
+from agent.llm_client import call_llm
 from tools.base import Tool
 
 
@@ -138,7 +138,7 @@ def teacher_class_summary(class_id: str, class_name: str = "", skill_gap_counts:
     )
 
     try:
-        resp = create_message_fpt(
+        resp = call_llm(
             system=_SYSTEM_PROMPT,
             messages=[{"role": "user", "content": user_msg}],
             tools=None,

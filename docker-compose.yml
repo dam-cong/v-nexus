@@ -50,6 +50,21 @@ services:
     ports:
       - "8081:8501"
 
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        ollama serve &
+        sleep 5
+        ollama pull qwen3:0.6b
+        wait
+
 volumes:
   vnexus_db_data:
+  ollama_data:
 
