@@ -43,6 +43,7 @@ import StudentSurvey from '../StudentSurvey';
 import StudentHistory from '../StudentHistory';
 import StudentRoadmap from '../StudentRoadmap';
 import TeacherDashboard from './TeacherDashboard';
+import AdminDashboard from './AdminDashboard';
 import useOnlineStatus from '../offline/useOnlineStatus';
 import { 
   seedFromStaticData, 
@@ -1301,8 +1302,12 @@ function DashboardApp({ user, logout }) {
           {activeTab === 'dashboard' && user?.role === 'giao_vien' && (
             <TeacherDashboard />
           )}
+
+          {activeTab === 'dashboard' && user?.role === 'admin' && (
+            <AdminDashboard />
+          )}
           
-          {activeTab === 'dashboard' && user?.role !== 'giao_vien' && (
+          {activeTab === 'dashboard' && user?.role !== 'giao_vien' && user?.role !== 'admin' && (
             <div className="animate-fade-in">
               {/* Stats Cards */}
               <div className="stats-grid">
