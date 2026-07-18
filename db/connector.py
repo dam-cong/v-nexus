@@ -36,6 +36,18 @@ async def init_db() -> None:
                 "ADD COLUMN IF NOT EXISTS training_plan TEXT;"
             )
         )
+        await conn.execute(
+            text(
+                "ALTER TABLE student_test_results "
+                "ADD COLUMN IF NOT EXISTS roadmap_completed BOOLEAN DEFAULT FALSE;"
+            )
+        )
+        await conn.execute(
+            text(
+                "ALTER TABLE student_test_results "
+                "ADD COLUMN IF NOT EXISTS quick_check_passed BOOLEAN DEFAULT FALSE;"
+            )
+        )
 
     # 2. Thêm các vai trò mặc định nếu chưa tồn tại
     async with SessionLocal() as session:

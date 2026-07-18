@@ -1,7 +1,7 @@
 """SQLAlchemy ORM Models representing the database schema."""
 from datetime import datetime
 from typing import Optional
-from sqlalchemy import DateTime, Integer, String, Text, ForeignKey, JSON, UniqueConstraint, func
+from sqlalchemy import DateTime, Integer, String, Text, Boolean, ForeignKey, JSON, UniqueConstraint, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -144,6 +144,8 @@ class StudentTestResult(Base):
     gaps: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     recommendations: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     training_plan: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    roadmap_completed: Mapped[bool] = mapped_column(Boolean, default=False)
+    quick_check_passed: Mapped[bool] = mapped_column(Boolean, default=False)
     test_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 

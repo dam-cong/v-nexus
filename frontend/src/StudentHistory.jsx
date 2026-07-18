@@ -88,31 +88,6 @@ function ResultDetail({ result, questions, onBack }) {
           </div>
         </div>
 
-        {masteryArr.length > 0 && (
-          <div className="survey-results-section">
-            <h3>Mastery theo kỹ năng</h3>
-            <div className="survey-mastery-list">
-              {masteryArr.map((m) => (
-                <div key={m.id} className="survey-mastery-item">
-                  <div className="survey-mastery-info">
-                    <span className="survey-mastery-name">{m.skill_name || m.id}</span>
-                    <span className={`survey-mastery-status ${m.status}`}>
-                      {m.status === 'mastered' ? 'Thành thạo' : m.status === 'developing' ? 'Đang phát triển' : 'Yếu'}
-                    </span>
-                  </div>
-                  <div className="survey-mastery-bar">
-                    <div
-                      className={`survey-mastery-fill ${m.status}`}
-                      style={{ width: `${Math.round((m.probability || 0) * 100)}%` }}
-                    />
-                  </div>
-                  <span className="survey-mastery-pct">{Math.round((m.probability || 0) * 100)}%</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {result.gaps?.length > 0 && (
           <div className="survey-results-section">
             <h3>Lỗ hổng kiến thức</h3>
@@ -135,7 +110,7 @@ function ResultDetail({ result, questions, onBack }) {
 
         {result.recommendations?.length > 0 && (
           <div className="survey-results-section">
-            <h3>Đề xuất học tập</h3>
+            <h3>Kỹ năng cần ôn (BKT)</h3>
             <div className="survey-rec-list">
               {result.recommendations.map((r, i) => (
                 <div key={i} className="survey-rec-item">
@@ -160,52 +135,76 @@ function ResultDetail({ result, questions, onBack }) {
           </div>
         )}
 
+        {masteryArr.length > 0 && (
+          <div className="survey-results-section">
+            <h3>Mastery theo kỹ năng</h3>
+            <table className="survey-table mastery-table">
+              <thead>
+                <tr>
+                  <th>Kỹ năng</th>
+                  <th>Xác suất (%)</th>
+                  <th>Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                {masteryArr.map((m) => (
+                  <tr key={m.id}>
+                    <td>{m.skill_name || m.id}</td>
+                    <td>{Math.round((m.probability || 0) * 100)}%</td>
+                    <td>
+                      <span className={`survey-mastery-status ${m.status}`}>
+                        {m.status === 'mastered' ? 'Thành thạo' : m.status === 'developing' ? 'Đang phát triển' : 'Yếu'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
         {answers.length > 0 && (
           <div className="survey-results-section">
             <h3>Câu đã trả lời ({answers.length})</h3>
-            <div className="history-answers-list">
-              {answers.map((a, i) => {
-                const q = qMap[a.question_id];
-                const selectedOpt = q?.options?.find((o) => o.option_id === a.selected);
-                const correctOpt = q?.options?.find((o) => o.option_id === q.correct_option_id);
-                return (
-                  <div key={a.question_id || i} className={`history-answer-item ${a.correct ? 'correct' : 'wrong'}`}>
-                    <div className="history-answer-head">
-                      <span className="history-answer-index">{i + 1}</span>
-                      <span className={`history-answer-badge ${a.correct ? 'correct' : 'wrong'}`}>
-                        {a.correct ? 'Đúng' : 'Sai'}
-                      </span>
-                      {q?.skill_name && <span className="history-answer-skill">{q.skill_name}</span>}
-                    </div>
-                    <p className="history-answer-prompt">
-                      {q?.prompt?.text || a.question_id}
-                    </p>
-                    <div className="history-answer-options">
-                      {(q?.options || []).map((o) => {
-                        const isSelected = o.option_id === a.selected;
-                        const isCorrect = o.option_id === q?.correct_option_id;
-                        let cls = 'history-answer-opt';
-                        if (isCorrect) cls += ' is-correct';
-                        else if (isSelected && !isCorrect) cls += ' is-selected-wrong';
-                        return (
-                          <div key={o.option_id} className={cls}>
-                            <span className="history-answer-opt-label">{o.label}</span>
-                            {isCorrect && <span className="history-answer-mark">✓ Đáp án đúng</span>}
-                            {isSelected && !isCorrect && <span className="history-answer-mark">Em chọn</span>}
-                            {isSelected && isCorrect && <span className="history-answer-mark">Em chọn ✓</span>}
-                          </div>
-                        );
-                      })}
-                    </div>
-                    {!a.correct && q?.explanation && (
-                      <p className="history-answer-explain">
-                        <strong>Giải thích:</strong> {q.explanation}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            <table className="survey-table answers-table">
+              <thead>
+                <tr>
+                  <th>STT</th>
+                  <th>Câu hỏi</th>
+                  <th>Đáp án em chọn</th>
+                  <th>Đáp án đúng</th>
+                  <th>Đúng/Sai</th>
+                  <th>Giải thích</th>
+                </tr>
+              </thead>
+              <tbody>
+                {answers.map((a, i) => {
+                  const q = qMap[a.question_id];
+                  const selectedOpt = q?.options?.find((o) => o.option_id === a.selected);
+                  const correctOpt = q?.options?.find((o) => o.option_id === q.correct_option_id);
+                  return (
+                    <tr key={a.question_id || i} className={a.correct ? 'row-correct' : 'row-wrong'}>
+                      <td>{i + 1}</td>
+                      <td>{q?.prompt?.text || a.question_id}</td>
+                      <td>{selectedOpt?.label || (a.selected ?? '—')}</td>
+                      <td>{correctOpt?.label || q?.correct_option_id || '—'}</td>
+                      <td>
+                        <span className={`history-answer-badge ${a.correct ? 'correct' : 'wrong'}`}>
+                          {a.correct ? 'Đúng' : 'Sai'}
+                        </span>
+                      </td>
+                      <td>
+                        {!a.correct && q?.explanation ? (
+                          <span className="history-answer-explain">{q.explanation}</span>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
@@ -271,7 +270,9 @@ export default function StudentHistory({ user, results, questions, onStartSurvey
 
       {!loading && !error && hasResults && (
         <div className="history-list">
-          {results.map((r) => (
+          {[...results]
+            .sort((a, b) => new Date(b.test_date || 0) - new Date(a.test_date || 0))
+            .map((r) => (
             <div key={r.id} className={`history-card ${levelClass(r.result_level)}`}>
               <div className="history-card-main">
                 <div className={`history-card-badge ${levelClass(r.result_level)}`}>

@@ -3,7 +3,7 @@ import {
   CheckCircle, Bookmark, ListOrdered, Mic, Clock, Cloud, Info, WifiOff,
   ArrowRight, ListTodo, Volume2, RefreshCw, XCircle, Star, AlertTriangle,
   Flag, Send, CircleHelp, CheckCheck, Lightbulb, RotateCcw, Smile,
-  GraduationCap, BookOpen
+  GraduationCap, BookOpen, Sparkles
 } from 'lucide-react';
 import { apiFetch } from './api';
 import './StudentSurvey.css';
@@ -33,6 +33,7 @@ const ICON_MAP = {
   sentiment_satisfied: Smile,
   school: GraduationCap,
   import_contacts: BookOpen,
+  sparkles: Sparkles,
 };
 
 function Icon({ name, size = 24, className = '', style = {} }) {
@@ -133,7 +134,7 @@ function computeResult(answers, questions) {
   return {
     score, max_score: maxScore, percentage, result_level: resultLevel, cefr,
     time_total_sec: answersArr.reduce((s, a) => s + a.time_spent_sec, 0),
-    mastery, gaps, recommendations, answers: answersArr,
+    mastery, gaps, recommendations, training_plan: null, answers: answersArr,
     test_date: new Date().toISOString(),
   };
 }
@@ -764,7 +765,7 @@ function ScreenResults({ result, onRestart }) {
 
       {result.recommendations?.length > 0 && (
         <div className="survey-results-section">
-          <h3>Đề xuất học tập</h3>
+          <h3>Kỹ năng cần ôn (BKT)</h3>
           <div className="survey-rec-list">
             {result.recommendations.map((r, i) => (
               <div key={i} className="survey-rec-item">
@@ -777,7 +778,18 @@ function ScreenResults({ result, onRestart }) {
         </div>
       )}
 
-      <div className="survey-actions" style={{ justifyContent: 'center' }}>
+      {result.training_plan && (
+        <div className="survey-results-section">
+          <h3>Kế hoạch học tập cá nhân hóa (AI)</h3>
+          <div className="history-training-plan">{result.training_plan}</div>
+        </div>
+      )}
+
+      <div className="survey-actions" style={{ justifyContent: 'center', flexWrap: 'wrap', gap: '12px' }}>
+        <button className="survey-btn survey-btn-primary" onClick={() => onTabChange && onTabChange('roadmap')}>
+          <Icon name="sparkles" size={20} />
+          <span>Xem lộ trình của em</span>
+        </button>
         <button className="survey-btn survey-btn-primary" onClick={onRestart}>
           <span>Làm lại bài test</span>
           <Icon name="replay" size={20} />
@@ -787,7 +799,7 @@ function ScreenResults({ result, onRestart }) {
   );
 }
 
-export default function StudentSurvey({ user }) {
+export default function StudentSurvey({ user, onTabChange }) {
   const [screen, setScreen] = useState('landing');
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -813,7 +825,7 @@ export default function StudentSurvey({ user }) {
         const tests = await placementTestRes.json();
         const test = tests.find(t => t.test_id === 'placement-test-en-2026');
         if (test) {
-          await apiFetch(`/api/placement-tests/${test.id}/submit`, {
+          const submitRes = await apiFetch(`/api/placement-tests/${test.id}/submit`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -830,6 +842,12 @@ export default function StudentSurvey({ user }) {
               test_date: res.test_date,
             }),
           });
+          if (submitRes.ok) {
+            const saved = await submitRes.json();
+            if (saved && saved.training_plan) {
+              setResult(prev => ({ ...prev, training_plan: saved.training_plan }));
+            }
+          }
         }
       }
     } catch (e) {

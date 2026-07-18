@@ -263,6 +263,105 @@ timestamp=2026-07-17T14:17:19.410Z level=INFO run=1532110b message=tracking hash
 timestamp=2026-07-17T14:17:19.420Z level=INFO run=1532110b message=process session.id=ses_08f97ea73ffe7a1jTXMlI8Mnyi messageID=msg_f70705a71002aFpN8NChvxStYQ
 timestamp=2026-07-17T14:17:19.421Z level=INFO run=1532110b message=stream providerID=opencode modelID=big-pickle session.id=ses_08f97ea73ffe7a1jTXMlI8Mnyi small=false agent=plan mode=primary
 timestamp=2026-07-17T14:17:19.422Z level=INFO run=1532110b message="llm runtime selected" llm.runtime=ai-sdk llm.provider=opencode llm.model=big-pickle
+
+# =====================================================================
+# CONTINUED SESSION LOG - Device 2 (Linux)
+# Date: 2026-07-17
+# Directory: /home/hiendc/Documents/VAIC-2026/v-nexus
+# Note: Appended from second device. Original data above preserved.
+# =====================================================================
+
+## [Linux session] Context loaded from prior device
+- Prior work (on Windows device) included: full adaptive tutoring system (V-Nexus Tutor), login/dashboard, question bank, placement test, BKT survey results, frontend menu items for "Ngân hàng câu hỏi" and "Danh sách bài test", edit/delete for questions and tests, question selection in placement test detail, and UI redesign for test results.
+
+## [Linux session] User: Can chinh sua duoc cau hoi va noi dung bai kiem tra
+## Assistant:
+- Added PUT/DELETE endpoints for questions and placement tests in backend (crud.py)
+- Added QuestionUpdate and PlacementTestUpdate schemas
+- Added update_placement_test_questions endpoint (replace all questions in a test)
+- Added edit/delete buttons in frontend question bank and placement tests
+- Added edit modals for questions and placement tests
+- Rebuilt frontend, found gateway needed rebuild (code baked at build time)
+- Rebuilt gateway container, verified PUT endpoints work
+
+## [Linux session] User: Toi chua chinh sua duoc
+## Assistant:
+- Diagnosed: gateway container was running old code (COPY at build time, not volume mount)
+- Rebuilt gateway container with `docker compose build gateway`
+- Restarted, verified PUT /api/questions/{id} and PUT /api/placement-tests/{id} work
+
+## [Linux session] User: UI co hot dong chua ?
+## Assistant:
+- Checked frontend is serving, all 4 containers running
+- Rebuilt frontend container (was running old code, no volume mount)
+- All containers now have latest code
+
+## [Linux session] User: Chi tiet bai test can chon danh sach cau hoi ? Co them bot cau hoi trong nay duoc khong ?
+## Assistant:
+- Planned: add question selection UI in placement test detail view
+- User chose: buttons inside detail view
+- Added state (showAddQuestionModal, addQuestionSearch, etc.)
+- Added handlers: handleSaveTestQuestions, handleRemoveQuestionFromTest
+- Added "+ Thêm câu hỏi" button and "Xóa" per row in detail view
+- Added modal with checkbox question list, filters, select-all
+- Rebuilt frontend container, verified
+
+## [Linux session] User: UI cua chi tiet ket qua kiem tra dang xau qua, can update ui
+## Assistant:
+- Explored current test results tab
+- Redesigned: replaced alert() with proper detail view
+- Added 4 summary cards (score, level, time, date)
+- Added mastery progress bars, gaps cards, recommendations cards
+- Added answers detail table with correct/incorrect indicators
+- Added AlertTriangle and Lightbulb icon imports
+- Rebuilt frontend container, verified
+
+## [Linux session] User: Run nhu nao
+## Assistant:
+- Provided URLs: frontend :8081, gateway :8000, mcp :8500, db :5434
+- Login: admin@vnexus.vn / 123456
+
+## [Linux session] User: Run docker gi de build lai, toi can check tren server
+## Assistant:
+- Provided: docker-compose build && docker-compose up -d
+
+## [Linux session] Server build error reported by user
+- ERROR: COPY docs/data/ ./docs/data/ failed - file not found
+- Diagnosed: docs/data/ directory missing on server
+- User chose: create docs/data/ on server
+- Provided 4 JSON files content (question-bank.json, placement-test.json, survey-results.json, knowledge-graph.json)
+- Suggested rsync from local to server
+
+## [Linux session] User: Hay export log cua toi vao ngay 17-07-2026 theo huong dan nay /home/hiendc/Documents/VAIC-2026/v-nexus/logs/SUBMISSION_EVIDENCE.md
+## Assistant:
+- In plan mode, provided plan to create SUBMISSION_EVIDENCE.md
+
+## [Linux session] User: Hay ghi vao file /home/hiendc/Documents/VAIC-2026/v-nexus/logs/opencode-session/vinc-opencode-2026-07-17.log
+## Assistant:
+- In plan mode, provided plan to append log
+
+## [Linux session] User: Trien khai di
+## Assistant:
+- Switched to build mode
+- Created log file with initial session content (overwrote - this was before learning about existing data)
+
+## [Linux session] User: Ban hay update nha chu khong phai xoa data va tao moi
+## Assistant:
+- Acknowledged: prioritize updates over deletions/re-creation
+
+## [Linux session] User: /home/hiendc/Documents/VAIC-2026/v-nexus/logs/opencode-session/vinc-opencode-2026-07-17.log Toi dang co data truoc do roi do lam viec tren thiet bi khac. Ban hay add tiep log cua phien lam viec tren thiet bi nay
+## Assistant:
+- In plan mode, provided plan to append without deleting
+
+## [Linux session] User: Trien khai nhe
+## Assistant:
+- Switched to build mode
+- Read existing file (265 lines from Windows device)
+- Appending current session log here (preserving original data)
+
+# =====================================================================
+# END OF CONTINUED SESSION LOG - Device 2 (Linux)
+# =====================================================================
 timestamp=2026-07-17T14:17:24.710Z level=INFO run=1532110b message=evaluated permission=grep pattern=test-results|selectedResult|placement|gap|mastery|recommendation action.permission=* action.action=allow action.pattern=*
 timestamp=2026-07-17T14:17:24.930Z level=INFO run=1532110b message=tracking hash=01fdcadcf5e1022eb5cccd8c82a81baff4a9540a cwd="D:\\sourcecode\\website\\v-nexus" git="C:\\Users\\Admin\\.local\\share\\opencode\\snapshot\\34abb6300424f3fd9b75533fef2502108bf1ff34\\8aa7fc0c2d7a28f447a2fbeb32c6cab95f2a02fe"
 timestamp=2026-07-17T14:17:25.092Z level=INFO run=1532110b message=loop session.id=ses_08f97ea73ffe7a1jTXMlI8Mnyi step=4

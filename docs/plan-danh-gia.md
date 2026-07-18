@@ -65,7 +65,14 @@ Kết quả (điểm, mastery, gaps, recommendations)
 - Summary cards: Điểm, Tỷ lệ, CEFR, Thời gian
 - Mastery bars theo skill
 - Gaps list
-- Recommendations list
+- "Kỹ năng cần ôn (BKT)" — recommendations tính phía client từ BKT (không phải AI)
+- "Kế hoạch học tập cá nhân hóa (AI)" — `training_plan` sinh bởi FPT AI (DeepSeek-V4-Flash),
+  lấy từ response backend sau khi submit, render bằng class `.history-training-plan`
+
+> Lưu ý: Màn hình Kết quả (StudentSurvey) và trang Lịch sử (StudentHistory) đều hiển thị
+> block "Kế hoạch đào tạo cá nhân hóa (AI)" từ `result.training_plan`. Ở StudentSurvey,
+> `handleSubmit` đọc `training_plan` từ response submit (`saved.training_plan`) và cập nhật
+> state để hiển thị ngay sau khi nộp bài.
 
 ## Data từ DB
 
@@ -121,3 +128,66 @@ const [survey, setSurvey] = useState({
 | 7 | SurveyResults | HIGH |
 | 8 | CSS responsive + animations | HIGH |
 | 9 | Load data từ API | HIGH |
+
+---
+
+## Cập nhật quan trọng (LLM: chuyển từ Anthropic → FPT AI)
+
+Hệ thống dùng FPT AI Inference (OpenAI-compatible, endpoint `https://mkp-api.fptcloud.com/v1`,
+model mặc định `DeepSeek-V4-Flash`) thay cho Anthropic Claude. Chức năng **đánh giá (BKT)**
+vẫn thuần thuật toán, **không dùng LLM**. LLM (FPT) chỉ dùng ở Tầng 3: sinh kế hoạch đào tạo,
+tóm tắt cho giáo viên/phụ huynh.
+
+### Cấu hình env (`.env` / `.env.example`)
+- Xóa khối Anthropic (`ANTHROPIC_API_KEY`, `LLM_MODEL`).
+- Thêm khối FPT:
+  ```
+  # --- FPT AI Inference (OpenAI-compatible) ---
+  FPT_API_KEY=<key từ mkp-api.fptcloud.com>
+  FPT_API_BASE=https://mkp-api.fptcloud.com/v1
+  FPT_MODEL=DeepSeek-V4-Flash
+  ```
+- `gateway/app/config.py` đọc `FPT_API_KEY`, `FPT_API_BASE`, `FPT_MODEL` (có default).
+  Đã thêm `load_dotenv()` để gateway tự đọc `.env` khi chạy.
+- `gateway/requirements.txt` thêm `python-dotenv>=1.0` (đã có sẵn `openai>=1.30`).
+
+### Flow sinh kế hoạch AI
+1. `frontend/src/StudentSurvey.jsx` `handleSubmit` POST kết quả lên
+   `POST /api/placement-tests/{id}/submit`.
+2. Backend `gateway/app/routes/crud.py:871-899`:
+   - Tầng 2: BKT Engine (`domain/bkt.run_assessment`) chẩn đoán mastery/gaps.
+   - Tầng 3: `tools/plan_tool.generate_training_plan` gọi FPT (`agent/llm_client.create_message_fpt`)
+     sinh `training_plan`, lưu vào `StudentTestResult.training_plan`, trả về response.
+3. Frontend cập nhật `result.training_plan` từ response và render block "Kế hoạch học tập cá nhân hóa (AI)".
+
+### Files thay đổi (bổ sung)
+| File | Thay đổi |
+|------|----------|
+| `.env`, `.env.example` | Xóa Anthropic, thêm FPT_API_KEY/BASE/MODEL |
+| `gateway/app/config.py` | Thêm `load_dotenv()`; đọc biến FPT |
+| `gateway/requirements.txt` | Thêm `python-dotenv` |
+| `agent/llm_client.py` | `create_message_fpt` gọi FPT OpenAI-compatible (đã có) |
+| `tools/plan_tool.py` | Gọi `create_message_fpt` sinh kế hoạch (đã có) |
+| `frontend/src/StudentSurvey.jsx` | Thêm render block "Kế hoạch học tập cá nhân hóa (AI)"; đổi nhãn "Đề xuất học tập" → "Kỹ năng cần ôn (BKT)"; `handleSubmit` đọc `training_plan` từ response; `computeResult` thêm `training_plan: null` |
+| `frontend/src/StudentHistory.jsx` | Sắp xếp bài mới lên đầu (`test_date` desc); đã có block "Kế hoạch đào tạo cá nhân hóa (AI)" |
+
+### Cách chạy (Docker — khuyên dùng)
+```bash
+cd /home/hiendc/Documents/VAIC-2026/v-nexus
+docker compose build
+docker compose up -d
+```
+- Gateway: `http://localhost:8000` (tự load `.env` qua `env_file`)
+- Frontend: `http://localhost:8081`
+- Nếu đổi `.env` (vd điền `FPT_API_KEY`), phải recreate gateway:
+  ```bash
+  docker compose up -d --force-recreate gateway
+  ```
+
+### Lưu ý vận hành
+- Gateway thủ công chạy bằng `python3.11` hệ thống sẽ **không có `openai`** (PEP 668) và
+  không load `.env` → gây lỗi fallback "[Kế hoạch tạm thời - LLM chưa khả dụng: Missing credentials".
+  Luôn chạy bằng Docker (image có sẵn `openai` + `python-dotenv` và `env_file` inject `.env`).
+- Nếu vẫn thấy fallback: kiểm tra `FPT_API_KEY` đã điền thật trong `.env` và gateway đã
+  recreate sau khi điền key.
+

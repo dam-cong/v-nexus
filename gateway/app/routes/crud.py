@@ -11,6 +11,7 @@ from db.models import (
     Role, Student, Teacher, Ranking,
     Question, PlacementTest, PlacementTestQuestion, StudentTestResult,
 )
+from domain.bkt import run_assessment
 from app.auth import get_current_user, require_role
 
 router = APIRouter(prefix="/api", tags=["CRUD Operations"])
@@ -152,10 +153,27 @@ class TestResultResponse(BaseModel):
     gaps: Optional[list] = None
     recommendations: Optional[list] = None
     training_plan: Optional[str] = None
+    roadmap_completed: bool = False
+    quick_check_passed: bool = False
     test_date: datetime
     created_at: datetime
     class Config:
         from_attributes = True
+
+
+class TestResultComplete(BaseModel):
+    completed: bool = True
+
+
+class QuickCheckSubmit(BaseModel):
+    answers: Optional[list] = None
+
+
+class QuickCheckResponse(BaseModel):
+    passed: bool
+    roadmap_completed: bool
+    remaining_gaps: list
+    mastery: Optional[dict] = None
 
 
 class TestResultSubmit(BaseModel):
@@ -842,6 +860,117 @@ async def get_student_test_results(
         .order_by(StudentTestResult.test_date.desc())
     )
     return list(result.scalars().all())
+
+
+@router.patch("/test-results/{result_id}/complete", response_model=TestResultResponse)
+async def mark_test_result_complete(
+    result_id: int,
+    body: TestResultComplete,
+    db: AsyncSession = Depends(get_session),
+    user: dict = Depends(get_current_user),
+):
+    result = await db.execute(select(StudentTestResult).where(StudentTestResult.id == result_id))
+    test_result = result.scalar_one_or_none()
+    if not test_result:
+        raise HTTPException(status_code=404, detail="Test result not found")
+
+    # Students can only update their own results.
+    if user.get("role") == "hoc_sinh" and test_result.student_id != user["id"]:
+        raise HTTPException(status_code=403, detail="Không có quyền")
+
+    test_result.roadmap_completed = body.completed
+    await db.commit()
+    await db.refresh(test_result)
+    return test_result
+
+
+@router.get("/test-results/{result_id}/quick-check-questions")
+async def get_quick_check_questions(
+    result_id: int,
+    db: AsyncSession = Depends(get_session),
+    user: dict = Depends(get_current_user),
+):
+    """Trả ~5 câu liên quan đến lỗ hổng (gaps) của bài đánh giá, để học sinh đánh giá nhanh."""
+    result = await db.execute(select(StudentTestResult).where(StudentTestResult.id == result_id))
+    test_result = result.scalar_one_or_none()
+    if not test_result:
+        raise HTTPException(status_code=404, detail="Test result not found")
+
+    if user.get("role") == "hoc_sinh" and test_result.student_id != user["id"]:
+        raise HTTPException(status_code=403, detail="Không có quyền")
+
+    gaps = test_result.gaps or []
+    skill_ids = [g.get("skill_id") for g in gaps if g.get("skill_id")]
+
+    q_result = await db.execute(select(Question))
+    all_q = list(q_result.scalars().all())
+
+    filtered = [q for q in all_q if q.skill_id in skill_ids] if skill_ids else []
+    # Nếu không đủ câu theo gaps, bổ sung ngẫu nhiên từ ngân hàng
+    if len(filtered) < 5:
+        extra = [q for q in all_q if q not in filtered]
+        import random
+        random.shuffle(extra)
+        filtered = (filtered + extra)[:5]
+    filtered = filtered[:5]
+
+    return [
+        {
+            "question_id": q.question_id,
+            "skill_id": q.skill_id,
+            "skill_name": q.skill_name,
+            "prompt": q.prompt,
+            "options": q.options,
+            "correct_option_id": q.correct_option_id,
+        }
+        for q in filtered
+    ]
+
+
+@router.post("/test-results/{result_id}/quick-check", response_model=QuickCheckResponse)
+async def run_quick_check(
+    result_id: int,
+    body: QuickCheckSubmit,
+    db: AsyncSession = Depends(get_session),
+    user: dict = Depends(get_current_user),
+):
+    """Đánh giá nhanh: chạy BKT trên answers mini-test, so sánh với gaps gốc.
+    Nếu mọi gap gốc đạt mastery >= 0.7 -> pass + đánh dấu hoàn thành lộ trình."""
+    result = await db.execute(select(StudentTestResult).where(StudentTestResult.id == result_id))
+    test_result = result.scalar_one_or_none()
+    if not test_result:
+        raise HTTPException(status_code=404, detail="Test result not found")
+
+    if user.get("role") == "hoc_sinh" and test_result.student_id != user["id"]:
+        raise HTTPException(status_code=403, detail="Không có quyền")
+
+    orig_gaps = test_result.gaps or []
+    assessment = run_assessment(body.answers or [], None)
+    new_mastery = assessment["mastery"]
+
+    remaining_gaps = []
+    for g in orig_gaps:
+        prob = (new_mastery.get(g.get("skill_id"), {}) or {}).get("probability") or 0
+        if prob < 0.7:
+            remaining_gaps.append({
+                "skill_id": g.get("skill_id"),
+                "skill_name": g.get("skill_name"),
+                "probability": round(prob * 100) / 100,
+            })
+
+    passed = len(orig_gaps) > 0 and len(remaining_gaps) == 0
+    if passed:
+        test_result.quick_check_passed = True
+        test_result.roadmap_completed = True
+        await db.commit()
+        await db.refresh(test_result)
+
+    return {
+        "passed": passed,
+        "roadmap_completed": test_result.roadmap_completed,
+        "remaining_gaps": remaining_gaps,
+        "mastery": new_mastery,
+    }
 
 
 @router.post("/placement-tests/{test_id}/submit", response_model=TestResultResponse, status_code=status.HTTP_201_CREATED)

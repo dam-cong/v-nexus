@@ -34,6 +34,7 @@ import { apiFetch } from './api';
 import Login from './pages/Login';
 import StudentSurvey from './StudentSurvey';
 import StudentHistory from './StudentHistory';
+import StudentRoadmap from './StudentRoadmap';
 import './App.css';
 
 // Base API URL
@@ -322,6 +323,13 @@ function DashboardApp({ user, logout }) {
 
   useEffect(() => {
     loadAllData();
+  }, []);
+
+  // Refresh roadmap badges after completing a quick-check
+  useEffect(() => {
+    const onRefresh = () => { fetchStudentTestResults(); };
+    window.addEventListener('vnexus:refresh-roadmap', onRefresh);
+    return () => window.removeEventListener('vnexus:refresh-roadmap', onRefresh);
   }, []);
 
   // Show auto-dismiss notifications
@@ -621,7 +629,7 @@ function DashboardApp({ user, logout }) {
               </button>
               <button
                 className={`menu-item ${studentActiveTab === 'roadmap' ? 'active' : ''}`}
-                onClick={() => { setStudentActiveTab('roadmap'); setSidebarOpen(false); }}
+                onClick={() => { setStudentActiveTab('roadmap'); fetchStudentTestResults(); if (!questions.length) fetchQuestions(); setSidebarOpen(false); }}
               >
                 <Sparkles size={20} />
                 <span>Lộ trình của em</span>
@@ -867,9 +875,11 @@ function DashboardApp({ user, logout }) {
                 </div>
               )}
               {studentActiveTab === 'roadmap' && (
-                <div className="animate-fade-in" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                  <p>Tính năng Lộ trình đang được phát triển.</p>
-                </div>
+                <StudentRoadmap
+                  results={studentTestResults}
+                  questions={questions}
+                  onStartSurvey={() => setStudentActiveTab('survey')}
+                />
               )}
               {studentActiveTab === 'progress' && (
                 <div className="animate-fade-in" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
