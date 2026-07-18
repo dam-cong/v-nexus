@@ -162,3 +162,124 @@ def run_assessment(answers: list, questions: list = None) -> dict:
     mastery = compute_mastery(answers, questions)
     gaps = diagnose_gaps(mastery)
     return {"mastery": mastery, "gaps": gaps}
+
+
+# ---------------------------------------------------------------------------
+# Tầng 2.5: Sinh danh sách bước lộ trình CÓ CẤU TRÚC (deterministic, không LLM)
+# ---------------------------------------------------------------------------
+# Đây là nơi QUANH GỌI nhất: BKT + Knowledge Graph quyết định THỨ TỰ và NỘI DUNG
+# từng bước. LLM chỉ nhận output của hàm này và diễn giải thành văn bản tự nhiên.
+
+# Độ khó gợi ý theo mastery
+_DIFFICULTY_MAP = {
+    "high": "easy",      # gốc rễ yếu nhất -> bắt đầu từ dễ
+    "medium": "medium",
+}
+
+# Thời lượng gợi ý (phút/buổi) theo severity
+_DURATION_MAP = {
+    "high": "20 phút",
+    "medium": "15 phút",
+}
+
+
+def generate_learning_steps(mastery: dict, gaps: list) -> list:
+    """Sinh danh sách bước lộ trình học tập có cấu trúc từ kết quả BKT.
+
+    Trả về list[dict], mỗi dict:
+    {
+      "step_order": int,           # thứ tự (1-based)
+      "skill_id": str,
+      "skill_name": str,
+      "current_mastery": float,    # probability hiện tại (0-1)
+      "status": str,               # weak / developing / mastered
+      "severity": str,             # high / medium
+      "reason": str,               # tại sao bước này được chọn
+      "suggested_difficulty": str, # easy / medium
+      "estimated_duration": str,   # "15 phút" / "20 phút"
+    }
+
+    Nguyên tắc sắp xếp:
+    1. Gốc rễ (root causes) có severity "high" lên trước.
+    2. Sau đó đến các kỹ năng "medium" theo thứ tự tiên quyết.
+    3. Không thêm kỹ năng ngoài danh sách gaps.
+    """
+    if not gaps:
+        return []
+
+    steps = []
+    step_num = 0
+
+    # Bước 1: các gap có severity "high" (gốc rễ)
+    for g in gaps:
+        if g.get("severity") != "high":
+            continue
+        step_num += 1
+        sid = g.get("skill_id", "")
+        prob = g.get("probability") or 0
+        steps.append({
+            "step_order": step_num,
+            "skill_id": sid,
+            "skill_name": g.get("skill_name", sid),
+            "current_mastery": round(prob, 3),
+            "status": g.get("status", _status(prob)),
+            "severity": "high",
+            "reason": g.get("reason", f"Gốc rễ lỗ hổng — cần ưu tiên ôn trước"),
+            "suggested_difficulty": "easy",
+            "estimated_duration": _DURATION_MAP["high"],
+        })
+
+    # Bước 2: các gap có severity "medium"
+    for g in gaps:
+        if g.get("severity") != "medium":
+            continue
+        step_num += 1
+        sid = g.get("skill_id", "")
+        prob = g.get("probability") or 0
+        root_info = ""
+        if g.get("root_causes"):
+            root_names = [get_skill_name(r) for r in g["root_causes"]]
+            root_info = f". Tiên quyết: {', '.join(root_names)}"
+        steps.append({
+            "step_order": step_num,
+            "skill_id": sid,
+            "skill_name": g.get("skill_name", sid),
+            "current_mastery": round(prob, 3),
+            "status": g.get("status", _status(prob)),
+            "severity": "medium",
+            "reason": g.get("reason", f"Cần củng cố thêm") + root_info,
+            "suggested_difficulty": _DIFFICULTY_MAP["medium"],
+            "estimated_duration": _DURATION_MAP["medium"],
+        })
+
+    return steps
+
+
+def format_steps_for_llm(steps: list) -> str:
+    """Format danh sách bước thành bảng có cấu trúc để truyền vào prompt LLM.
+
+    Đây là INPUT DỮ LIỆU cho LLM — LLM chỉ được diễn giải nội dung này,
+    không được thêm/bớt bước hay đổi thứ tự.
+    """
+    if not steps:
+        return "(Không có bước lộ trình — học sinh đã nắm vững tất cả kỹ năng.)"
+
+    lines = [
+        "LO TRÌNH HỌC TẬP (dữ liệu từ BKT Engine — KHÔNG được sửa đổi thứ tự hoặc nội dung):",
+        "",
+        "| # | Kỹ năng | Mastery hiện tại | Mức ưu tiên | Độ khó gợi ý | Thời lượng | Lý do |",
+        "|---|---------|-----------------|-------------|--------------|------------|-------|",
+    ]
+    for s in steps:
+        mastery_pct = f"{round(s['current_mastery'] * 100)}%"
+        lines.append(
+            f"| {s['step_order']} | {s['skill_name']} ({s['skill_id']}) | {mastery_pct} | "
+            f"{s['severity']} | {s['suggested_difficulty']} | {s['estimated_duration']} | "
+            f"{s['reason']} |"
+        )
+    return "\n".join(lines)
+
+
+def get_input_skill_ids(steps: list) -> list:
+    """Trích xuất danh sách skill_id từ steps — dùng cho post-validation."""
+    return [s["skill_id"] for s in steps]
