@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, Link } from 'react-router-dom';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import { 
   GraduationCap, 
   Users, 
@@ -41,6 +42,7 @@ import LandingPage from '../pages/LandingPage';
 import StudentSurvey from '../StudentSurvey';
 import StudentHistory from '../StudentHistory';
 import StudentRoadmap from '../StudentRoadmap';
+import TeacherDashboard from './TeacherDashboard';
 import useOnlineStatus from '../offline/useOnlineStatus';
 import { 
   seedFromStaticData, 
@@ -102,6 +104,7 @@ function DashboardApp({ user, logout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
+  const [parents, setParents] = useState([]);
   const [rankings, setRankings] = useState([]);
   const [testResults, setTestResults] = useState([]);
   const [questions, setQuestions] = useState([]);
@@ -133,6 +136,9 @@ function DashboardApp({ user, logout }) {
   const [studentActiveTab, setStudentActiveTab] = useState('student-dashboard');
   const [studentTestResults, setStudentTestResults] = useState([]);
   const [studentProfile, setStudentProfile] = useState(null);
+  const [targetStudentId, setTargetStudentId] = useState(user?.role === 'hoc_sinh' ? user.id : null);
+  const [parentEvaluations, setParentEvaluations] = useState([]);
+  const [newEvaluation, setNewEvaluation] = useState("");
 
   // Offline state
   const isOnline = useOnlineStatus();
@@ -161,7 +167,9 @@ function DashboardApp({ user, logout }) {
     name: '',
     email: '',
     grade: 'Lớp 6',
-    password: ''
+    password: '',
+    primary_teacher_id: '',
+    parent_id: ''
   });
 
   const [teacherForm, setTeacherForm] = useState({
@@ -208,6 +216,18 @@ function DashboardApp({ user, logout }) {
     }
   };
 
+  const fetchParents = async () => {
+    try {
+      const res = await apiFetch('/api/parents');
+      if (res.ok) {
+        const data = await res.json();
+        setParents(data);
+      }
+    } catch (err) {
+      console.error("Error fetching parents:", err);
+    }
+  };
+
   const fetchRankings = async () => {
     try {
       if (!navigator.onLine) {
@@ -249,10 +269,10 @@ function DashboardApp({ user, logout }) {
     try {
       if (!navigator.onLine) {
         const data = await getOfflineTestResults();
-        setStudentTestResults(data.filter(r => r.user_id === user.id));
+        setStudentTestResults(data.filter(r => r.user_id === targetStudentId));
         return;
       }
-      const res = await apiFetch(`/api/test-results/student/${user.id}`);
+      const res = await apiFetch(`/api/test-results/student/${targetStudentId}`);
       if (res.ok) {
         const data = await res.json();
         setStudentTestResults(data);
@@ -263,21 +283,66 @@ function DashboardApp({ user, logout }) {
   };
 
   const fetchStudentProfile = async () => {
-    if (!user || !user.id || user.role !== 'hoc_sinh') return;
+    if (!targetStudentId || (user.role !== 'hoc_sinh' && user.role !== 'phu_huynh')) return;
     try {
       if (!navigator.onLine) {
-        const data = await getOfflineStudentProfile(user.id);
+        const data = await getOfflineStudentProfile(targetStudentId);
         if (data) setStudentProfile(data);
         return;
       }
-      const res = await apiFetch(`/api/students/${user.id}`);
+      const res = await apiFetch(`/api/students/${targetStudentId}`);
       if (res.ok) {
         const data = await res.json();
         setStudentProfile(data);
-        saveStudentProfile(data);
+        if (user.role === 'hoc_sinh') saveStudentProfile(data);
       }
     } catch (err) {
       console.error("Error fetching student profile:", err);
+    }
+  };
+
+  const fetchEvaluations = async () => {
+    if (!targetStudentId || user.role !== 'phu_huynh') return;
+    try {
+      const res = await apiFetch(`/api/students/${targetStudentId}/evaluations`);
+      if (res.ok) {
+        setParentEvaluations(await res.json());
+      }
+    } catch (err) {
+      console.error("Error fetching evaluations", err);
+    }
+  };
+
+  const handleApproveRoadmap = async (resultId) => {
+    if (!resultId) return;
+    try {
+      const res = await apiFetch(`/api/test-results/${resultId}/approve`, { method: 'POST' });
+      if (res.ok) {
+        triggerNotification('Đã phê duyệt lộ trình thành công!');
+        fetchTestResults();
+        if (selectedResult && selectedResult.id === resultId) {
+          setSelectedResult({ ...selectedResult, is_roadmap_approved: true });
+        }
+      }
+    } catch (err) {
+      console.error("Error approving roadmap", err);
+    }
+  };
+
+  const handleTeacherEvaluation = async (studentId, comment) => {
+    if (!studentId || !comment) return;
+    try {
+      const res = await apiFetch(`/api/students/${studentId}/evaluations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comment })
+      });
+      if (res.ok) {
+        triggerNotification('Đã gửi nhận xét thành công!');
+        setNewEvaluation('');
+      }
+    } catch (err) {
+      console.error("Error submitting evaluation", err);
     }
   };
 
@@ -429,18 +494,41 @@ function DashboardApp({ user, logout }) {
 
   const loadAllData = async () => {
     setLoading(true);
-    await Promise.all([fetchStudents(), fetchTeachers(), fetchRankings(), fetchTestResults()]);
+    await Promise.all([
+      fetchStudents(),
+      fetchTeachers(),
+      fetchParents(),
+      fetchRankings(),
+      fetchTestResults(),
+      fetchQuestions(),
+      fetchPlacementTests()
+    ]);
     setLoading(false);
   };
 
   useEffect(() => {
-    if (user?.role === 'hoc_sinh') {
-      fetchStudentTestResults();
-      fetchStudentProfile();
-    } else {
-      loadAllData();
+    if (user?.role === 'phu_huynh') {
+      apiFetch(`/api/parents/${user.id}/students`).then(res => {
+        if(res.ok) return res.json();
+      }).then(data => {
+        if(data && data.length > 0) {
+           setTargetStudentId(data[0].id);
+        }
+      });
     }
   }, [user?.id, user?.role]);
+
+  useEffect(() => {
+    if (user?.role === 'hoc_sinh' || user?.role === 'phu_huynh') {
+      if (targetStudentId) {
+        fetchStudentTestResults();
+        fetchStudentProfile();
+        if (user.role === 'phu_huynh') fetchEvaluations();
+      }
+    } else if (user?.role === 'admin' || user?.role === 'giao_vien') {
+      loadAllData();
+    }
+  }, [targetStudentId, user?.role]);
 
   // ── Seed IndexedDB from /data on mount (for offline use) ──────────────
   useEffect(() => {
@@ -549,6 +637,8 @@ function DashboardApp({ user, logout }) {
 
       const payload = { ...studentForm };
       if (!payload.password) delete payload.password;
+      if (payload.primary_teacher_id === '') payload.primary_teacher_id = null;
+      if (payload.parent_id === '') payload.parent_id = null;
 
       const res = await apiFetch(url, {
         method,
@@ -557,7 +647,8 @@ function DashboardApp({ user, logout }) {
 
       if (!res.ok) {
         const errorDetail = await res.json();
-        throw new Error(errorDetail.detail || "Lỗi thao tác trên học sinh");
+        const errorMsg = typeof errorDetail.detail === 'object' ? JSON.stringify(errorDetail.detail) : errorDetail.detail;
+        throw new Error(errorMsg || "Lỗi thao tác trên học sinh");
       }
 
       triggerNotification(
@@ -714,6 +805,9 @@ function DashboardApp({ user, logout }) {
 
   // Filters
   const filteredStudents = students.filter(s => {
+    if (user?.role === 'giao_vien' && s.primary_teacher_id !== user.id) {
+      return false;
+    }
     const matchSearch = s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
       s.email.toLowerCase().includes(studentSearch.toLowerCase()) ||
       (s.grade && s.grade.toLowerCase().includes(studentSearch.toLowerCase()));
@@ -770,7 +864,7 @@ function DashboardApp({ user, logout }) {
         
         <div className="sidebar-menu">
           {/* STUDENT SIDEBAR */}
-          {user?.role === 'hoc_sinh' ? (
+          {user?.role === 'hoc_sinh' || user?.role === 'phu_huynh' ? (
             <>
               <button
                 className={`menu-item ${studentActiveTab === 'student-dashboard' ? 'active' : ''}`}
@@ -779,27 +873,33 @@ function DashboardApp({ user, logout }) {
                 <LayoutDashboard size={20} />
                 <span>Tổng quan</span>
               </button>
-              <button
-                className={`menu-item ${studentActiveTab === 'survey' ? 'active' : ''}`}
-                onClick={() => { setStudentActiveTab('survey'); setSidebarOpen(false); }}
-              >
-                <BookOpen size={20} />
-                <span>Khảo sát đầu vào</span>
-              </button>
-              <button
-                className={`menu-item ${studentActiveTab === 'roadmap' ? 'active' : ''}`}
-                onClick={() => { setStudentActiveTab('roadmap'); fetchStudentTestResults(); if (!questions.length) fetchQuestions(); setSidebarOpen(false); }}
-              >
-                <Sparkles size={20} />
-                <span>Lộ trình của em</span>
-              </button>
-              <button
-                className={`menu-item ${studentActiveTab === 'progress' ? 'active' : ''}`}
-                onClick={() => { setStudentActiveTab('progress'); setSidebarOpen(false); }}
-              >
-                <TrendingUp size={20} />
-                <span>Tiến bộ</span>
-              </button>
+              
+              {user?.role === 'hoc_sinh' && (
+                <>
+                  <button
+                    className={`menu-item ${studentActiveTab === 'survey' ? 'active' : ''}`}
+                    onClick={() => { setStudentActiveTab('survey'); setSidebarOpen(false); }}
+                  >
+                    <BookOpen size={20} />
+                    <span>Khảo sát đầu vào</span>
+                  </button>
+                  <button
+                    className={`menu-item ${studentActiveTab === 'roadmap' ? 'active' : ''}`}
+                    onClick={() => { setStudentActiveTab('roadmap'); fetchStudentTestResults(); if (!questions.length) fetchQuestions(); setSidebarOpen(false); }}
+                  >
+                    <Sparkles size={20} />
+                    <span>Lộ trình của em</span>
+                  </button>
+                  <button
+                    className={`menu-item ${studentActiveTab === 'progress' ? 'active' : ''}`}
+                    onClick={() => { setStudentActiveTab('progress'); setSidebarOpen(false); }}
+                  >
+                    <TrendingUp size={20} />
+                    <span>Tiến bộ</span>
+                  </button>
+                </>
+              )}
+              
               <button
                 className={`menu-item ${studentActiveTab === 'history' ? 'active' : ''}`}
                 onClick={() => { setStudentActiveTab('history'); fetchStudentTestResults(); if (!questions.length) fetchQuestions(); setSidebarOpen(false); }}
@@ -807,6 +907,16 @@ function DashboardApp({ user, logout }) {
                 <ClipboardCheck size={20} />
                 <span>Lịch sử bài đánh giá</span>
               </button>
+              
+              {user?.role === 'phu_huynh' && (
+                <button 
+                  className={`menu-item ${studentActiveTab === 'evaluations' ? 'active' : ''}`}
+                  onClick={() => { setStudentActiveTab('evaluations'); setSidebarOpen(false); }}
+                >
+                  <MessageSquare size={20} />
+                  <span>Nhận xét của giáo viên</span>
+                </button>
+              )}
             </>
           ) : (
             <>
@@ -849,6 +959,16 @@ function DashboardApp({ user, logout }) {
             </button>
           )}
 
+          {(user?.role === 'admin' || user?.role === 'giao_vien') && (
+            <button
+              className={`menu-item ${activeTab === 'roadmaps' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('roadmaps'); fetchTestResults(); fetchStudents(); setSidebarOpen(false); }}
+            >
+              <Sparkles size={20} />
+              <span>Lộ trình học</span>
+            </button>
+          )}
+
           {/* Question Bank tab: visible to admin and teacher */}
           {(user?.role === 'admin' || user?.role === 'giao_vien') && (
             <button 
@@ -878,13 +998,14 @@ function DashboardApp({ user, logout }) {
               {user?.role === 'hoc_sinh' ? 'Không gian học tập' : 'Trung tâm điều hành'}
             </span>
             <h1>
-              {user?.role === 'hoc_sinh' ? (
+              {user?.role === 'hoc_sinh' || user?.role === 'phu_huynh' ? (
                 <>
                   {studentActiveTab === 'student-dashboard' && 'Tổng quan'}
                   {studentActiveTab === 'survey' && 'Khảo sát đầu vào'}
                   {studentActiveTab === 'roadmap' && 'Lộ trình của em'}
                   {studentActiveTab === 'progress' && 'Tiến bộ'}
                   {studentActiveTab === 'history' && 'Lịch sử bài đánh giá'}
+                  {studentActiveTab === 'evaluations' && 'Nhận xét của giáo viên'}
                 </>
               ) : (
                 <>
@@ -892,7 +1013,6 @@ function DashboardApp({ user, logout }) {
                   {activeTab === 'users' && userSubTab === 'students' && 'Danh sách Học sinh'}
                   {activeTab === 'users' && userSubTab === 'teachers' && 'Danh sách Giáo viên'}
                   {activeTab === 'leaderboard' && 'Bảng xếp hạng'}
-                  {activeTab === 'assessment' && assessmentSubTab === 'survey' && 'Khảo sát đầu vào'}
                   {activeTab === 'assessment' && assessmentSubTab === 'test-results' && 'Kết quả kiểm tra trình độ'}
                   {activeTab === 'assessment' && assessmentSubTab === 'placement-tests' && 'Danh sách bài test'}
                   {activeTab === 'questions' && 'Ngân hàng câu hỏi'}
@@ -1010,9 +1130,9 @@ function DashboardApp({ user, logout }) {
           {/* ==========================================================
               STUDENT CONTENT
               ========================================================== */}
-          {user?.role === 'hoc_sinh' ? (
+          {user?.role === 'hoc_sinh' || user?.role === 'phu_huynh' ? (
             <>
-              {studentActiveTab === 'survey' && (
+              {studentActiveTab === 'survey' && user?.role === 'hoc_sinh' && (
                 <StudentSurvey user={user} onTabChange={setStudentActiveTab} />
               )}
               {studentActiveTab === 'student-dashboard' && (
@@ -1026,6 +1146,7 @@ function DashboardApp({ user, logout }) {
                           ? 'Lộ trình cá nhân đã sẵn sàng. Chỉ cần một chút đều đặn mỗi ngày để em tiến gần hơn tới mục tiêu.'
                           : 'Bắt đầu bằng một bài khảo sát ngắn để V-NEXUS SCHOOL hiểu điểm mạnh và thiết kế lộ trình phù hợp với em.'}
                       </p>
+                      {user?.role === 'hoc_sinh' && (
                       <button
                         className="student-hero-button"
                         onClick={() => {
@@ -1041,6 +1162,7 @@ function DashboardApp({ user, logout }) {
                         <Play size={17} fill="currentColor" />
                         {latestStudentResult ? 'Tiếp tục lộ trình' : 'Bắt đầu đánh giá'}
                       </button>
+                      )}
                     </div>
                     <div className="student-hero-progress">
                       <div className="student-progress-ring" style={{ '--student-progress': `${studentPercent * 3.6}deg` }}>
@@ -1052,6 +1174,8 @@ function DashboardApp({ user, logout }) {
                     <div className="student-hero-shape shape-two" />
                   </section>
 
+                  {user?.role === 'hoc_sinh' && (
+                    <>
                   <div className="student-section-heading">
                     <div><span>ĐIỂM ĐẾN TIẾP THEO</span><h3>Em muốn làm gì hôm nay?</h3></div>
                     <p>Chọn một hoạt động để tiếp tục</p>
@@ -1086,10 +1210,30 @@ function DashboardApp({ user, logout }) {
                       <div><span>Lộ trình hoàn thành</span><strong>{completedRoadmaps}</strong></div>
                       <div><span>Kỹ năng cần ưu tiên</span><strong>{latestStudentResult?.gaps?.length || 0}</strong></div>
                     </div>
+                    {latestStudentResult && (
+                      <div className="student-radar-chart-container" style={{ marginTop: '24px', height: '300px', background: '#f8f9ff', borderRadius: '12px', padding: '16px' }}>
+                        <h4 style={{ textAlign: 'center', marginBottom: '8px', color: '#303972', fontSize: '15px' }}>Phân bố năng lực (Nghe, Nói, Đọc, Viết)</h4>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RadarChart cx="50%" cy="50%" outerRadius="70%" data={[
+                            { subject: 'Nghe', score: 85, fullMark: 100 },
+                            { subject: 'Nói', score: 65, fullMark: 100 },
+                            { subject: 'Đọc', score: 90, fullMark: 100 },
+                            { subject: 'Viết', score: 75, fullMark: 100 },
+                          ]}>
+                            <PolarGrid stroke="#e0e0e0" />
+                            <PolarAngleAxis dataKey="subject" tick={{ fill: '#6b7280', fontSize: 13, fontWeight: 600 }} />
+                            <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                            <Radar name="Năng lực" dataKey="score" stroke="#6C63FF" fill="#6C63FF" fillOpacity={0.4} />
+                          </RadarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
                     {!latestStudentResult && (
                       <div className="student-empty-tip"><Sparkles size={17} /> Hoàn thành khảo sát đầu tiên để mở khóa hồ sơ năng lực của em.</div>
                     )}
                   </section>
+                  </>
+                  )}
                 </div>
               )}
               {studentActiveTab === 'roadmap' && (
@@ -1126,13 +1270,39 @@ function DashboardApp({ user, logout }) {
                   onRetry={fetchStudentTestResults}
                 />
               )}
+              {studentActiveTab === 'evaluations' && (
+                <div className="animate-fade-in panel" style={{ padding: '24px' }}>
+                  <h3 className="section-title"><MessageSquare size={20} /> Nhận xét của giáo viên</h3>
+                  {parentEvaluations.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '20px' }}>
+                      {parentEvaluations.map(ev => (
+                        <div key={ev.id} style={{ padding: '16px', border: '1px solid #e2e8f0', borderRadius: '8px', background: '#f8fafc' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#64748b', fontSize: '13px', marginBottom: '12px' }}>
+                            <Calendar size={14} /> {new Date(ev.created_at).toLocaleString('vi-VN')}
+                          </div>
+                          <p style={{ margin: 0, fontSize: '15px', color: '#334155', lineHeight: '1.5' }}>{ev.comment}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                      <MessageSquare size={48} style={{ opacity: '0.4', marginBottom: '16px' }} />
+                      <p>Hiện chưa có nhận xét nào từ giáo viên.</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </>
           ) : (
             <>
           {/* ==========================================================
               TAB: DASHBOARD OVERVIEW
               ========================================================== */}
-          {activeTab === 'dashboard' && (
+          {activeTab === 'dashboard' && user?.role === 'giao_vien' && (
+            <TeacherDashboard />
+          )}
+          
+          {activeTab === 'dashboard' && user?.role !== 'giao_vien' && (
             <div className="animate-fade-in">
               {/* Stats Cards */}
               <div className="stats-grid">
@@ -1379,7 +1549,7 @@ function DashboardApp({ user, logout }) {
                 <button
                   className="btn btn-primary"
                   onClick={() => {
-                    setStudentForm({ name: '', email: '', grade: 'Lớp 6', password: '' });
+                    setStudentForm({ name: '', email: '', grade: 'Lớp 6', password: '', primary_teacher_id: '', parent_id: '' });
                     setStudentModal({ open: true, mode: 'create', data: null });
                   }}
                 >
@@ -1441,7 +1611,9 @@ function DashboardApp({ user, logout }) {
                                     name: student.name,
                                     email: student.email,
                                     grade: student.grade || 'Lớp 6',
-                                    password: ''
+                                    password: '',
+                                    primary_teacher_id: student.primary_teacher_id || '',
+                                    parent_id: student.parent_id || ''
                                   });
                                   setStudentModal({ open: true, mode: 'edit', data: student });
                                 }}
@@ -1698,13 +1870,6 @@ function DashboardApp({ user, logout }) {
             <div className="animate-fade-in">
               <div className="subtab-bar">
                 <button
-                  className={`subtab-btn ${assessmentSubTab === 'survey' ? 'active' : ''}`}
-                  onClick={() => setAssessmentSubTab('survey')}
-                >
-                  <BookOpen size={16} />
-                  Khảo sát
-                </button>
-                <button
                   className={`subtab-btn ${assessmentSubTab === 'test-results' ? 'active' : ''}`}
                   onClick={() => { setAssessmentSubTab('test-results'); fetchTestResults(); fetchStudents(); }}
                 >
@@ -1874,12 +2039,12 @@ function DashboardApp({ user, logout }) {
                               <tr key={result.id}>
                                 <td>
                                   <div className="student-meta">
-                                    <div className="avatar-circle" style={{ background: getAvatarColor(getStudentName(result.student_id)) }}>
-                                      {getStudentName(result.student_id).charAt(0).toUpperCase()}
+                                    <div className="avatar-circle" style={{ background: getAvatarColor(getStudentName(result.user_id)) }}>
+                                      {getStudentName(result.user_id).charAt(0).toUpperCase()}
                                     </div>
                                     <div>
-                                      <div className="meta-name">{getStudentName(result.student_id)}</div>
-                                      <div className="meta-email">{getStudentEmail(result.student_id)}</div>
+                                      <div className="meta-name">{getStudentName(result.user_id)}</div>
+                                      <div className="meta-email">{getStudentEmail(result.user_id)}</div>
                                     </div>
                                   </div>
                                 </td>
@@ -1946,7 +2111,7 @@ function DashboardApp({ user, logout }) {
                         ← Quay lại
                       </button>
                       <h3 className="table-title" style={{ margin: 0, flex: 1 }}>
-                        Kết quả: {getStudentName(selectedResult.student_id)}
+                        Kết quả: {getStudentName(selectedResult.user_id)}
                       </h3>
                     </div>
                   </div>
@@ -2139,11 +2304,46 @@ function DashboardApp({ user, logout }) {
                   {/* Training plan (AI) */}
                   {selectedResult.training_plan && (
                     <div style={{ padding: '0 32px 24px' }}>
-                      <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Lightbulb size={18} style={{ color: '#a43c20' }} />
-                        Kế hoạch đào tạo cá nhân hóa (AI)
-                      </h4>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                          <Lightbulb size={18} style={{ color: '#a43c20' }} />
+                          Kế hoạch đào tạo cá nhân hóa (AI)
+                        </h4>
+                        {user?.role === 'giao_vien' && !selectedResult.is_roadmap_approved && (
+                          <button className="btn btn-primary btn-small" onClick={() => handleApproveRoadmap(selectedResult.id)}>
+                            <CheckCircle2 size={16} /> Phê duyệt lộ trình
+                          </button>
+                        )}
+                        {selectedResult.is_roadmap_approved && (
+                          <span style={{ fontSize: '13px', color: '#27c26c', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <CheckCircle2 size={16} /> Đã phê duyệt
+                          </span>
+                        )}
+                      </div>
                       <div className="history-training-plan">{selectedResult.training_plan}</div>
+                    </div>
+                  )}
+
+                  {/* Teacher Evaluation Input */}
+                  {user?.role === 'giao_vien' && (
+                    <div style={{ padding: '0 32px 24px' }}>
+                      <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <MessageSquare size={18} style={{ color: '#4d44b5' }} />
+                        Thêm nhận xét giáo viên
+                      </h4>
+                      <div style={{ display: 'flex', gap: '12px' }}>
+                        <input 
+                          type="text" 
+                          className="input-field" 
+                          placeholder="Nhập nhận xét về học sinh này..." 
+                          value={newEvaluation}
+                          onChange={(e) => setNewEvaluation(e.target.value)}
+                          style={{ flex: 1 }}
+                        />
+                        <button className="btn btn-primary" onClick={() => handleTeacherEvaluation(selectedResult.student_id, newEvaluation)}>
+                          Gửi nhận xét
+                        </button>
+                      </div>
                     </div>
                   )}
 
@@ -2224,6 +2424,76 @@ function DashboardApp({ user, logout }) {
                   </div>
                 </>
               )}
+            </div>
+          )}
+
+          {/* ==========================================================
+              TAB: ROADMAPS (Lộ trình học)
+              ========================================================== */}
+          {activeTab === 'roadmaps' && (
+            <div className="animate-fade-in panel table-panel">
+              <div className="table-header-bar">
+                <h3 className="table-title">Lộ trình cần phê duyệt</h3>
+              </div>
+              <div className="table-container">
+                <table className="custom-table">
+                  <thead>
+                    <tr>
+                      <th>Học sinh</th>
+                      <th>Ngày nộp</th>
+                      <th>Khung tham chiếu</th>
+                      <th style={{ textAlign: 'center' }}>Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {testResults.filter(r => !r.is_roadmap_approved && r.training_plan && (user?.role === 'admin' || (students.find(s => s.id === r.user_id)?.primary_teacher_id === user?.id))).map(result => (
+                      <tr key={result.id}>
+                        <td>
+                          <div className="student-meta">
+                            <div className="avatar-circle" style={{ background: getAvatarColor(getStudentName(result.user_id)) }}>
+                              {getStudentName(result.user_id).charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <div className="meta-name">{getStudentName(result.user_id)}</div>
+                              <div className="meta-email">{getStudentEmail(result.user_id)}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>
+                            <Calendar size={12} />
+                            <span>{new Date(result.test_date).toLocaleDateString('vi-VN')}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className="badge badge-primary">{result.cefr}</span>
+                        </td>
+                        <td style={{ textAlign: 'center' }}>
+                          <button 
+                            className="btn btn-primary btn-small"
+                            onClick={() => {
+                              setSelectedResult(result);
+                              setActiveTab('assessment');
+                              setAssessmentSubTab('test-results');
+                            }}
+                          >
+                            <Sparkles size={12} />
+                            Phê duyệt
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {testResults.filter(r => !r.is_roadmap_approved && r.training_plan && (user?.role === 'admin' || (students.find(s => s.id === r.user_id)?.primary_teacher_id === user?.id))).length === 0 && (
+                      <tr>
+                        <td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                          <Sparkles size={48} style={{ opacity: '0.4', marginBottom: '16px', margin: '0 auto' }} />
+                          <p>Không có lộ trình nào cần phê duyệt.</p>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
@@ -2656,6 +2926,32 @@ function DashboardApp({ user, logout }) {
                   <option value="Lớp 10">Lớp 10</option>
                   <option value="Lớp 11">Lớp 11</option>
                   <option value="Lớp 12">Lớp 12</option>
+                </select>
+              </div>
+
+              <div>
+                <label>Giáo viên phụ trách</label>
+                <select 
+                  value={studentForm.primary_teacher_id}
+                  onChange={e => setStudentForm({ ...studentForm, primary_teacher_id: e.target.value ? parseInt(e.target.value) : '' })}
+                >
+                  <option value="">-- Không chỉ định --</option>
+                  {teachers.map(t => (
+                    <option key={t.id} value={t.id}>{t.name} ({t.email})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label>Phụ huynh liên kết</label>
+                <select 
+                  value={studentForm.parent_id}
+                  onChange={e => setStudentForm({ ...studentForm, parent_id: e.target.value ? parseInt(e.target.value) : '' })}
+                >
+                  <option value="">-- Không chỉ định --</option>
+                  {parents.map(p => (
+                    <option key={p.id} value={p.id}>{p.name} ({p.email})</option>
+                  ))}
                 </select>
               </div>
 
