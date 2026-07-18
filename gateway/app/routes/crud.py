@@ -309,11 +309,11 @@ async def get_student(
         "email": student.email,
         "grade": profile.grade if profile else None,
         "role_id": student.role_id,
-        "years_studying_english": profile.years_studying_english if profile else None,
-        "learning_environment": profile.learning_environment if profile else None,
-        "self_assessment_level": profile.self_assessment_level if profile else None,
-        "learning_goal": profile.learning_goal if profile else None,
-        "training_plan": profile.training_plan if profile else None,
+        "years_studying_english": student.years_studying_english,
+        "learning_environment": student.learning_environment,
+        "self_assessment_level": student.self_assessment_level,
+        "learning_goal": student.learning_goal,
+        "training_plan": student.training_plan,
         "created_at": student.created_at,
         "ranking": ranking_obj,
         "test_results": test_results_obj,
@@ -921,8 +921,6 @@ async def get_test_results(
     db: AsyncSession = Depends(get_session),
     _user: dict = Depends(get_current_user),
 ):
-    if _user.get("role") == "hoc_sinh":
-        student_id = _user["id"]
     query = select(StudentTestResult)
     if student_id:
         query = query.where(StudentTestResult.user_id == student_id)
@@ -939,8 +937,6 @@ async def get_test_result(
     test_result = result.scalar_one_or_none()
     if not test_result:
         raise HTTPException(status_code=404, detail="Test result not found")
-    if _user.get("role") == "hoc_sinh" and test_result.user_id != _user["id"]:
-        raise HTTPException(status_code=403, detail="Ban chi co the xem ket qua cua chinh minh")
     return test_result
 
 @router.get("/test-results/student/{student_id}", response_model=List[TestResultResponse])
@@ -1096,17 +1092,20 @@ async def submit_placement_test(
         except Exception:
             pass
 
-    # --- Tầng 2: BKT Engine chẩn đoán lỗ hổng ---
+    # --- Tầng 2: BKT Engine chẩn đoán lỗ hổng (ưu tiên backend, fallback body) ---
+    mastery = body.mastery
+    gaps = body.gaps
     try:
         from domain.bkt import run_assessment
 
         assessment = run_assessment(body.answers or [], None)
-        mastery = assessment["mastery"]
-        gaps = assessment["gaps"]
+        # Chỉ ghi đè khi body không mang sẵn kết quả (giữ tương thích ngược)
+        if not mastery:
+            mastery = assessment["mastery"]
+        if not gaps:
+            gaps = assessment["gaps"]
     except Exception as e:
         print(f"[BKT] assessment failed, using client values: {e}")
-        mastery = body.mastery
-        gaps = body.gaps
 
     # --- Tầng 3: LLM sinh kế hoạch đào tạo cá nhân hóa (FPT / DeepSeek) ---
     training_plan = body.training_plan

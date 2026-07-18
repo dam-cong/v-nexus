@@ -235,159 +235,122 @@ export default function StudentDashboard({ user, studentProfile, results, onTabC
 
   if (view === 'progress') {
     return (
-      <div className="sd-container" style={{ padding: 0, margin: 0, background: 'transparent', boxShadow: 'none' }}>
+      <div className="sd-container">
         <div className="sd-header">
           <div>
             <h2 className="sd-title">Kỹ năng của em</h2>
-            <div className="sd-tabs">
-              <span onClick={() => onTabChange('student-dashboard')} className={`sd-tab ${view === 'overview' ? 'active' : ''}`}>Tổng quan</span>
-              <span onClick={() => onTabChange('roadmap')} className={`sd-tab ${view === 'roadmap' ? 'active' : ''}`}>Lộ trình của em</span>
-              <span onClick={() => onTabChange('progress')} className={`sd-tab ${view === 'progress' ? 'active' : ''}`}>Tiến bộ</span>
-            </div>
+            <p className="sd-subtitle">Theo dõi sự tiến bộ và tập trung vào những điểm cần cải thiện.</p>
+          </div>
+          <div className="sd-filter-bar">
+            <button 
+              className={`sd-tab ${skillFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setSkillFilter('all')}
+            >
+              Tất cả
+            </button>
+            <button 
+              className={`sd-tab ${skillFilter === 'good' ? 'active' : ''}`}
+              onClick={() => setSkillFilter('good')}
+            >
+              Đang làm tốt
+            </button>
+            <button 
+              className={`sd-tab ${skillFilter === 'developing' ? 'active' : ''}`}
+              onClick={() => setSkillFilter('developing')}
+            >
+              Đang tiến bộ
+            </button>
+            <button 
+              className={`sd-tab ${skillFilter === 'needs_work' ? 'active' : ''}`}
+              onClick={() => setSkillFilter('needs_work')}
+            >
+              Nên luyện thêm
+            </button>
           </div>
         </div>
 
-        <div className="p-container-margin-mobile md:p-container-margin-desktop flex-1 mb-20 md:mb-0 max-w-7xl mx-auto w-full">
-          <div className="mb-lg flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div>
-              <p className="font-body-lg text-body-lg text-on-surface-variant">Theo dõi sự tiến bộ và tập trung vào những điểm cần cải thiện.</p>
-            </div>
-            {/* Filters */}
-            <div className="flex flex-wrap gap-2">
-              <button className="bg-primary text-on-primary rounded-full px-4 py-2 font-label-md text-label-md shadow-sm transition-transform hover:scale-105">Tất cả</button>
-              <button className="bg-surface-container text-on-surface rounded-full px-4 py-2 font-label-md text-label-md shadow-sm transition-transform hover:scale-105 border border-outline-variant">Đang làm tốt</button>
-              <button className="bg-surface-container text-on-surface rounded-full px-4 py-2 font-label-md text-label-md shadow-sm transition-transform hover:scale-105 border border-outline-variant">Đang tiến bộ</button>
-              <button className="bg-surface-container text-on-surface rounded-full px-4 py-2 font-label-md text-label-md shadow-sm transition-transform hover:scale-105 border border-outline-variant">Nên luyện thêm</button>
-            </div>
+        <div className="sd-mastery-layout">
+          {/* Main Skills List */}
+          <div className="sd-mastery-grid">
+            {filteredMastery.length === 0 ? (
+              <div className="sd-empty-state">
+                <p>Không tìm thấy kỹ năng nào trong bộ lọc này.</p>
+              </div>
+            ) : (
+              filteredMastery.map((m) => {
+                const pct = Math.round((m.probability || 0) * 100);
+                let statusClass = 'good';
+                let statusLabel = 'Đang làm tốt';
+                let badgeStyle = { background: '#53e38920', color: '#004822' };
+
+                if (m.status === 'developing') {
+                  statusClass = 'developing';
+                  statusLabel = 'Đang tiến bộ';
+                  badgeStyle = { background: '#fd7e5c20', color: '#83250a' };
+                } else if (m.status === 'weak') {
+                  statusClass = 'weak';
+                  statusLabel = 'Nên luyện thêm';
+                  badgeStyle = { background: '#ffdad6', color: '#93000a' };
+                }
+
+                return (
+                  <div key={m.id} className="sd-mastery-card">
+                    <div>
+                      <div className="sd-mastery-header">
+                        <h3 className="sd-mastery-title">{m.skill_name}</h3>
+                        <CheckCircle2 size={20} className={`sd-mastery-icon ${statusClass}`} />
+                      </div>
+                      <div className="sd-mastery-meta">
+                        <span className="sd-mastery-badge" style={badgeStyle}>
+                          {statusLabel}
+                        </span>
+                        <span className="sd-mastery-pct">{pct}% Mastery</span>
+                      </div>
+                      <div className="sd-progress-track">
+                        <div className={`sd-progress-fill ${statusClass}`} style={{ width: `${pct}%` }}></div>
+                      </div>
+                    </div>
+                    <button 
+                      className="sd-btn-outline"
+                      onClick={() => onTabChange('roadmap')}
+                    >
+                      Luyện tập lộ trình
+                    </button>
+                  </div>
+                );
+              })
+            )}
           </div>
 
-          {/* Bento Grid Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-lg mt-8">
-            {/* Main Skills List */}
-            <div className="md:col-span-8 grid gap-4 grid-cols-1 sm:grid-cols-2">
-              {/* Skill Card 1 */}
-              <div className="bg-surface-container-lowest rounded-2xl p-lg soft-shadow hover-lift flex flex-col justify-between border border-outline-variant/30">
-                <div>
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-headline-card-sm text-headline-card-sm text-on-surface">Adverbs of Frequency</h3>
-                    <span className="material-symbols-outlined text-tertiary">check_circle</span>
-                  </div>
-                  <div className="flex items-center gap-2 mb-sm">
-                    <span className="bg-tertiary/10 text-tertiary font-caption text-caption px-2 py-1 rounded-md">Đang làm tốt</span>
-                    <span className="font-caption text-caption text-outline">78% Mastery</span>
-                  </div>
-                  <div className="w-full h-2 rounded-full progress-bar-bg mb-4 overflow-hidden">
-                    <div className="h-full progress-bar-fill-good rounded-full" style={{width: '78%'}}></div>
-                  </div>
-                  <div className="text-sm text-on-surface-variant mb-4 font-body-md">
-                    <p>Đã hoàn thành: 45/50 câu</p>
-                    <p>Lần tập cuối: Hôm qua</p>
-                  </div>
-                </div>
-                <button className="w-full bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary rounded-full py-2 font-label-md text-label-md transition-colors mt-auto border border-primary/20">Xem chi tiết</button>
+          {/* Right Side Panel */}
+          <div className="sd-side-panel">
+            <div className="sd-tip-card">
+              <div className="sd-tip-header">
+                <Lightbulb className="sd-tip-icon" />
+                <h3 className="sd-tip-title">Lời khuyên học tập</h3>
               </div>
-
-              {/* Skill Card 2 */}
-              <div className="bg-surface-container-lowest rounded-2xl p-lg soft-shadow hover-lift flex flex-col justify-between border border-outline-variant/30">
-                <div>
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-headline-card-sm text-headline-card-sm text-on-surface">Comparative Adjectives</h3>
-                    <span className="material-symbols-outlined text-tertiary">check_circle</span>
-                  </div>
-                  <div className="flex items-center gap-2 mb-sm">
-                    <span className="bg-tertiary/10 text-tertiary font-caption text-caption px-2 py-1 rounded-md">Đang làm tốt</span>
-                    <span className="font-caption text-caption text-outline">74% Mastery</span>
-                  </div>
-                  <div className="w-full h-2 rounded-full progress-bar-bg mb-4 overflow-hidden">
-                    <div className="h-full progress-bar-fill-good rounded-full" style={{width: '74%'}}></div>
-                  </div>
-                  <div className="text-sm text-on-surface-variant mb-4 font-body-md">
-                    <p>Đã hoàn thành: 38/50 câu</p>
-                    <p>Lần tập cuối: 2 ngày trước</p>
-                  </div>
-                </div>
-                <button className="w-full bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary rounded-full py-2 font-label-md text-label-md transition-colors mt-auto border border-primary/20">Xem chi tiết</button>
-              </div>
-
-              {/* Skill Card 3 */}
-              <div className="bg-surface-container-lowest rounded-2xl p-lg soft-shadow hover-lift flex flex-col justify-between border border-outline-variant/30">
-                <div>
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-headline-card-sm text-headline-card-sm text-on-surface">Must / Mustn't</h3>
-                    <span className="material-symbols-outlined text-secondary-container">trending_up</span>
-                  </div>
-                  <div className="flex items-center gap-2 mb-sm">
-                    <span className="bg-secondary-container/10 text-secondary-container font-caption text-caption px-2 py-1 rounded-md">Đã nắm khá tốt</span>
-                    <span className="font-caption text-caption text-outline">71% Mastery</span>
-                  </div>
-                  <div className="w-full h-2 rounded-full progress-bar-bg mb-4 overflow-hidden">
-                    <div className="h-full bg-secondary-container rounded-full" style={{width: '71%'}}></div>
-                  </div>
-                  <div className="text-sm text-on-surface-variant mb-4 font-body-md">
-                    <p>Đã hoàn thành: 30/45 câu</p>
-                    <p>Lần tập cuối: 3 ngày trước</p>
-                  </div>
-                </div>
-                <button className="w-full bg-surface-container-high text-primary hover:bg-primary hover:text-on-primary rounded-full py-2 font-label-md text-label-md transition-colors mt-auto border border-primary/20">Xem chi tiết</button>
-              </div>
-
-              {/* Skill Card 4 */}
-              <div className="bg-error-container/20 rounded-2xl p-lg soft-shadow hover-lift flex flex-col justify-between border border-error/20">
-                <div>
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-headline-card-sm text-headline-card-sm text-on-surface">Food and Tableware</h3>
-                    <span className="material-symbols-outlined text-error">warning</span>
-                  </div>
-                  <div className="flex items-center gap-2 mb-sm">
-                    <span className="bg-error/10 text-error font-caption text-caption px-2 py-1 rounded-md">Nên luyện thêm</span>
-                    <span className="font-caption text-caption text-outline">48% Mastery</span>
-                  </div>
-                  <div className="w-full h-2 rounded-full progress-bar-bg mb-4 overflow-hidden">
-                    <div className="h-full bg-error rounded-full" style={{width: '48%'}}></div>
-                  </div>
-                  <div className="text-sm text-on-surface-variant mb-4 font-body-md">
-                    <p>Đã hoàn thành: 15/40 câu</p>
-                    <p>Lần tập cuối: Tuần trước</p>
-                  </div>
-                </div>
-                <button className="w-full bg-secondary text-on-secondary hover:bg-secondary/90 rounded-full py-2 font-label-md text-label-md transition-colors mt-auto shadow-sm">Luyện tập ngay</button>
+              <p className="sd-tip-text">
+                Luyện tập đều đặn giúp củng cố liên kết thần kinh. Hãy hoàn thành các mục tiêu hàng ngày trên lộ trình của em nhé!
+              </p>
+              <div className="sd-tip-box">
+                <p className="sd-tip-box-title">Bí quyết hôm nay:</p>
+                <p className="sd-tip-box-text">Dành 10 phút luyện tập mỗi ngày hiệu quả hơn học dồn vào cuối tuần.</p>
               </div>
             </div>
 
-            {/* Right Side Panel */}
-            <div className="md:col-span-4 flex flex-col gap-lg">
-              {/* Insight Card */}
-              <div className="bg-gradient-to-br from-primary/10 to-surface-variant rounded-2xl p-lg soft-shadow border border-primary/20 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
-                <div className="flex items-center gap-2 mb-4 relative z-10">
-                  <span className="material-symbols-outlined text-primary text-3xl">lightbulb</span>
-                  <h3 className="font-headline-card-sm text-headline-card-sm text-primary">Vì sao em nên học kỹ năng này?</h3>
-                </div>
-                <p className="font-body-md text-body-md text-on-surface-variant mb-4 relative z-10">
-                  Việc nắm vững <strong>Past Simple Irregular Verbs</strong> (Động từ bất quy tắc) giúp em kể những câu chuyện thú vị đã xảy ra trong quá khứ một cách tự nhiên hơn, giống như người bản xứ vậy!
-                </p>
-                <div className="bg-surface-container-lowest/80 backdrop-blur-sm rounded-xl p-4 border border-outline-variant/30 relative z-10">
-                  <p className="font-label-md text-label-md text-on-surface mb-2">Ví dụ:</p>
-                  <div className="flex gap-2 items-center text-sm font-body-md">
-                    <span className="text-error line-through">I goed to the park.</span>
-                    <span className="material-symbols-outlined text-outline text-sm">arrow_forward</span>
-                    <span className="text-tertiary-container font-bold">I went to the park.</span>
-                  </div>
-                </div>
+            <div className="sd-suggest-card">
+              <div className="sd-suggest-icon">
+                <Trophy size={24} />
               </div>
-
-              {/* Action Card */}
-              <div className="bg-surface-container-lowest rounded-2xl p-lg soft-shadow border border-outline-variant/30 flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-primary-container flex items-center justify-center text-on-primary shrink-0">
-                  <span className="material-symbols-outlined text-3xl">psychology</span>
-                </div>
-                <div>
-                  <h4 className="font-label-md text-label-md text-on-surface mb-1">Gợi ý ôn tập</h4>
-                  <p className="font-caption text-caption text-on-surface-variant mb-2">Hệ thống thấy em hay nhầm "Some/Any". Làm 1 bài test nhỏ nhé?</p>
-                  <button className="text-primary font-label-md text-label-md hover:underline flex items-center gap-1">
-                    Làm test 5 phút <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                  </button>
-                </div>
+              <div>
+                <h4 className="sd-suggest-title">Gợi ý từ Medi Bee</h4>
+                <p className="sd-suggest-text">Xem lại lộ trình học để kiểm tra bài luyện tập tiếp theo.</p>
+                <button 
+                  onClick={() => onTabChange('roadmap')}
+                  className="sd-link"
+                >
+                  Mở lộ trình <ArrowRight size={12} />
+                </button>
               </div>
             </div>
           </div>
