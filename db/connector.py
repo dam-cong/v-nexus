@@ -198,6 +198,24 @@ async def init_db() -> None:
                 "ALTER TABLE student_test_results ADD COLUMN IF NOT EXISTS user_id INTEGER;"
             )
         )
+        await conn.execute(
+            text(
+                "ALTER TABLE student_test_results "
+                "ADD COLUMN IF NOT EXISTS is_roadmap_approved BOOLEAN NOT NULL DEFAULT FALSE;"
+            )
+        )
+        await conn.execute(
+            text(
+                "ALTER TABLE students ADD COLUMN IF NOT EXISTS primary_teacher_id INTEGER "
+                "REFERENCES teachers(id) ON DELETE SET NULL;"
+            )
+        )
+        await conn.execute(
+            text(
+                "ALTER TABLE students ADD COLUMN IF NOT EXISTS parent_id INTEGER "
+                "REFERENCES parents(id) ON DELETE SET NULL;"
+            )
+        )
         # Drop old NOT NULL columns after migration (only if still present)
         await conn.execute(text("ALTER TABLE student_test_results DROP COLUMN IF EXISTS student_id;"))
         await conn.execute(text("ALTER TABLE rankings DROP COLUMN IF EXISTS student_id;"))
