@@ -30,6 +30,7 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://vnexus:vnexus@db:5432/vnexus}
       MCP_SERVER_URL: ${MCP_SERVER_URL:-http://mcp_server:8100/mcp}
+
     depends_on:
       db:
         condition: service_healthy
@@ -49,5 +50,8 @@ services:
     ports:
       - "8081:8501"
 
+
+
 volumes:
   vnexus_db_data:
+

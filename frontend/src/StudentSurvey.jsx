@@ -350,7 +350,10 @@ function ScreenLevelSelect({ tests, selectedTestId, onSelectTest, onNext, onBack
               <div
                 key={test.id}
                 className={`survey-level-card ${selected ? 'selected' : ''}`}
-                onClick={() => onSelectTest(test)}
+                onClick={() => {
+                  onSelectTest(test);
+                  onNext();
+                }}
               >
                 {selected && (
                   <div className="survey-level-check">
@@ -367,10 +370,6 @@ function ScreenLevelSelect({ tests, selectedTestId, onSelectTest, onNext, onBack
             );
           })}
         </div>
-      </div>
-
-      <div className="survey-actions">
-        <button className="survey-btn survey-btn-primary" onClick={onNext} disabled={!selectedTestId}>Tiếp tục</button>
       </div>
     </div>
   );
@@ -716,7 +715,7 @@ function ScreenReview({ questions, answers, marked, onBack, onSubmit }) {
   );
 }
 
-function ScreenResults({ result, onRestart, onTabChange, user, isGeneratingPlan }) {
+function ScreenResults({ result, onRestart, onTabChange, user, isGeneratingPlan  }) {
   if (!result) return null;
   const masteryArr = Object.entries(result.mastery || {}).map(([id, m]) => ({
     id, ...m,
@@ -829,14 +828,11 @@ export default function StudentSurvey({ user, onTabChange }) {
   const loading = testsLoading || (selectedTest?.id && questionsLoading);
 
   const handleStart = () => setScreen('level-select');
-  const handleLevelNext = () => setScreen('instructions');
-  const handleInstructionsNext = () => {
+  const handleLevelNext = () => {
     setCurrentIdx(0);
     setStartTime(Date.now());
     setScreen('testing');
   };
-  const handleTestingDone = () => setScreen('review');
-  const handleReviewBack = () => setScreen('testing');
 
   const handleSubmit = useCallback(async () => {
     if (!selectedTest?.id || !questions.length) return;
@@ -949,13 +945,13 @@ export default function StudentSurvey({ user, onTabChange }) {
           onBack={() => setScreen('landing')}
         />
       )}
-      {screen === 'instructions' && (
-        <ScreenInstructions
-          onNext={handleInstructionsNext}
-          onBack={() => setScreen('level-select')}
-        />
+      {screen === 'testing' && questions.length === 0 && (
+        <div className="survey-loading">
+          <div className="survey-loading-spinner" />
+          <p>Đang chuẩn bị bài làm...</p>
+        </div>
       )}
-      {screen === 'testing' && (
+      {screen === 'testing' && questions.length > 0 && (
         <ScreenTestTaking
           questions={questions}
           answers={answers}
@@ -964,26 +960,11 @@ export default function StudentSurvey({ user, onTabChange }) {
           setCurrentIdx={setCurrentIdx}
           marked={marked}
           setMarked={setMarked}
-          onSubmit={handleTestingDone}
-        />
-      )}
-      {screen === 'review' && (
-        <ScreenReview
-          questions={questions}
-          answers={answers}
-          marked={marked}
-          onBack={handleReviewBack}
           onSubmit={handleSubmit}
         />
       )}
       {screen === 'results' && (
-        <ScreenResults
-          result={result}
-          onRestart={handleRestart}
-          onTabChange={onTabChange}
-          user={user}
-          isGeneratingPlan={isGeneratingPlan}
-        />
+        <ScreenResults result={result} onRestart={handleRestart} onTabChange={onTabChange} user={user} />
       )}
     </div>
   );

@@ -14,7 +14,7 @@
 import json
 import re
 
-from agent.llm_client import create_message_fpt
+from agent.llm_client import call_llm
 from domain.bkt import generate_learning_steps, format_steps_for_llm, get_input_skill_ids
 from tools.base import Tool
 
@@ -323,9 +323,9 @@ def generate_training_plan(gaps: list, mastery: dict = None, student_name: str =
     # --- Bước 3: Tạo input có cấu trúc ---
     user_msg = _format_steps_for_user_msg(mastery, gaps, student_name, level, audience)
 
-    # --- Bước 4: Gọi LLM (FPT) ---
+    # --- Bước 4: Gọi LLM (FPT hoặc Ollama) ---
     try:
-        resp = create_message_fpt(
+        resp = call_llm(
             system=system_prompt,
             messages=[{"role": "user", "content": user_msg}],
             tools=None,
@@ -430,16 +430,207 @@ def generate_training_plan_from_survey(
     )
     
     try:
-        resp = create_message_fpt(
-            system=SURVEY_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": user_msg}],
-            tools=None,
-        )
-        return resp.get("text") or "(Hệ thống chưa sinh được lộ trình. Vui lòng thử lại.)"
+            resp = call_llm(
+                system=SURVEY_SYSTEM_PROMPT,
+                messages=[{"role": "user", "content": user_msg}],
+                tools=None,
+            )
+            return resp.get("text") or "(Hệ thống chưa sinh được lộ trình. Vui lòng thử lại.)"
     except Exception as e:
         return (
             f"[Lộ trình tạm thời - LLM chưa khả dụng: {e}]\n"
             f"Dựa trên khảo sát của em {student_name} ({grade}), với mục tiêu '{learning_goal}', "
             "hệ thống khuyến nghị tập trung ôn tập ngữ pháp và từ vựng theo chương trình học trên lớp."
         )
+
+
+# ---------------------------------------------------------------------------
+# 6. ĐỀ XUẤT LỘ TRÌNH THAY THẾ CHO GIÁO VIÊN
+# ---------------------------------------------------------------------------
+
+_ALTERNATIVE_PATHS_SYSTEM_PROMPT = """Bạn là một Chuyên gia Giáo dục số và là Trợ lý Sư phạm AI cho hệ thống V-Nexus.
+Nhiệm vụ của bạn là hỗ trợ Giáo viên thiết kế 3 Lộ trình học tập thay thế (Alternative Learning Paths) khác nhau cho học sinh dựa trên dữ liệu học tập thực tế.
+
+QUY TẮC PHÂN TÁCH 3 LỘ TRÌNH (BẮT BUỘC):
+Bạn phải sinh ra đúng 3 đề xuất tương ứng với 3 trục chiến lược sư phạm sau:
+1. TRỤC 1: "Quay lại gốc rễ sâu hơn" (Back-to-roots): Đề xuất quay lại ôn tập kỹ và củng cố các kỹ năng tiền quyết cấp dưới (prerequisites) sâu hơn trong đồ thị kiến thức.
+2. TRỤC 2: "Đổi nhịp độ và mật độ luyện tập" (Pacing & Density): Giữ nguyên kỹ năng, nhưng thay đổi nhịp độ (giảm độ khó, giãn thời gian, tăng số lượng ví dụ và bài tập lặp lại có hướng dẫn).
+3. TRỤC 3: "Đổi hình thức tiếp cận" (Alternative Modality): Thay đổi hình thức tương tác (gợi ý kèm 1-1 với giáo viên, đổi từ làm bài độc lập sang học nhóm hoặc làm bài tập viết tay tự luận thay vì trắc nghiệm).
+
+HƯỚNG DẪN GROUNDING & AN TOÀN TUYỆT ĐỐI:
+- Chỉ sử dụng các kỹ năng và thông tin có trong phần "DỮ LIỆU ĐẦU VÀO". Tuyệt đối KHÔNG tự sáng tạo ra tên kỹ năng, mã kỹ năng (Skill ID) không tồn tại trong ngữ cảnh.
+- Hãy dùng văn phong chuyên môn, lịch sự và mang tính gợi ý hợp tác sư phạm với giáo viên.
+- Đầu ra phải là định dạng JSON hợp lệ, KHÔNG thêm bất cứ văn bản giải thích nào ngoài khối JSON.
+"""
+
+
+def _run_simple_duplicate_check(data: dict) -> None:
+    """Kiểm tra giao tập hợp Skill ID giữa 3 lộ trình.
+    
+    Nếu trùng lặp quá nhiều, thêm cảnh báo vào `teacher_summary_comparison` 
+    để giáo viên nhận biết và không bị nhầm lẫn.
+    """
+    try:
+        paths = data.get("alternative_paths", {})
+        skills_p1 = set(paths.get("path_1_back_to_roots", {}).get("target_prerequisite_skills", []))
+        skills_p2 = set(paths.get("path_2_pacing_density", {}).get("target_prerequisite_skills", []))
+        skills_p3 = set(paths.get("path_3_alternative_modality", {}).get("target_prerequisite_skills", []))
+        
+        warnings = []
+        if skills_p1 and skills_p2 and len(skills_p1.intersection(skills_p2)) == len(skills_p1):
+            warnings.append("Lộ trình 1 & 2 đề xuất ôn tập cùng tập hợp kỹ năng.")
+        if skills_p1 and skills_p3 and len(skills_p1.intersection(skills_p3)) == len(skills_p1):
+            warnings.append("Lộ trình 1 & 3 đề xuất ôn tập cùng tập hợp kỹ năng.")
+        if skills_p2 and skills_p3 and len(skills_p2.intersection(skills_p3)) == len(skills_p2):
+            warnings.append("Lộ trình 2 & 3 đề xuất ôn tập cùng tập hợp kỹ năng.")
+            
+        if warnings:
+            existing_summary = data.get("teacher_summary_comparison", "")
+            warning_text = "\n[Lưu ý sư phạm] Phát hiện trùng lặp cao về kỹ năng đề xuất ôn tập giữa các phương án. " + " ".join(warnings)
+            data["teacher_summary_comparison"] = existing_summary + warning_text
+    except Exception:
+        pass
+
+
+def _offline_fallback_alternative_plans(steps: list, student_name: str) -> dict:
+    """Fallback ngoại tuyến tạo 3 lộ trình có cấu trúc cố định cho giáo viên."""
+    sids = [s["skill_id"] for s in steps]
+    skills_text = ", ".join([s["skill_name"] for s in steps])
+    
+    return {
+        "alternative_paths": {
+            "path_1_back_to_roots": {
+                "reasoning_cot": "Học sinh liên tục làm bài chưa đạt, giả định hổng kiến thức nền tảng.",
+                "primary_difference": "Khác biệt: Quay lại tập trung củng cố 100% các kỹ năng tiền quyết của các bài học trước đó.",
+                "target_prerequisite_skills": sids,
+                "action_steps": [
+                    {
+                        "step_number": i + 1,
+                        "skill_id": s["skill_id"],
+                        "action_description": f"Xem lại video bài giảng và thực hiện bài tập cơ bản của kỹ năng '{s['skill_name']}'.",
+                        "estimated_duration_mins": 25
+                    } for i, s in enumerate(steps)
+                ],
+                "expected_outcome": f"Nắm vững các kỹ năng nền tảng ({skills_text}) trước khi làm lại đề."
+            },
+            "path_2_pacing_density": {
+                "reasoning_cot": "Học sinh có thể bị quá tải với mật độ và độ khó hiện tại.",
+                "primary_difference": "Khác biệt: Giữ nguyên kỹ năng, nhưng chia nhỏ số lượng câu hỏi và tăng thời gian làm bài.",
+                "target_prerequisite_skills": sids,
+                "action_steps": [
+                    {
+                        "step_number": i + 1,
+                        "skill_id": s["skill_id"],
+                        "action_description": f"Luyện tập 5 câu hỏi dễ (easy) của kỹ năng '{s['skill_name']}', có gợi ý từng bước.",
+                        "estimated_duration_mins": 30
+                    } for i, s in enumerate(steps)
+                ],
+                "expected_outcome": "Xây dựng sự tự tin qua các bài tập chia nhỏ có hướng dẫn."
+            },
+            "path_3_alternative_modality": {
+                "reasoning_cot": "Học sinh không phù hợp với hình thức làm bài trắc nghiệm tự học hiện tại.",
+                "primary_difference": "Khác biệt: Thay đổi phương thức tiếp cận thông qua thảo luận hoặc kèm cặp 1-1.",
+                "target_prerequisite_skills": sids,
+                "action_steps": [
+                    {
+                        "step_number": 1,
+                        "skill_id": sids[0] if sids else "unknown",
+                        "action_description": f"Học nhóm với bạn bè hoặc giáo viên hướng dẫn 1-1, giải thích bằng lời cách làm bài '{skills_text}'.",
+                        "estimated_duration_mins": 45
+                    }
+                ],
+                "expected_outcome": "Giải quyết các nút thắt nhận thức thông qua đối thoại trực tiếp."
+            }
+        },
+        "teacher_summary_comparison": f"Hệ thống đề xuất 3 hướng khắc phục cho em {student_name}: (1) Quay lại ôn bài cũ, (2) Giảm tải/giảm độ khó bài tập, hoặc (3) Hướng dẫn trực tiếp 1-1."
+    }
+
+
+def generate_alternative_plans(gaps: list, mastery: dict = None, student_name: str = "",
+                             level: str = "", old_plan: str = "") -> dict:
+    """Sinh 3 lộ trình thay thế cho giáo viên khi học sinh làm lại nhiều lần không tiến bộ.
+    
+    Gộp vào 1 cuộc gọi duy nhất để tối ưu chi phí và độ trễ, ép JSON schema chặt chẽ.
+    """
+    mastery = mastery or {}
+    
+    # 1. Chuẩn bị bảng lộ trình học tập từ BKT
+    from domain.bkt import generate_learning_steps, format_steps_for_llm
+    steps = generate_learning_steps(mastery, gaps)
+    steps_table = format_steps_for_llm(steps)
+    
+    name = student_name or "học sinh"
+    cefr = level or "chưa xác định"
+    
+    user_msg = (
+        f"THÔNG TIN HỌC SINH:\n"
+        f"- Tên: {name}\n"
+        f"- Trình độ CEFR: {cefr}\n"
+        f"- Lộ trình cũ đã áp dụng (thất bại):\n{old_plan or 'Không có dữ liệu lộ trình cũ'}\n\n"
+        f"{steps_table}\n\n"
+        f"Hãy thiết kế 3 lộ trình thay thế khác nhau (Trục 1: Quay lại gốc rễ, Trục 2: Đổi nhịp độ, Trục 3: Đổi hình thức). "
+        f"Đầu ra bắt buộc là JSON có cấu trúc sau:\n"
+        f"{{\n"
+        f"  \"alternative_paths\": {{\n"
+        f"    \"path_1_back_to_roots\": {{\n"
+        f"      \"reasoning_cot\": \"Phân tích lý do thất bại và vì sao trục này phù hợp\",\n"
+        f"      \"primary_difference\": \"Điểm khác biệt cốt lõi nhất của lộ trình này so với 2 lộ trình còn lại (viết ở câu đầu tiên)\",\n"
+        f"      \"target_prerequisite_skills\": [\"ID các kỹ năng cần ôn tập\"],\n"
+        f"      \"action_steps\": [\n"
+        f"        {{\n"
+        f"          \"step_number\": 1,\n"
+        f"          \"skill_id\": \"mã kỹ năng\",\n"
+        f"          \"action_description\": \"mô tả hành động chi tiết\",\n"
+        f"          \"estimated_duration_mins\": 20\n"
+        f"        }}\n"
+        f"      ],\n"
+        f"      \"expected_outcome\": \"Mục tiêu kỳ vọng\"\n"
+        f"    }},\n"
+        f"    \"path_2_pacing_density\": {{\n"
+        f"      \"reasoning_cot\": \"...\",\n"
+        f"      \"primary_difference\": \"...\",\n"
+        f"      \"target_prerequisite_skills\": [\"...\"],\n"
+        f"      \"action_steps\": [...],\n"
+        f"      \"expected_outcome\": \"...\"\n"
+        f"    }},\n"
+        f"    \"path_3_alternative_modality\": {{\n"
+        f"      \"reasoning_cot\": \"...\",\n"
+        f"      \"primary_difference\": \"...\",\n"
+        f"      \"target_prerequisite_skills\": [\"...\"],\n"
+        f"      \"action_steps\": [...],\n"
+        f"      \"expected_outcome\": \"...\"\n"
+        f"    }}\n"
+        f"  }},\n"
+        f"  \"teacher_summary_comparison\": \"Đoạn tóm tắt so sánh nhanh 3 phương án để giáo viên quét nhanh.\"\n"
+        f"}}"
+    )
+
+    try:
+        resp = call_llm(
+            system=_ALTERNATIVE_PATHS_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": user_msg}],
+            tools=None,
+        )
+        text = resp.get("text") or ""
+        
+        # Parse JSON
+        import json
+        clean_text = text.strip()
+        if clean_text.startswith("```json"):
+            clean_text = clean_text[7:]
+        if clean_text.endswith("```"):
+            clean_text = clean_text[:-3]
+        clean_text = clean_text.strip()
+        
+        data = json.loads(clean_text)
+        
+        # Thực hiện kiểm tra trùng lặp
+        _run_simple_duplicate_check(data)
+        
+        return data
+        
+    except Exception as e:
+        print(f"[LLM Alternative Plan] failed to generate/parse, using fallback: {e}")
+        return _offline_fallback_alternative_plans(steps, name)
+
 

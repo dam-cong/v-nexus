@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, Link } from 'react-router-dom';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
-import { 
-  GraduationCap, 
-  Users, 
-  Trophy, 
-  Plus, 
-  Trash2, 
-  Edit3, 
-  Search, 
-  X, 
-  Award, 
-  Sparkles, 
-  Mail, 
-  BookOpen, 
-  Clock, 
+import {
+  GraduationCap,
+  Users,
+  Trophy,
+  Plus,
+  Trash2,
+  Edit3,
+  Search,
+  X,
+  Award,
+  Sparkles,
+  Mail,
+  BookOpen,
+  Clock,
   ArrowRight,
   TrendingUp,
   LayoutDashboard,
@@ -33,7 +33,8 @@ import {
   CheckCircle2,
   Flame,
   Play,
-  Target
+  Target,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { apiFetch, OfflineError } from '../api';
@@ -43,11 +44,12 @@ import StudentSurvey from '../StudentSurvey';
 import StudentHistory from '../StudentHistory';
 import StudentRoadmap from '../StudentRoadmap';
 import TeacherDashboard from './TeacherDashboard';
+import BeautifulRoadmap from '../BeautifulRoadmap';
 import AdminDashboard from './AdminDashboard';
 import useOnlineStatus from '../offline/useOnlineStatus';
-import { 
-  seedFromStaticData, 
-  getQuestions as getOfflineQuestions, 
+import {
+  seedFromStaticData,
+  getQuestions as getOfflineQuestions,
   getPlacementTests as getOfflineTests,
   getStudents as getOfflineStudents,
   getTeachers as getOfflineTeachers,
@@ -140,6 +142,19 @@ function DashboardApp({ user, logout }) {
   const [targetStudentId, setTargetStudentId] = useState(user?.role === 'hoc_sinh' ? user.id : null);
   const [parentEvaluations, setParentEvaluations] = useState([]);
   const [newEvaluation, setNewEvaluation] = useState("");
+  const [viewingMode, setViewingMode] = useState(null); // 'student' | 'parent'
+
+  const startViewingDashboard = (studentId, mode) => {
+    setTargetStudentId(studentId);
+    setViewingMode(mode);
+    setStudentActiveTab('student-dashboard');
+    setSidebarOpen(false);
+  };
+
+  const exitViewingMode = () => {
+    setViewingMode(null);
+    setTargetStudentId(null);
+  };
 
   // Offline state
   const isOnline = useOnlineStatus();
@@ -148,10 +163,12 @@ function DashboardApp({ user, logout }) {
   const [studentSearch, setStudentSearch] = useState('');
   const [studentLevelFilter, setStudentLevelFilter] = useState('');
   const [teacherSearch, setTeacherSearch] = useState('');
+  const [parentSearch, setParentSearch] = useState('');
 
   // Modals state
   const [studentModal, setStudentModal] = useState({ open: false, mode: 'create', data: null });
   const [teacherModal, setTeacherModal] = useState({ open: false, mode: 'create', data: null });
+  const [parentModal, setParentModal] = useState({ open: false, mode: 'create', data: null });
 
   // Form states
   const [surveyForm, setSurveyForm] = useState({
@@ -178,6 +195,14 @@ function DashboardApp({ user, logout }) {
     email: '',
     subject: '',
     password: ''
+  });
+
+  const [parentForm, setParentForm] = useState({
+    name: '',
+    email: '',
+    phone_number: '',
+    password: '',
+    student_ids: []
   });
 
   // Fetch all data
@@ -284,7 +309,7 @@ function DashboardApp({ user, logout }) {
   };
 
   const fetchStudentProfile = async () => {
-    if (!targetStudentId || (user.role !== 'hoc_sinh' && user.role !== 'phu_huynh')) return;
+    if (!targetStudentId || (user.role !== 'hoc_sinh' && user.role !== 'phu_huynh' && !viewingMode)) return;
     try {
       if (!navigator.onLine) {
         const data = await getOfflineStudentProfile(targetStudentId);
@@ -303,7 +328,7 @@ function DashboardApp({ user, logout }) {
   };
 
   const fetchEvaluations = async () => {
-    if (!targetStudentId || user.role !== 'phu_huynh') return;
+    if (!targetStudentId || (user.role !== 'phu_huynh' && viewingMode !== 'parent')) return;
     try {
       const res = await apiFetch(`/api/students/${targetStudentId}/evaluations`);
       if (res.ok) {
@@ -330,10 +355,10 @@ function DashboardApp({ user, logout }) {
     }
   };
 
-  const handleTeacherEvaluation = async (studentId, comment) => {
-    if (!studentId || !comment) return;
+  const handleTeacherEvaluation = async (userId, comment) => {
+    if (!userId || !comment) return;
     try {
-      const res = await apiFetch(`/api/students/${studentId}/evaluations`, {
+      const res = await apiFetch(`/api/students/${userId}/evaluations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ comment })
@@ -341,11 +366,26 @@ function DashboardApp({ user, logout }) {
       if (res.ok) {
         triggerNotification('Đã gửi nhận xét thành công!');
         setNewEvaluation('');
+        // Re-fetch evaluations
+        const evRes = await apiFetch(`/api/students/${userId}/evaluations`);
+        if (evRes.ok) {
+          setParentEvaluations(await evRes.json());
+        }
       }
     } catch (err) {
       console.error("Error submitting evaluation", err);
     }
   };
+
+  // Fetch evaluations when a teacher views a test result
+  useEffect(() => {
+    if (selectedResult && (user?.role === 'giao_vien' || user?.role === 'admin')) {
+      apiFetch(`/api/students/${selectedResult.user_id}/evaluations`)
+        .then(res => res.json())
+        .then(data => setParentEvaluations(data))
+        .catch(err => console.error("Error fetching evaluations", err));
+    }
+  }, [selectedResult, user?.role]);
 
   const fetchQuestions = async () => {
     try {
@@ -510,21 +550,21 @@ function DashboardApp({ user, logout }) {
   useEffect(() => {
     if (user?.role === 'phu_huynh') {
       apiFetch(`/api/parents/${user.id}/students`).then(res => {
-        if(res.ok) return res.json();
+        if (res.ok) return res.json();
       }).then(data => {
-        if(data && data.length > 0) {
-           setTargetStudentId(data[0].id);
+        if (data && data.length > 0) {
+          setTargetStudentId(data[0].id);
         }
       });
     }
   }, [user?.id, user?.role]);
 
   useEffect(() => {
-    if (user?.role === 'hoc_sinh' || user?.role === 'phu_huynh') {
+    if (user?.role === 'hoc_sinh' || user?.role === 'phu_huynh' || viewingMode) {
       if (targetStudentId) {
         fetchStudentTestResults();
         fetchStudentProfile();
-        if (user.role === 'phu_huynh') fetchEvaluations();
+        if (user.role === 'phu_huynh' || viewingMode === 'parent') fetchEvaluations();
       }
     } else if (user?.role === 'admin' || user?.role === 'giao_vien') {
       loadAllData();
@@ -603,7 +643,7 @@ function DashboardApp({ user, logout }) {
       }
 
       triggerNotification("Học sinh đã được tạo thành công! Hãy cho học sinh làm bài kiểm tra trình độ.");
-      
+
       // Reset survey form
       setSurveyForm({
         name: '',
@@ -631,7 +671,7 @@ function DashboardApp({ user, logout }) {
     e.preventDefault();
     setLoading(true);
     try {
-      const url = studentModal.mode === 'create' 
+      const url = studentModal.mode === 'create'
         ? '/api/students'
         : `/api/students/${studentModal.data.id}`;
       const method = studentModal.mode === 'create' ? 'POST' : 'PUT';
@@ -697,7 +737,7 @@ function DashboardApp({ user, logout }) {
     e.preventDefault();
     setLoading(true);
     try {
-      const url = teacherModal.mode === 'create' 
+      const url = teacherModal.mode === 'create'
         ? '/api/teachers'
         : `/api/teachers/${teacherModal.data.id}`;
       const method = teacherModal.mode === 'create' ? 'POST' : 'PUT';
@@ -744,6 +784,66 @@ function DashboardApp({ user, logout }) {
     if (!window.confirm(`Reset mật khẩu của "${name}" về mặc định (88888888)?`)) return;
     try {
       const res = await apiFetch(`/api/teachers/${id}/reset-password`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        triggerNotification(`Đã reset mật khẩu. Mật khẩu mới: ${data.new_password}`);
+      }
+    } catch (err) {
+      triggerNotification("Không thể reset mật khẩu", "error");
+    }
+  };
+
+  const saveParent = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const url = parentModal.mode === 'create'
+        ? '/api/parents'
+        : `/api/parents/${parentModal.data.id}`;
+      const method = parentModal.mode === 'create' ? 'POST' : 'PUT';
+
+      const payload = { ...parentForm };
+      if (!payload.password) delete payload.password;
+
+      const res = await apiFetch(url, {
+        method,
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const errorDetail = await res.json();
+        throw new Error(errorDetail.detail || "Lỗi thao tác trên phụ huynh");
+      }
+
+      triggerNotification(
+        parentModal.mode === 'create' ? "Đã thêm phụ huynh thành công!" : "Đã cập nhật phụ huynh thành công!"
+      );
+      setParentModal({ open: false, mode: 'create', data: null });
+      fetchParents();
+    } catch (err) {
+      triggerNotification(err.message, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteParent = async (id) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa phụ huynh này không?")) return;
+    try {
+      const res = await apiFetch(`/api/parents/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        triggerNotification("Đã xóa phụ huynh thành công.");
+        fetchParents();
+      }
+    } catch (err) {
+      triggerNotification("Không thể xóa phụ huynh", "error");
+    }
+  };
+
+  const resetParentPassword = async (id, name) => {
+    if (!window.confirm(`Reset mật khẩu của "${name}" về mặc định (88888888)?`)) return;
+    try {
+      const res = await apiFetch(`/api/parents/${id}/reset-password`, { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
         triggerNotification(`Đã reset mật khẩu. Mật khẩu mới: ${data.new_password}`);
@@ -816,10 +916,16 @@ function DashboardApp({ user, logout }) {
     return matchSearch && matchLevel;
   });
 
-  const filteredTeachers = teachers.filter(t => 
+  const filteredTeachers = teachers.filter(t =>
     t.name.toLowerCase().includes(teacherSearch.toLowerCase()) ||
     t.email.toLowerCase().includes(teacherSearch.toLowerCase()) ||
     (t.subject && t.subject.toLowerCase().includes(teacherSearch.toLowerCase()))
+  );
+
+  const filteredParents = parents.filter(p =>
+    p.name.toLowerCase().includes(parentSearch.toLowerCase()) ||
+    p.email.toLowerCase().includes(parentSearch.toLowerCase()) ||
+    (p.phone_number && p.phone_number.toLowerCase().includes(parentSearch.toLowerCase()))
   );
 
   // Sorting Rankings for top podium
@@ -828,7 +934,7 @@ function DashboardApp({ user, logout }) {
 
   // Total test results count
   const totalTestResults = testResults.length;
-  const avgScore = rankings.length > 0 
+  const avgScore = rankings.length > 0
     ? Math.round(rankings.reduce((acc, curr) => acc + curr.score, 0) / rankings.length)
     : 0;
 
@@ -842,18 +948,18 @@ function DashboardApp({ user, logout }) {
   return (
     <div className={`app-container ${user?.role === 'hoc_sinh' ? 'student-app' : 'staff-app'}`}>
       {/* Mobile Hamburger Toggle */}
-      <button 
-        className="mobile-menu-toggle" 
+      <button
+        className="mobile-menu-toggle"
         onClick={() => setSidebarOpen(!sidebarOpen)}
         aria-label="Toggle menu"
       >
         <Menu size={22} />
       </button>
-      
+
       {/* Mobile Overlay */}
-      <div 
-        className={`mobile-overlay ${sidebarOpen ? 'visible' : ''}`} 
-        onClick={() => setSidebarOpen(false)} 
+      <div
+        className={`mobile-overlay ${sidebarOpen ? 'visible' : ''}`}
+        onClick={() => setSidebarOpen(false)}
       />
 
       {/* Sidebar */}
@@ -862,10 +968,10 @@ function DashboardApp({ user, logout }) {
           <div className="sidebar-logo-icon"><img src="/logo-mark.png" alt="V-NEXUS SCHOOL" /></div>
           <div className="sidebar-logo-copy"><span>V-NEXUS SCHOOL</span><small>Adaptive learning</small></div>
         </Link>
-        
+
         <div className="sidebar-menu">
           {/* STUDENT SIDEBAR */}
-          {user?.role === 'hoc_sinh' || user?.role === 'phu_huynh' ? (
+          {user?.role === 'hoc_sinh' || user?.role === 'phu_huynh' || viewingMode ? (
             <>
               <button
                 className={`menu-item ${studentActiveTab === 'student-dashboard' ? 'active' : ''}`}
@@ -874,22 +980,24 @@ function DashboardApp({ user, logout }) {
                 <LayoutDashboard size={20} />
                 <span>Tổng quan</span>
               </button>
-              
+
               {user?.role === 'hoc_sinh' && (
+                <button
+                  className={`menu-item ${studentActiveTab === 'survey' ? 'active' : ''}`}
+                  onClick={() => { setStudentActiveTab('survey'); setSidebarOpen(false); }}
+                >
+                  <BookOpen size={20} />
+                  <span>Khảo sát đầu vào</span>
+                </button>
+              )}
+              {(user?.role === 'hoc_sinh' || user?.role === 'phu_huynh' || viewingMode) && (
                 <>
-                  <button
-                    className={`menu-item ${studentActiveTab === 'survey' ? 'active' : ''}`}
-                    onClick={() => { setStudentActiveTab('survey'); setSidebarOpen(false); }}
-                  >
-                    <BookOpen size={20} />
-                    <span>Khảo sát đầu vào</span>
-                  </button>
                   <button
                     className={`menu-item ${studentActiveTab === 'roadmap' ? 'active' : ''}`}
                     onClick={() => { setStudentActiveTab('roadmap'); fetchStudentTestResults(); if (!questions.length) fetchQuestions(); setSidebarOpen(false); }}
                   >
                     <Sparkles size={20} />
-                    <span>Lộ trình của em</span>
+                    <span>Lộ trình {user?.role === 'phu_huynh' ? 'của con' : 'của em'}</span>
                   </button>
                   <button
                     className={`menu-item ${studentActiveTab === 'progress' ? 'active' : ''}`}
@@ -900,7 +1008,7 @@ function DashboardApp({ user, logout }) {
                   </button>
                 </>
               )}
-              
+
               <button
                 className={`menu-item ${studentActiveTab === 'history' ? 'active' : ''}`}
                 onClick={() => { setStudentActiveTab('history'); fetchStudentTestResults(); if (!questions.length) fetchQuestions(); setSidebarOpen(false); }}
@@ -908,9 +1016,9 @@ function DashboardApp({ user, logout }) {
                 <ClipboardCheck size={20} />
                 <span>Lịch sử bài đánh giá</span>
               </button>
-              
-              {user?.role === 'phu_huynh' && (
-                <button 
+
+              {(user?.role === 'phu_huynh' || viewingMode === 'parent') && (
+                <button
                   className={`menu-item ${studentActiveTab === 'evaluations' ? 'active' : ''}`}
                   onClick={() => { setStudentActiveTab('evaluations'); setSidebarOpen(false); }}
                 >
@@ -921,65 +1029,65 @@ function DashboardApp({ user, logout }) {
             </>
           ) : (
             <>
-          {/* ADMIN/TEACHER SIDEBAR */}
-          <button 
-            className={`menu-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('dashboard'); setSidebarOpen(false); }}
-          >
-            <LayoutDashboard size={20} />
-            <span>Tổng quan</span>
-          </button>
+              {/* ADMIN/TEACHER SIDEBAR */}
+              <button
+                className={`menu-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+                onClick={() => { setActiveTab('dashboard'); setSidebarOpen(false); }}
+              >
+                <LayoutDashboard size={20} />
+                <span>Tổng quan</span>
+              </button>
 
-          {/* Users tab: visible to admin and teacher */}
-          {(user?.role === 'admin' || user?.role === 'giao_vien') && (
-            <button
-              className={`menu-item ${activeTab === 'users' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('users'); setUserSubTab('students'); fetchStudents(); setSidebarOpen(false); }}
-            >
-              <Users size={20} />
-              <span>Người dùng</span>
-            </button>
-          )}
+              {/* Users tab: visible to admin and teacher */}
+              {(user?.role === 'admin' || user?.role === 'giao_vien') && (
+                <button
+                  className={`menu-item ${activeTab === 'users' ? 'active' : ''}`}
+                  onClick={() => { setActiveTab('users'); setUserSubTab('students'); fetchStudents(); setSidebarOpen(false); }}
+                >
+                  <Users size={20} />
+                  <span>Người dùng</span>
+                </button>
+              )}
 
-          <button 
-            className={`menu-item ${activeTab === 'leaderboard' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('leaderboard'); fetchRankings(); fetchStudents(); setSidebarOpen(false); }}
-          >
-            <Trophy size={20} />
-            <span>Bảng xếp hạng</span>
-          </button>
+              <button
+                className={`menu-item ${activeTab === 'leaderboard' ? 'active' : ''}`}
+                onClick={() => { setActiveTab('leaderboard'); fetchRankings(); fetchStudents(); setSidebarOpen(false); }}
+              >
+                <Trophy size={20} />
+                <span>Bảng xếp hạng</span>
+              </button>
 
-          {/* Assessment tab: visible to admin and teacher */}
-          {(user?.role === 'admin' || user?.role === 'giao_vien') && (
-            <button
-              className={`menu-item ${activeTab === 'assessment' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('assessment'); setAssessmentSubTab('test-results'); fetchTestResults(); fetchStudents(); setSidebarOpen(false); }}
-            >
-              <ClipboardCheck size={20} />
-              <span>Đánh giá</span>
-            </button>
-          )}
+              {/* Assessment tab: visible to admin and teacher */}
+              {(user?.role === 'admin' || user?.role === 'giao_vien') && (
+                <button
+                  className={`menu-item ${activeTab === 'assessment' ? 'active' : ''}`}
+                  onClick={() => { setActiveTab('assessment'); setAssessmentSubTab('test-results'); fetchTestResults(); fetchStudents(); setSidebarOpen(false); }}
+                >
+                  <ClipboardCheck size={20} />
+                  <span>Đánh giá</span>
+                </button>
+              )}
 
-          {(user?.role === 'admin' || user?.role === 'giao_vien') && (
-            <button
-              className={`menu-item ${activeTab === 'roadmaps' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('roadmaps'); fetchTestResults(); fetchStudents(); setSidebarOpen(false); }}
-            >
-              <Sparkles size={20} />
-              <span>Lộ trình học</span>
-            </button>
-          )}
+              {(user?.role === 'admin' || user?.role === 'giao_vien') && (
+                <button
+                  className={`menu-item ${activeTab === 'roadmaps' ? 'active' : ''}`}
+                  onClick={() => { setActiveTab('roadmaps'); fetchTestResults(); fetchStudents(); setSidebarOpen(false); }}
+                >
+                  <Sparkles size={20} />
+                  <span>Lộ trình học</span>
+                </button>
+              )}
 
-          {/* Question Bank tab: visible to admin and teacher */}
-          {(user?.role === 'admin' || user?.role === 'giao_vien') && (
-            <button 
-              className={`menu-item ${activeTab === 'questions' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('questions'); fetchQuestions(); setSidebarOpen(false); }}
-            >
-              <Database size={20} />
-              <span>Ngân hàng câu hỏi</span>
-            </button>
-          )}
+              {/* Question Bank tab: visible to admin and teacher */}
+              {(user?.role === 'admin' || user?.role === 'giao_vien') && (
+                <button
+                  className={`menu-item ${activeTab === 'questions' ? 'active' : ''}`}
+                  onClick={() => { setActiveTab('questions'); fetchQuestions(); setSidebarOpen(false); }}
+                >
+                  <Database size={20} />
+                  <span>Ngân hàng câu hỏi</span>
+                </button>
+              )}
             </>
           )}
         </div>
@@ -992,6 +1100,21 @@ function DashboardApp({ user, logout }) {
 
       {/* Main Wrapper */}
       <div className="main-wrapper">
+        {viewingMode && (
+          <div style={{ background: '#f59e0b', color: '#fff', padding: '10px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: '500', fontSize: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <LayoutDashboard size={16} />
+              Đang xem Dashboard với tư cách là {viewingMode === 'parent' ? 'Phụ huynh' : 'Học sinh'} (ID Học sinh: {targetStudentId})
+            </div>
+            <button 
+              onClick={exitViewingMode} 
+              style={{ background: 'rgba(0,0,0,0.2)', color: 'white', border: 'none', padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+              <LogOut size={14} /> Thoát chế độ xem
+            </button>
+          </div>
+        )}
+        
         {/* Top Header */}
         <header className="top-header">
           <div className="header-title">
@@ -999,7 +1122,7 @@ function DashboardApp({ user, logout }) {
               {user?.role === 'hoc_sinh' ? 'Không gian học tập' : 'Trung tâm điều hành'}
             </span>
             <h1>
-              {user?.role === 'hoc_sinh' || user?.role === 'phu_huynh' ? (
+              {user?.role === 'hoc_sinh' || user?.role === 'phu_huynh' || viewingMode ? (
                 <>
                   {studentActiveTab === 'student-dashboard' && 'Tổng quan'}
                   {studentActiveTab === 'survey' && 'Khảo sát đầu vào'}
@@ -1021,30 +1144,30 @@ function DashboardApp({ user, logout }) {
               )}
             </h1>
           </div>
-          
+
           <div className="header-right">
             {/* Conditional Search bar in Header */}
             {activeTab === 'users' && userSubTab === 'students' && (
               <div className="header-search-filter" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div className="search-bar">
-                <Search size={18} />
-                <input
-                  type="text"
-                  placeholder="Tìm học sinh, email..."
-                  value={studentSearch}
-                  onChange={e => setStudentSearch(e.target.value)}
-                />
-              </div>
-              <select
-                value={studentLevelFilter}
-                onChange={e => setStudentLevelFilter(e.target.value)}
-                style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', fontWeight: '600', color: 'var(--text-color)', background: 'white', cursor: 'pointer', minWidth: '130px' }}
-              >
-                <option value="">Tất cả trình độ</option>
-                <option value="Beginner">Beginner</option>
-                <option value="Intermediate">Intermediate</option>
-                <option value="Expert">Expert</option>
-              </select>
+                <div className="search-bar">
+                  <Search size={18} />
+                  <input
+                    type="text"
+                    placeholder="Tìm học sinh, email..."
+                    value={studentSearch}
+                    onChange={e => setStudentSearch(e.target.value)}
+                  />
+                </div>
+                <select
+                  value={studentLevelFilter}
+                  onChange={e => setStudentLevelFilter(e.target.value)}
+                  style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', fontWeight: '600', color: 'var(--text-color)', background: 'white', cursor: 'pointer', minWidth: '130px' }}
+                >
+                  <option value="">Tất cả trình độ</option>
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Expert">Expert</option>
+                </select>
               </div>
             )}
             {activeTab === 'users' && userSubTab === 'teachers' && (
@@ -1061,15 +1184,15 @@ function DashboardApp({ user, logout }) {
             {activeTab === 'questions' && (
               <div className="search-bar">
                 <Search size={18} />
-                <input 
-                  type="text" 
-                  placeholder="Tìm câu hỏi, kỹ năng..." 
+                <input
+                  type="text"
+                  placeholder="Tìm câu hỏi, kỹ năng..."
                   value={questionSearch}
                   onChange={e => setQuestionSearch(e.target.value)}
                 />
               </div>
             )}
-            
+
             <div className="icon-buttons">
               {isOnline ? (
                 <span className="online-badge" title="Đang kết nối mạng">
@@ -1083,24 +1206,25 @@ function DashboardApp({ user, logout }) {
               <button className="icon-btn"><Bell size={18} /></button>
               <button className="icon-btn"><Settings size={18} /></button>
             </div>
-            
+
             <div className="user-profile">
               <div className="user-info">
                 <p className="user-name">{user?.name || 'Người dùng'}</p>
                 <p className="user-role">
-                  {user?.role === 'admin' ? 'Quản trị viên' : 
-                   user?.role === 'giao_vien' ? 'Giáo viên' : 'Học sinh'}
+                  {user?.role === 'admin' ? 'Quản trị viên' :
+                    user?.role === 'giao_vien' ? 'Giáo viên' : 
+                    user?.role === 'phu_huynh' ? 'Phụ huynh' : 'Học sinh'}
                 </p>
               </div>
-              <div 
-                className="user-avatar" 
-                style={{ 
-                  background: user?.role === 'admin' ? '#fb7d5b' : user?.role === 'giao_vien' ? '#4d44b5' : '#27c26c',
-                  color: 'white', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  fontWeight: '700' 
+              <div
+                className="user-avatar"
+                style={{
+                  background: user?.role === 'admin' ? '#fb7d5b' : user?.role === 'giao_vien' ? '#4d44b5' : user?.role === 'phu_huynh' ? '#0ea5e9' : '#27c26c',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: '700'
                 }}
               >
                 {user?.name?.charAt(0)?.toUpperCase() || '?'}
@@ -1127,11 +1251,11 @@ function DashboardApp({ user, logout }) {
 
         {/* Content Area */}
         <main className="content-area">
-          
+
           {/* ==========================================================
               STUDENT CONTENT
               ========================================================== */}
-          {user?.role === 'hoc_sinh' || user?.role === 'phu_huynh' ? (
+          {(user?.role === 'hoc_sinh' || user?.role === 'phu_huynh' || viewingMode) ? (
             <>
               {studentActiveTab === 'survey' && user?.role === 'hoc_sinh' && (
                 <StudentSurvey user={user} onTabChange={setStudentActiveTab} />
@@ -1140,29 +1264,31 @@ function DashboardApp({ user, logout }) {
                 <div className="student-home animate-fade-in">
                   <section className="student-welcome-hero">
                     <div className="student-welcome-copy">
-                      <span className="student-welcome-kicker"><Sparkles size={15} /> Hành trình của em</span>
-                      <h2>Chào {user?.name?.split(' ').slice(-1)[0] || 'em'}, hôm nay mình cùng tiến thêm một bước nhé!</h2>
+                      <span className="student-welcome-kicker"><Sparkles size={15} /> {user?.role === 'phu_huynh' || viewingMode === 'parent' ? 'Hành trình của con' : 'Hành trình của em'}</span>
+                      <h2>
+                        Chào {user?.role === 'phu_huynh' || viewingMode === 'parent' ? 'Phụ huynh' : (user?.name?.split(' ').slice(-1)[0] || 'em')}, hôm nay mình cùng tiến thêm một bước nhé!
+                      </h2>
                       <p>
                         {latestStudentResult
-                          ? 'Lộ trình cá nhân đã sẵn sàng. Chỉ cần một chút đều đặn mỗi ngày để em tiến gần hơn tới mục tiêu.'
-                          : 'Bắt đầu bằng một bài khảo sát ngắn để V-NEXUS SCHOOL hiểu điểm mạnh và thiết kế lộ trình phù hợp với em.'}
+                          ? (user?.role === 'phu_huynh' || viewingMode === 'parent' ? 'Lộ trình cá nhân của con đã sẵn sàng.' : 'Lộ trình cá nhân đã sẵn sàng. Chỉ cần một chút đều đặn mỗi ngày để em tiến gần hơn tới mục tiêu.')
+                          : (user?.role === 'phu_huynh' || viewingMode === 'parent' ? 'Hãy liên hệ giáo viên hoặc để con thực hiện bài khảo sát ngắn để thiết kế lộ trình học.' : 'Bắt đầu bằng một bài khảo sát ngắn để V-NEXUS SCHOOL hiểu điểm mạnh và thiết kế lộ trình phù hợp với em.')}
                       </p>
-                      {user?.role === 'hoc_sinh' && (
-                      <button
-                        className="student-hero-button"
-                        onClick={() => {
-                          if (latestStudentResult) {
-                            setStudentActiveTab('roadmap');
-                            fetchStudentTestResults();
-                            if (!questions.length) fetchQuestions();
-                          } else {
-                            setStudentActiveTab('survey');
-                          }
-                        }}
-                      >
-                        <Play size={17} fill="currentColor" />
-                        {latestStudentResult ? 'Tiếp tục lộ trình' : 'Bắt đầu đánh giá'}
-                      </button>
+                      {(user?.role === 'hoc_sinh' || viewingMode === 'student') && (
+                        <button
+                          className="student-hero-button"
+                          onClick={() => {
+                            if (latestStudentResult) {
+                              setStudentActiveTab('roadmap');
+                              fetchStudentTestResults();
+                              if (!questions.length) fetchQuestions();
+                            } else {
+                              setStudentActiveTab('survey');
+                            }
+                          }}
+                        >
+                          <Play size={17} fill="currentColor" />
+                          {latestStudentResult ? 'Tiếp tục lộ trình' : 'Bắt đầu đánh giá'}
+                        </button>
                       )}
                     </div>
                     <div className="student-hero-progress">
@@ -1175,65 +1301,103 @@ function DashboardApp({ user, logout }) {
                     <div className="student-hero-shape shape-two" />
                   </section>
 
-                  {user?.role === 'hoc_sinh' && (
+                  {(user?.role === 'hoc_sinh' || user?.role === 'phu_huynh' || viewingMode) && (
                     <>
-                  <div className="student-section-heading">
-                    <div><span>ĐIỂM ĐẾN TIẾP THEO</span><h3>Em muốn làm gì hôm nay?</h3></div>
-                    <p>Chọn một hoạt động để tiếp tục</p>
-                  </div>
-
-                  <section className="student-action-grid">
-                    <button className="student-action-card assessment" onClick={() => setStudentActiveTab('survey')}>
-                      <span className="student-action-icon"><ClipboardCheck size={22} /></span>
-                      <span className="student-action-copy"><b>Đánh giá năng lực</b><small>Khám phá trình độ hiện tại của em</small></span>
-                      <ArrowRight size={18} />
-                    </button>
-                    <button className="student-action-card roadmap" onClick={() => { setStudentActiveTab('roadmap'); fetchStudentTestResults(); if (!questions.length) fetchQuestions(); }}>
-                      <span className="student-action-icon"><Target size={22} /></span>
-                      <span className="student-action-copy"><b>Lộ trình của em</b><small>Học theo các bước được cá nhân hóa</small></span>
-                      <ArrowRight size={18} />
-                    </button>
-                    <button className="student-action-card history" onClick={() => { setStudentActiveTab('history'); fetchStudentTestResults(); if (!questions.length) fetchQuestions(); }}>
-                      <span className="student-action-icon"><BarChart3 size={22} /></span>
-                      <span className="student-action-copy"><b>Xem thành tích</b><small>Nhìn lại kết quả và sự tiến bộ</small></span>
-                      <ArrowRight size={18} />
-                    </button>
-                  </section>
-
-                  <section className="student-insight-panel">
-                    <div className="student-insight-title">
-                      <div className="student-insight-icon"><GraduationCap size={23} /></div>
-                      <div><span>HỒ SƠ HỌC TẬP</span><h3>Bức tranh năng lực của em</h3></div>
-                    </div>
-                    <div className="student-insight-stats">
-                      <div><span>Trình độ hiện tại</span><strong>{latestStudentResult?.cefr || 'Chưa xác định'}</strong></div>
-                      <div><span>Kết quả gần nhất</span><strong>{latestStudentResult ? `${studentPercent}%` : '—'}</strong></div>
-                      <div><span>Lộ trình hoàn thành</span><strong>{completedRoadmaps}</strong></div>
-                      <div><span>Kỹ năng cần ưu tiên</span><strong>{latestStudentResult?.gaps?.length || 0}</strong></div>
-                    </div>
-                    {latestStudentResult && (
-                      <div className="student-radar-chart-container" style={{ marginTop: '24px', height: '300px', background: '#f8f9ff', borderRadius: '12px', padding: '16px' }}>
-                        <h4 style={{ textAlign: 'center', marginBottom: '8px', color: '#303972', fontSize: '15px' }}>Phân bố năng lực (Nghe, Nói, Đọc, Viết)</h4>
-                        <ResponsiveContainer width="100%" height="100%">
-                          <RadarChart cx="50%" cy="50%" outerRadius="70%" data={[
-                            { subject: 'Nghe', score: 85, fullMark: 100 },
-                            { subject: 'Nói', score: 65, fullMark: 100 },
-                            { subject: 'Đọc', score: 90, fullMark: 100 },
-                            { subject: 'Viết', score: 75, fullMark: 100 },
-                          ]}>
-                            <PolarGrid stroke="#e0e0e0" />
-                            <PolarAngleAxis dataKey="subject" tick={{ fill: '#6b7280', fontSize: 13, fontWeight: 600 }} />
-                            <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                            <Radar name="Năng lực" dataKey="score" stroke="#6C63FF" fill="#6C63FF" fillOpacity={0.4} />
-                          </RadarChart>
-                        </ResponsiveContainer>
+                      <div className="student-section-heading">
+                        <div><span>ĐIỂM ĐẾN TIẾP THEO</span><h3>{user?.role === 'phu_huynh' || viewingMode === 'parent' ? 'Hoạt động của con' : 'Em muốn làm gì hôm nay?'}</h3></div>
+                        <p>{user?.role === 'phu_huynh' || viewingMode === 'parent' ? 'Chọn một hoạt động để xem chi tiết' : 'Chọn một hoạt động để tiếp tục'}</p>
                       </div>
-                    )}
-                    {!latestStudentResult && (
-                      <div className="student-empty-tip"><Sparkles size={17} /> Hoàn thành khảo sát đầu tiên để mở khóa hồ sơ năng lực của em.</div>
-                    )}
-                  </section>
-                  </>
+
+                      <section className="student-action-grid">
+                        {(user?.role === 'hoc_sinh' || viewingMode === 'student') && (
+                          <button className="student-action-card assessment" onClick={() => setStudentActiveTab('survey')}>
+                            <span className="student-action-icon"><ClipboardCheck size={22} /></span>
+                            <span className="student-action-copy"><b>Đánh giá năng lực</b><small>Khám phá trình độ hiện tại của em</small></span>
+                            <ArrowRight size={18} />
+                          </button>
+                        )}
+                        <button className="student-action-card roadmap" onClick={() => { setStudentActiveTab('roadmap'); fetchStudentTestResults(); if (!questions.length) fetchQuestions(); }}>
+                          <span className="student-action-icon"><Target size={22} /></span>
+                          <span className="student-action-copy"><b>Lộ trình {user?.role === 'phu_huynh' || viewingMode === 'parent' ? 'của con' : 'của em'}</b><small>Học theo các bước được cá nhân hóa</small></span>
+                          <ArrowRight size={18} />
+                        </button>
+                        <button className="student-action-card history" onClick={() => { setStudentActiveTab('history'); fetchStudentTestResults(); if (!questions.length) fetchQuestions(); }}>
+                          <span className="student-action-icon"><BarChart3 size={22} /></span>
+                          <span className="student-action-copy"><b>Xem thành tích</b><small>Nhìn lại kết quả và sự tiến bộ</small></span>
+                          <ArrowRight size={18} />
+                        </button>
+                      </section>
+
+                      <section className="student-insight-panel">
+                        <div className="student-insight-title">
+                          <div className="student-insight-icon"><GraduationCap size={23} /></div>
+                          <div><span>HỒ SƠ HỌC TẬP</span><h3>Bức tranh năng lực {user?.role === 'phu_huynh' || viewingMode === 'parent' ? 'của con' : 'của em'}</h3></div>
+                        </div>
+                        <div className="student-insight-stats">
+                          <div><span>Trình độ hiện tại</span><strong>{latestStudentResult?.cefr || 'Chưa xác định'}</strong></div>
+                          <div><span>Kết quả gần nhất</span><strong>{latestStudentResult ? `${studentPercent}%` : '—'}</strong></div>
+                          <div><span>Lộ trình hoàn thành</span><strong>{completedRoadmaps}</strong></div>
+                          <div><span>Kỹ năng cần ưu tiên</span><strong>{latestStudentResult?.gaps?.length || 0}</strong></div>
+                        </div>
+                        {latestStudentResult && (
+                          <div className="student-radar-chart-container" style={{ marginTop: '24px', height: '300px', background: '#f8f9ff', borderRadius: '12px', padding: '16px' }}>
+                            <h4 style={{ textAlign: 'center', marginBottom: '8px', color: '#303972', fontSize: '15px' }}>Phân bố năng lực (Nghe, Nói, Đọc, Viết)</h4>
+                            <ResponsiveContainer width="100%" height="100%">
+                              <RadarChart cx="50%" cy="50%" outerRadius="70%" data={[
+                                { subject: 'Nghe', score: 85, fullMark: 100 },
+                                { subject: 'Nói', score: 65, fullMark: 100 },
+                                { subject: 'Đọc', score: 90, fullMark: 100 },
+                                { subject: 'Viết', score: 75, fullMark: 100 },
+                              ]}>
+                                <PolarGrid stroke="#e0e0e0" />
+                                <PolarAngleAxis dataKey="subject" tick={{ fill: '#6b7280', fontSize: 13, fontWeight: 600 }} />
+                                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                                <Radar name="Năng lực" dataKey="score" stroke="#6C63FF" fill="#6C63FF" fillOpacity={0.4} />
+                              </RadarChart>
+                            </ResponsiveContainer>
+                          </div>
+                        )}
+                        {!latestStudentResult && (
+                          <div className="student-empty-tip"><Sparkles size={17} /> Hoàn thành khảo sát đầu tiên để mở khóa hồ sơ năng lực.</div>
+                        )}
+                      </section>
+                    </>
+                  )}
+
+                  {user?.role === 'phu_huynh' && (
+                    <section className="student-insight-panel" style={{ marginTop: '24px' }}>
+                      <div className="student-insight-title" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', marginBottom: '16px' }}>
+                        <div className="student-insight-icon" style={{ background: '#e0e7ff', color: '#4f46e5' }}><MessageSquare size={23} /></div>
+                        <div><span>GÓC ĐÁNH GIÁ</span><h3>Nhận xét từ giáo viên</h3></div>
+                      </div>
+
+                      {parentEvaluations.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {parentEvaluations.slice(0, 3).map(ev => (
+                            <div key={ev.id} style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #4f46e5' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                <strong style={{ color: '#1e293b' }}>{ev.teacher_name}</strong>
+                                <span style={{ color: '#64748b', fontSize: '13px' }}>{new Date(ev.created_at).toLocaleDateString('vi-VN')}</span>
+                              </div>
+                              <p style={{ margin: 0, color: '#334155', lineHeight: '1.5' }}>{ev.comment}</p>
+                            </div>
+                          ))}
+                          {parentEvaluations.length > 3 && (
+                            <button
+                              className="btn btn-outline"
+                              style={{ alignSelf: 'center', marginTop: '8px' }}
+                              onClick={() => setStudentActiveTab('evaluations')}
+                            >
+                              Xem tất cả nhận xét
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="student-empty-tip">
+                          <MessageSquare size={17} /> Hiện chưa có nhận xét nào từ giáo viên.
+                        </div>
+                      )}
+                    </section>
                   )}
                 </div>
               )}
@@ -1271,7 +1435,7 @@ function DashboardApp({ user, logout }) {
                   onRetry={fetchStudentTestResults}
                 />
               )}
-              {studentActiveTab === 'evaluations' && (
+              {studentActiveTab === 'evaluations' && (user?.role === 'phu_huynh' || viewingMode === 'parent') && (
                 <div className="animate-fade-in panel" style={{ padding: '24px' }}>
                   <h3 className="section-title"><MessageSquare size={20} /> Nhận xét của giáo viên</h3>
                   {parentEvaluations.length > 0 ? (
@@ -1296,179 +1460,711 @@ function DashboardApp({ user, logout }) {
             </>
           ) : (
             <>
-          {/* ==========================================================
+              {/* ==========================================================
               TAB: DASHBOARD OVERVIEW
               ========================================================== */}
-          {activeTab === 'dashboard' && user?.role === 'giao_vien' && (
-            <TeacherDashboard />
-          )}
+              {activeTab === 'dashboard' && user?.role === 'giao_vien' && (
+                <TeacherDashboard />
+              )}
 
-          {activeTab === 'dashboard' && user?.role === 'admin' && (
-            <AdminDashboard />
-          )}
-          
-          {activeTab === 'dashboard' && user?.role !== 'giao_vien' && user?.role !== 'admin' && (
-            <div className="animate-fade-in">
-              {/* Stats Cards */}
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <div className="stat-icon" style={{ background: '#e6e4f6', color: '#4d44b5' }}>
-                    <GraduationCap />
-                  </div>
-                  <div className="stat-info">
-                    <span className="stat-label">Học sinh</span>
-                    <span className="stat-val">{students.length}</span>
-                  </div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-icon" style={{ background: '#fff2eb', color: '#fb7d5b' }}>
-                    <Users />
-                  </div>
-                  <div className="stat-info">
-                    <span className="stat-label">Giáo viên</span>
-                    <span className="stat-val">{teachers.length}</span>
-                  </div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-icon" style={{ background: '#e1f6e8', color: '#27c26c' }}>
-                    <ClipboardCheck />
-                  </div>
-                  <div className="stat-info">
-                    <span className="stat-label">Bài kiểm tra</span>
-                    <span className="stat-val">{totalTestResults}</span>
-                  </div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-icon" style={{ background: '#fffbeb', color: '#f59e0b' }}>
-                    <Award />
-                  </div>
-                  <div className="stat-info">
-                    <span className="stat-label">Điểm trung bình</span>
-                    <span className="stat-val">{avgScore} pts</span>
-                  </div>
-                </div>
-              </div>
+              {activeTab === 'dashboard' && user?.role === 'admin' && (
+                <AdminDashboard />
+              )}
 
-              {/* Charts grid */}
-              <div className="charts-grid">
-                <div className="panel">
-                    <h3 className="card-title">Biểu đồ điểm theo tuần</h3>
-                  <div className="chart-placeholder">
-                    {/* SVG Line Chart for premium looks */}
-                    <svg viewBox="0 0 500 150" style={{ width: '100%', height: '180px' }}>
-                      <defs>
-                        <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#4d44b5" stopOpacity="0.2"/>
-                          <stop offset="100%" stopColor="#4d44b5" stopOpacity="0"/>
-                        </linearGradient>
-                      </defs>
-                      {/* Grid lines */}
-                      <line x1="0" y1="30" x2="500" y2="30" stroke="#f2f2f2" strokeWidth="1" />
-                      <line x1="0" y1="75" x2="500" y2="75" stroke="#f2f2f2" strokeWidth="1" />
-                      <line x1="0" y1="120" x2="500" y2="120" stroke="#f2f2f2" strokeWidth="1" />
-                      
-                      {/* Area */}
-                      <path d="M 0 120 C 50 100, 100 60, 150 90 C 200 120, 250 40, 300 60 C 350 80, 400 30, 500 10 L 500 120 Z" fill="url(#chartGrad)" />
-                      {/* Line */}
-                      <path d="M 0 120 C 50 100, 100 60, 150 90 C 200 120, 250 40, 300 60 C 350 80, 400 30, 500 10" fill="none" stroke="#4d44b5" strokeWidth="3" />
-                      
-                      {/* Dots */}
-                      <circle cx="150" cy="90" r="5" fill="#4d44b5" stroke="white" strokeWidth="2" />
-                      <circle cx="300" cy="60" r="5" fill="#4d44b5" stroke="white" strokeWidth="2" />
-                      <circle cx="500" cy="10" r="5" fill="#fb7d5b" stroke="white" strokeWidth="2" />
-                    </svg>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)' }}>
-                      <span>Tuần 01</span>
-                      <span>Tuần 02</span>
-                      <span>Tuần 03</span>
-                      <span>Tuần 04</span>
+              {activeTab === 'dashboard' && user?.role !== 'giao_vien' && user?.role !== 'admin' && (
+                <div className="animate-fade-in">
+                  {/* Stats Cards */}
+                  <div className="stats-grid">
+                    <div className="stat-card">
+                      <div className="stat-icon" style={{ background: '#e6e4f6', color: '#4d44b5' }}>
+                        <GraduationCap />
+                      </div>
+                      <div className="stat-info">
+                        <span className="stat-label">Học sinh</span>
+                        <span className="stat-val">{students.length}</span>
+                      </div>
                     </div>
-                  </div>
-                </div>
-
-                <div className="panel">
-                    <h3 className="card-title">Thống kê theo lớp</h3>
-                  <div className="chart-placeholder">
-                    <div className="bar-chart-visual">
-                      <div className="bar-column">
-                        <div className="bar-fill-container">
-                          <div className="bar-fill" style={{ height: '70%', background: '#4d44b5' }}></div>
-                        </div>
-                        <span className="bar-label">Lớp 6</span>
+                    <div className="stat-card">
+                      <div className="stat-icon" style={{ background: '#fff2eb', color: '#fb7d5b' }}>
+                        <Users />
                       </div>
-                      <div className="bar-column">
-                        <div className="bar-fill-container">
-                          <div className="bar-fill" style={{ height: '85%', background: '#fb7d5b' }}></div>
-                        </div>
-                        <span className="bar-label">Lớp 7</span>
+                      <div className="stat-info">
+                        <span className="stat-label">Giáo viên</span>
+                        <span className="stat-val">{teachers.length}</span>
                       </div>
-                      <div className="bar-column">
-                        <div className="bar-fill-container">
-                          <div className="bar-fill" style={{ height: '40%', background: '#27c26c' }}></div>
-                        </div>
-                        <span className="bar-label">Lớp 8</span>
+                    </div>
+                    <div className="stat-card">
+                      <div className="stat-icon" style={{ background: '#e1f6e8', color: '#27c26c' }}>
+                        <ClipboardCheck />
                       </div>
-                      <div className="bar-column">
-                        <div className="bar-fill-container">
-                          <div className="bar-fill" style={{ height: '60%', background: '#f59e0b' }}></div>
-                        </div>
-                        <span className="bar-label">Lớp 9</span>
+                      <div className="stat-info">
+                        <span className="stat-label">Bài kiểm tra</span>
+                        <span className="stat-val">{totalTestResults}</span>
+                      </div>
+                    </div>
+                    <div className="stat-card">
+                      <div className="stat-icon" style={{ background: '#fffbeb', color: '#f59e0b' }}>
+                        <Award />
+                      </div>
+                      <div className="stat-info">
+                        <span className="stat-label">Điểm trung bình</span>
+                        <span className="stat-val">{avgScore} pts</span>
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Bottom section: Recent Students & Teachers tables */}
-              <div className="dashboard-bottom-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px' }}>
-                {/* Recent Students */}
-                <div className="panel table-panel">
+                  {/* Charts grid */}
+                  <div className="charts-grid">
+                    <div className="panel">
+                      <h3 className="card-title">Biểu đồ điểm theo tuần</h3>
+                      <div className="chart-placeholder">
+                        {/* SVG Line Chart for premium looks */}
+                        <svg viewBox="0 0 500 150" style={{ width: '100%', height: '180px' }}>
+                          <defs>
+                            <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#4d44b5" stopOpacity="0.2" />
+                              <stop offset="100%" stopColor="#4d44b5" stopOpacity="0" />
+                            </linearGradient>
+                          </defs>
+                          {/* Grid lines */}
+                          <line x1="0" y1="30" x2="500" y2="30" stroke="#f2f2f2" strokeWidth="1" />
+                          <line x1="0" y1="75" x2="500" y2="75" stroke="#f2f2f2" strokeWidth="1" />
+                          <line x1="0" y1="120" x2="500" y2="120" stroke="#f2f2f2" strokeWidth="1" />
+
+                          {/* Area */}
+                          <path d="M 0 120 C 50 100, 100 60, 150 90 C 200 120, 250 40, 300 60 C 350 80, 400 30, 500 10 L 500 120 Z" fill="url(#chartGrad)" />
+                          {/* Line */}
+                          <path d="M 0 120 C 50 100, 100 60, 150 90 C 200 120, 250 40, 300 60 C 350 80, 400 30, 500 10" fill="none" stroke="#4d44b5" strokeWidth="3" />
+
+                          {/* Dots */}
+                          <circle cx="150" cy="90" r="5" fill="#4d44b5" stroke="white" strokeWidth="2" />
+                          <circle cx="300" cy="60" r="5" fill="#4d44b5" stroke="white" strokeWidth="2" />
+                          <circle cx="500" cy="10" r="5" fill="#fb7d5b" stroke="white" strokeWidth="2" />
+                        </svg>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)' }}>
+                          <span>Tuần 01</span>
+                          <span>Tuần 02</span>
+                          <span>Tuần 03</span>
+                          <span>Tuần 04</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="panel">
+                      <h3 className="card-title">Thống kê theo lớp</h3>
+                      <div className="chart-placeholder">
+                        <div className="bar-chart-visual">
+                          <div className="bar-column">
+                            <div className="bar-fill-container">
+                              <div className="bar-fill" style={{ height: '70%', background: '#4d44b5' }}></div>
+                            </div>
+                            <span className="bar-label">Lớp 6</span>
+                          </div>
+                          <div className="bar-column">
+                            <div className="bar-fill-container">
+                              <div className="bar-fill" style={{ height: '85%', background: '#fb7d5b' }}></div>
+                            </div>
+                            <span className="bar-label">Lớp 7</span>
+                          </div>
+                          <div className="bar-column">
+                            <div className="bar-fill-container">
+                              <div className="bar-fill" style={{ height: '40%', background: '#27c26c' }}></div>
+                            </div>
+                            <span className="bar-label">Lớp 8</span>
+                          </div>
+                          <div className="bar-column">
+                            <div className="bar-fill-container">
+                              <div className="bar-fill" style={{ height: '60%', background: '#f59e0b' }}></div>
+                            </div>
+                            <span className="bar-label">Lớp 9</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom section: Recent Students & Teachers tables */}
+                  <div className="dashboard-bottom-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px' }}>
+                    {/* Recent Students */}
+                    <div className="panel table-panel">
+                      <div className="table-header-bar">
+                        <h3 className="table-title">Học sinh gần đây</h3>
+                        <button className="btn btn-primary btn-small" onClick={() => setActiveTab('students')}>Xem tất cả</button>
+                      </div>
+                      <div className="table-container">
+                        <table className="custom-table">
+                          <thead>
+                            <tr>
+                              <th>Thông tin học sinh</th>
+                              <th>Khối</th>
+                              <th>Trình độ</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {students.slice(0, 4).map(student => {
+                              const level = student.ranking?.level || 'Beginner';
+                              const isWeak = level === 'Beginner' || level === 'Starter';
+                              return (
+                                <tr key={student.id} style={isWeak ? { background: 'rgba(255,77,79,0.02)' } : {}}>
+                                  <td>
+                                    <div className="student-meta">
+                                      <div className="avatar-circle" style={{ background: isWeak ? '#ff4d4f' : getAvatarColor(student.name) }}>
+                                        {student.name.charAt(0).toUpperCase()}
+                                      </div>
+                                      <div>
+                                        <div className="meta-name">{student.name}</div>
+                                        <div className="meta-email">{student.email}</div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td>
+                                    <span className="badge badge-primary">{student.grade || 'Lớp 6'}</span>
+                                  </td>
+                                  <td>
+                                    <span className={`badge ${level === 'Expert' ? 'badge-success' : level === 'Intermediate' ? 'badge-secondary' : isWeak ? 'badge-danger' : 'badge-primary'}`}>
+                                      {level}
+                                      {isWeak && <span style={{ marginLeft: '4px', fontSize: '9px' }}>⚠</span>}
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                            {students.length === 0 && (
+                              <tr>
+                                <td colSpan="3" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
+                                  Chưa có học sinh nào.
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* Calendar Card */}
+                    <div className="panel">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <h3 className="card-title" style={{ margin: 0 }}>Lịch học</h3>
+                        <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--primary)' }}>Tháng 7, 2026</span>
+                      </div>
+                      <div className="calendar-visual">
+                        <div className="cal-header">Su</div>
+                        <div className="cal-header">Mo</div>
+                        <div className="cal-header">Tu</div>
+                        <div className="cal-header">We</div>
+                        <div className="cal-header">Th</div>
+                        <div className="cal-header">Fr</div>
+                        <div className="cal-header">Sa</div>
+
+                        <div className="cal-day muted">27</div>
+                        <div className="cal-day muted">28</div>
+                        <div className="cal-day muted">29</div>
+                        <div className="cal-day muted">30</div>
+                        <div className="cal-day">1</div>
+                        <div className="cal-day">2</div>
+                        <div className="cal-day">3</div>
+
+                        <div className="cal-day">4</div>
+                        <div className="cal-day">5</div>
+                        <div className="cal-day">6</div>
+                        <div className="cal-day active">7</div>
+                        <div className="cal-day">8</div>
+                        <div className="cal-day">9</div>
+                        <div className="cal-day">10</div>
+
+                        <div className="cal-day">11</div>
+                        <div className="cal-day">12</div>
+                        <div className="cal-day">13</div>
+                        <div className="cal-day">14</div>
+                        <div className="cal-day today">15</div>
+                        <div className="cal-day">16</div>
+                        <div className="cal-day">17</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ==========================================================
+              TAB: STUDENTS DIRECTORY
+              ========================================================== */}
+              {activeTab === 'users' && (
+                <div className="animate-fade-in">
+                  <div className="subtab-bar">
+                    <button
+                      className={`subtab-btn ${userSubTab === 'students' ? 'active' : ''}`}
+                      onClick={() => { setUserSubTab('students'); fetchStudents(); }}
+                    >
+                      <GraduationCap size={16} />
+                      Học sinh
+                    </button>
+                    {user?.role === 'admin' && (
+                      <>
+                        <button
+                          className={`subtab-btn ${userSubTab === 'teachers' ? 'active' : ''}`}
+                          onClick={() => { setUserSubTab('teachers'); fetchTeachers(); }}
+                        >
+                          <Users size={16} />
+                          Giáo viên
+                        </button>
+                        <button
+                          className={`subtab-btn ${userSubTab === 'parents' ? 'active' : ''}`}
+                          onClick={() => { setUserSubTab('parents'); fetchParents(); }}
+                        >
+                          <Users size={16} />
+                          Phụ huynh
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'users' && userSubTab === 'students' && (
+                <div className="animate-fade-in panel table-panel">
                   <div className="table-header-bar">
-                    <h3 className="table-title">Học sinh gần đây</h3>
-                    <button className="btn btn-primary btn-small" onClick={() => setActiveTab('students')}>Xem tất cả</button>
+                    <h3 className="table-title">Chi tiết Học sinh</h3>
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => {
+                        setStudentForm({ name: '', email: '', grade: 'Lớp 6', password: '', primary_teacher_id: '', parent_id: '' });
+                        setStudentModal({ open: true, mode: 'create', data: null });
+                      }}
+                    >
+                      <Plus size={16} />
+                      Thêm học sinh
+                    </button>
                   </div>
-                  <div className="table-container">
+
+                  {loading && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Đang tải dữ liệu...</div>}
+
+                  {!loading && filteredStudents.length === 0 ? (
+                    <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                      <GraduationCap size={48} style={{ opacity: '0.4', marginBottom: '16px' }} />
+                      <p>Không tìm thấy học sinh nào matching với query.</p>
+                    </div>
+                  ) : (
+                    <div className="table-container">
+                      <table className="custom-table">
+                        <thead>
+                          <tr>
+                            <th>Tên</th>
+                            <th>Email</th>
+                            <th>Khối</th>
+                            <th>Trình độ</th>
+                            <th>Điểm</th>
+                            <th style={{ width: '150px', textAlign: 'center' }}>Thao tác</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredStudents.map(student => (
+                            <tr key={student.id}>
+                              <td>
+                                <div className="student-meta">
+                                  <div className="avatar-circle" style={{ background: getAvatarColor(student.name) }}>
+                                    {student.name.charAt(0).toUpperCase()}
+                                  </div>
+                                  <span className="meta-name">{student.name}</span>
+                                </div>
+                              </td>
+                              <td style={{ color: 'var(--text-muted)' }}>{student.email}</td>
+                              <td>
+                                <span className="badge badge-primary">{student.grade || 'Lớp 6'}</span>
+                              </td>
+                              <td>
+                                <span className={`badge ${student.ranking?.level === 'Expert' ? 'badge-success' : student.ranking?.level === 'Intermediate' ? 'badge-secondary' : (student.ranking?.level === 'Beginner' || student.ranking?.level === 'Starter') ? 'badge-danger' : 'badge-primary'}`}>
+                                  {student.ranking?.level || 'Beginner'}
+                                </span>
+                              </td>
+                              <td style={{ fontWeight: '700', color: '#f59e0b' }}>
+                                {student.ranking?.score || 0} pts
+                              </td>
+                              <td>
+                                <div className="action-group">
+                                  <button 
+                                    className="action-btn action-btn-view" 
+                                    title="Xem Dashboard Học Sinh"
+                                    onClick={() => startViewingDashboard(student.id, 'student')}
+                                  >
+                                    <LayoutDashboard size={14} />
+                                  </button>
+                                  <button
+                                    className="action-btn action-btn-edit"
+                                    title="Chỉnh sửa"
+                                    onClick={() => {
+                                      setStudentForm({
+                                        name: student.name,
+                                        email: student.email,
+                                        grade: student.grade || 'Lớp 6',
+                                        password: '',
+                                        primary_teacher_id: student.primary_teacher_id || '',
+                                        parent_id: student.parent_id || ''
+                                      });
+                                      setStudentModal({ open: true, mode: 'edit', data: student });
+                                    }}
+                                  >
+                                    <Edit3 size={14} />
+                                  </button>
+                                  <button
+                                    className="action-btn action-btn-edit"
+                                    title="Reset mật khẩu"
+                                    onClick={() => resetStudentPassword(student.id, student.name)}
+                                  >
+                                    <Key size={14} />
+                                  </button>
+                                  <button
+                                    className="action-btn action-btn-delete"
+                                    title="Xóa"
+                                    onClick={() => deleteStudent(student.id)}
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ==========================================================
+              TAB: TEACHERS DIRECTORY (under Người dùng)
+              ========================================================== */}
+              {activeTab === 'users' && userSubTab === 'teachers' && (
+                <div className="animate-fade-in panel table-panel">
+                  <div className="table-header-bar">
+                    <h3 className="table-title">Chi tiết Giáo viên</h3>
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => {
+                        setTeacherForm({ name: '', email: '', subject: '', password: '' });
+                        setTeacherModal({ open: true, mode: 'create', data: null });
+                      }}
+                    >
+                      <Plus size={16} />
+                      Thêm giáo viên
+                    </button>
+                  </div>
+
+                  {loading && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Đang tải dữ liệu...</div>}
+
+                  {!loading && filteredTeachers.length === 0 ? (
+                    <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                      <Users size={48} style={{ opacity: '0.4', marginBottom: '16px' }} />
+                      <p>Không tìm thấy giáo viên nào.</p>
+                    </div>
+                  ) : (
+                    <div className="table-container">
+                      <table className="custom-table">
+                        <thead>
+                          <tr>
+                            <th>Thông tin giáo viên</th>
+                            <th>Môn học</th>
+                            <th>Bằng cấp / Email</th>
+                            <th>Ngày tham gia</th>
+                            <th style={{ width: '150px', textAlign: 'center' }}>Thao tác</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredTeachers.map(teacher => (
+                            <tr key={teacher.id}>
+                              <td>
+                                <div className="teacher-meta">
+                                  <div className="avatar-circle" style={{ background: getAvatarColor(teacher.name) }}>
+                                    {teacher.name.charAt(0).toUpperCase()}
+                                  </div>
+                                  <span className="meta-name">{teacher.name}</span>
+                                </div>
+                              </td>
+                              <td>
+                                <span className="badge badge-secondary">{teacher.subject || 'Tiếng Anh'}</span>
+                              </td>
+                              <td style={{ color: 'var(--text-muted)' }}>{teacher.email}</td>
+                              <td>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>
+                                  <Clock size={12} />
+                                  <span>{new Date(teacher.created_at).toLocaleDateString('vi-VN')}</span>
+                                </div>
+                              </td>
+                              <td>
+                                <div className="action-group">
+                                  <button
+                                    className="action-btn action-btn-edit"
+                                    title="Chỉnh sửa"
+                                    onClick={() => {
+                                      setTeacherForm({
+                                        name: teacher.name,
+                                        email: teacher.email,
+                                        subject: teacher.subject || '',
+                                        password: ''
+                                      });
+                                      setTeacherModal({ open: true, mode: 'edit', data: teacher });
+                                    }}
+                                  >
+                                    <Edit3 size={14} />
+                                  </button>
+                                  <button
+                                    className="action-btn action-btn-edit"
+                                    title="Reset mật khẩu"
+                                    onClick={() => resetTeacherPassword(teacher.id, teacher.name)}
+                                  >
+                                    <Key size={14} />
+                                  </button>
+                                  <button
+                                    className="action-btn action-btn-delete"
+                                    title="Xóa"
+                                    onClick={() => deleteTeacher(teacher.id)}
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ==========================================================
+              TAB: PARENTS DIRECTORY (under Người dùng)
+              ========================================================== */}
+              {activeTab === 'users' && userSubTab === 'parents' && (
+                <div className="animate-fade-in panel table-panel">
+                  <div className="table-header-bar">
+                    <h3 className="table-title">Chi tiết Phụ huynh</h3>
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => {
+                        setParentForm({ name: '', email: '', phone_number: '', password: '', student_ids: [] });
+                        setParentModal({ open: true, mode: 'create', data: null });
+                      }}
+                    >
+                      <Plus size={16} />
+                      Thêm phụ huynh
+                    </button>
+                  </div>
+
+                  {loading && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Đang tải dữ liệu...</div>}
+
+                  {!loading && filteredParents.length === 0 ? (
+                    <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                      <Users size={48} style={{ opacity: '0.4', marginBottom: '16px' }} />
+                      <p>Không tìm thấy phụ huynh nào.</p>
+                    </div>
+                  ) : (
+                    <div className="table-container">
+                      <table className="custom-table">
+                        <thead>
+                          <tr>
+                            <th>Thông tin phụ huynh</th>
+                            <th>Email / SĐT</th>
+                            <th>Ngày tham gia</th>
+                            <th>Học sinh liên kết</th>
+                            <th style={{ width: '150px', textAlign: 'center' }}>Thao tác</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredParents.map(parent => (
+                            <tr key={parent.id}>
+                              <td>
+                                <div className="teacher-meta">
+                                  <div className="avatar-circle" style={{ background: getAvatarColor(parent.name) }}>
+                                    {parent.name.charAt(0).toUpperCase()}
+                                  </div>
+                                  <span className="meta-name">{parent.name}</span>
+                                </div>
+                              </td>
+                              <td style={{ color: 'var(--text-muted)' }}>
+                                {parent.email} <br />
+                                {parent.phone_number && <span style={{ fontSize: '12px' }}>{parent.phone_number}</span>}
+                              </td>
+                              <td>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>
+                                  <Clock size={12} />
+                                  <span>{new Date(parent.created_at).toLocaleDateString('vi-VN')}</span>
+                                </div>
+                              </td>
+                              <td>
+                                {parent.students && parent.students.length > 0 ? (
+                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                    {parent.students.map(st => (
+                                      <span key={st.id} className="badge badge-primary" style={{ fontSize: '11px' }}>{st.name}</span>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Chưa có</span>
+                                )}
+                              </td>
+                              <td>
+                                <div className="action-group">
+                                  <button 
+                                    className="action-btn action-btn-view" 
+                                    title="Xem Dashboard"
+                                    onClick={() => {
+                                      if (parent.students && parent.students.length > 0) {
+                                        startViewingDashboard(parent.students[0].id, 'parent');
+                                      } else {
+                                        alert('Phụ huynh này chưa liên kết với học sinh nào!');
+                                      }
+                                    }}
+                                  >
+                                    <LayoutDashboard size={14} />
+                                  </button>
+                                  <button
+                                    className="action-btn action-btn-edit"
+                                    title="Chỉnh sửa"
+                                    onClick={() => {
+                                      setParentForm({
+                                        name: parent.name,
+                                        email: parent.email,
+                                        phone_number: parent.phone_number || '',
+                                        password: '',
+                                        student_ids: parent.students ? parent.students.map(s => s.id) : []
+                                      });
+                                      setParentModal({ open: true, mode: 'edit', data: parent });
+                                    }}
+                                  >
+                                    <Edit3 size={14} />
+                                  </button>
+                                  <button
+                                    className="action-btn action-btn-edit"
+                                    title="Reset mật khẩu"
+                                    onClick={() => resetParentPassword(parent.id, parent.name)}
+                                  >
+                                    <Key size={14} />
+                                  </button>
+                                  <button
+                                    className="action-btn action-btn-delete"
+                                    title="Xóa"
+                                    onClick={() => deleteParent(parent.id)}
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ==========================================================
+              TAB: LEADERBOARD / RANKINGS
+              ========================================================== */}
+              {activeTab === 'leaderboard' && (
+                <div className="animate-fade-in panel">
+                  <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                    <h3 className="card-title">Bảng vinh danh</h3>
+                    <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Top học sinh xuất sắc nhất hệ thống</p>
+                  </div>
+
+                  {/* Top 3 Podium */}
+                  {podiumStudents.length > 0 && (
+                    <div className="podium-container">
+                      {/* 2nd place */}
+                      {podiumStudents[1] && (
+                        <div className="podium-column">
+                          <div className="podium-avatar" style={{ background: getAvatarColor(getStudentName(podiumStudents[1].student_id)) }}>
+                            {getStudentName(podiumStudents[1].student_id).charAt(0).toUpperCase()}
+                            <div className="podium-medal silver-medal">2</div>
+                          </div>
+                          <div className="podium-name">{getStudentName(podiumStudents[1].student_id)}</div>
+                          <div className="podium-score">{podiumStudents[1].score} pts</div>
+                          <div className="podium-block podium-block-2">2</div>
+                        </div>
+                      )}
+
+                      {/* 1st place */}
+                      {podiumStudents[0] && (
+                        <div className="podium-column">
+                          <div className="podium-avatar" style={{ background: getAvatarColor(getStudentName(podiumStudents[0].student_id)) }}>
+                            {getStudentName(podiumStudents[0].student_id).charAt(0).toUpperCase()}
+                            <div className="podium-medal gold-medal">1</div>
+                          </div>
+                          <div className="podium-name" style={{ fontSize: '16px', fontWeight: '800' }}>{getStudentName(podiumStudents[0].student_id)}</div>
+                          <div className="podium-score" style={{ fontSize: '13px' }}>{podiumStudents[0].score} pts</div>
+                          <div className="podium-block podium-block-1">1</div>
+                        </div>
+                      )}
+
+                      {/* 3rd place */}
+                      {podiumStudents[2] && (
+                        <div className="podium-column">
+                          <div className="podium-avatar" style={{ background: getAvatarColor(getStudentName(podiumStudents[2].student_id)) }}>
+                            {getStudentName(podiumStudents[2].student_id).charAt(0).toUpperCase()}
+                            <div className="podium-medal bronze-medal">3</div>
+                          </div>
+                          <div className="podium-name">{getStudentName(podiumStudents[2].student_id)}</div>
+                          <div className="podium-score">{podiumStudents[2].score} pts</div>
+                          <div className="podium-block podium-block-3">3</div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Complete Leaderboard List */}
+                  <div className="table-container" style={{ marginTop: '40px' }}>
                     <table className="custom-table">
                       <thead>
                         <tr>
+                          <th style={{ width: '80px', textAlign: 'center' }}>Hạng</th>
                           <th>Thông tin học sinh</th>
                           <th>Khối</th>
                           <th>Trình độ</th>
+                          <th style={{ width: '120px' }}>Điểm</th>
+                          <th style={{ width: '180px', textAlign: 'center' }}>Thao tác</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {students.slice(0, 4).map(student => {
-                          const level = student.ranking?.level || 'Beginner';
-                          const isWeak = level === 'Beginner' || level === 'Starter';
-                          return (
-                          <tr key={student.id} style={isWeak ? { background: 'rgba(255,77,79,0.02)' } : {}}>
+                        {sortedRankings.map((rank, index) => (
+                          <tr key={rank.id}>
+                            <td style={{ textAlign: 'center', fontWeight: '800', fontSize: '15px' }}>
+                              {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
+                            </td>
                             <td>
                               <div className="student-meta">
-                                <div className="avatar-circle" style={{ background: isWeak ? '#ff4d4f' : getAvatarColor(student.name) }}>
-                                  {student.name.charAt(0).toUpperCase()}
+                                <div className="avatar-circle" style={{ background: getAvatarColor(getStudentName(rank.student_id)) }}>
+                                  {getStudentName(rank.student_id).charAt(0).toUpperCase()}
                                 </div>
                                 <div>
-                                  <div className="meta-name">{student.name}</div>
-                                  <div className="meta-email">{student.email}</div>
+                                  <div className="meta-name">{getStudentName(rank.student_id)}</div>
+                                  <div className="meta-email">{getStudentEmail(rank.student_id)}</div>
                                 </div>
                               </div>
                             </td>
+                            <td>{getStudentGrade(rank.student_id) || 'Lớp 6'}</td>
                             <td>
-                              <span className="badge badge-primary">{student.grade || 'Lớp 6'}</span>
-                            </td>
-                            <td>
-                              <span className={`badge ${level === 'Expert' ? 'badge-success' : level === 'Intermediate' ? 'badge-secondary' : isWeak ? 'badge-danger' : 'badge-primary'}`}>
-                                {level}
-                                {isWeak && <span style={{ marginLeft: '4px', fontSize: '9px' }}>⚠</span>}
+                              <span className={`badge ${rank.level === 'Expert' ? 'badge-success' : rank.level === 'Intermediate' ? 'badge-secondary' : (rank.level === 'Beginner' || rank.level === 'Starter') ? 'badge-danger' : 'badge-primary'}`}>
+                                {rank.level}
                               </span>
                             </td>
+                            <td style={{ fontWeight: '800', color: '#fb7d5b', fontSize: '15px' }}>
+                              {rank.score} pts
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <button
+                                className="btn btn-outline btn-small"
+                                onClick={() => incrementScore(rank)}
+                              >
+                                <TrendingUp size={12} />
+                                +10 Điểm
+                              </button>
+                            </td>
                           </tr>
-                          );
-                        })}
-                        {students.length === 0 && (
+                        ))}
+                        {sortedRankings.length === 0 && (
                           <tr>
-                            <td colSpan="3" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
-                              Chưa có học sinh nào.
+                            <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
+                              Chưa có dữ liệu xếp hạng.
                             </td>
                           </tr>
                         )}
@@ -1476,1184 +2172,697 @@ function DashboardApp({ user, logout }) {
                     </table>
                   </div>
                 </div>
-
-                {/* Calendar Card */}
-                <div className="panel">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                    <h3 className="card-title" style={{ margin: 0 }}>Lịch học</h3>
-                    <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--primary)' }}>Tháng 7, 2026</span>
-                  </div>
-                  <div className="calendar-visual">
-                    <div className="cal-header">Su</div>
-                    <div className="cal-header">Mo</div>
-                    <div className="cal-header">Tu</div>
-                    <div className="cal-header">We</div>
-                    <div className="cal-header">Th</div>
-                    <div className="cal-header">Fr</div>
-                    <div className="cal-header">Sa</div>
-                    
-                    <div className="cal-day muted">27</div>
-                    <div className="cal-day muted">28</div>
-                    <div className="cal-day muted">29</div>
-                    <div className="cal-day muted">30</div>
-                    <div className="cal-day">1</div>
-                    <div className="cal-day">2</div>
-                    <div className="cal-day">3</div>
-                    
-                    <div className="cal-day">4</div>
-                    <div className="cal-day">5</div>
-                    <div className="cal-day">6</div>
-                    <div className="cal-day active">7</div>
-                    <div className="cal-day">8</div>
-                    <div className="cal-day">9</div>
-                    <div className="cal-day">10</div>
-                    
-                    <div className="cal-day">11</div>
-                    <div className="cal-day">12</div>
-                    <div className="cal-day">13</div>
-                    <div className="cal-day">14</div>
-                    <div className="cal-day today">15</div>
-                    <div className="cal-day">16</div>
-                    <div className="cal-day">17</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ==========================================================
-              TAB: STUDENTS DIRECTORY
-              ========================================================== */}
-          {activeTab === 'users' && (
-            <div className="animate-fade-in">
-              <div className="subtab-bar">
-                <button
-                  className={`subtab-btn ${userSubTab === 'students' ? 'active' : ''}`}
-                  onClick={() => { setUserSubTab('students'); fetchStudents(); }}
-                >
-                  <GraduationCap size={16} />
-                  Học sinh
-                </button>
-                {user?.role === 'admin' && (
-                  <button
-                    className={`subtab-btn ${userSubTab === 'teachers' ? 'active' : ''}`}
-                    onClick={() => { setUserSubTab('teachers'); fetchTeachers(); }}
-                  >
-                    <Users size={16} />
-                    Giáo viên
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'users' && userSubTab === 'students' && (
-            <div className="animate-fade-in panel table-panel">
-              <div className="table-header-bar">
-                <h3 className="table-title">Chi tiết Học sinh</h3>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => {
-                    setStudentForm({ name: '', email: '', grade: 'Lớp 6', password: '', primary_teacher_id: '', parent_id: '' });
-                    setStudentModal({ open: true, mode: 'create', data: null });
-                  }}
-                >
-                  <Plus size={16} />
-                  Thêm học sinh
-                </button>
-              </div>
-
-              {loading && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Đang tải dữ liệu...</div>}
-
-              {!loading && filteredStudents.length === 0 ? (
-                <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                  <GraduationCap size={48} style={{ opacity: '0.4', marginBottom: '16px' }} />
-                  <p>Không tìm thấy học sinh nào matching với query.</p>
-                </div>
-              ) : (
-                <div className="table-container">
-                  <table className="custom-table">
-                    <thead>
-                      <tr>
-                        <th>Tên</th>
-                        <th>Email</th>
-                        <th>Khối</th>
-                        <th>Trình độ</th>
-                        <th>Điểm</th>
-                        <th style={{ width: '150px', textAlign: 'center' }}>Thao tác</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredStudents.map(student => (
-                        <tr key={student.id}>
-                          <td>
-                            <div className="student-meta">
-                              <div className="avatar-circle" style={{ background: getAvatarColor(student.name) }}>
-                                {student.name.charAt(0).toUpperCase()}
-                              </div>
-                              <span className="meta-name">{student.name}</span>
-                            </div>
-                          </td>
-                          <td style={{ color: 'var(--text-muted)' }}>{student.email}</td>
-                          <td>
-                            <span className="badge badge-primary">{student.grade || 'Lớp 6'}</span>
-                          </td>
-                           <td>
-                             <span className={`badge ${student.ranking?.level === 'Expert' ? 'badge-success' : student.ranking?.level === 'Intermediate' ? 'badge-secondary' : (student.ranking?.level === 'Beginner' || student.ranking?.level === 'Starter') ? 'badge-danger' : 'badge-primary'}`}>
-                               {student.ranking?.level || 'Beginner'}
-                             </span>
-                           </td>
-                          <td style={{ fontWeight: '700', color: '#f59e0b' }}>
-                            {student.ranking?.score || 0} pts
-                          </td>
-                          <td>
-                            <div className="action-group">
-                              <button 
-                                className="action-btn action-btn-edit" 
-                                title="Chỉnh sửa"
-                                onClick={() => {
-                                  setStudentForm({
-                                    name: student.name,
-                                    email: student.email,
-                                    grade: student.grade || 'Lớp 6',
-                                    password: '',
-                                    primary_teacher_id: student.primary_teacher_id || '',
-                                    parent_id: student.parent_id || ''
-                                  });
-                                  setStudentModal({ open: true, mode: 'edit', data: student });
-                                }}
-                              >
-                                <Edit3 size={14} />
-                              </button>
-                              <button 
-                                className="action-btn action-btn-edit" 
-                                title="Reset mật khẩu"
-                                onClick={() => resetStudentPassword(student.id, student.name)}
-                              >
-                                <Key size={14} />
-                              </button>
-                              <button 
-                                className="action-btn action-btn-delete" 
-                                title="Xóa"
-                                onClick={() => deleteStudent(student.id)}
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ==========================================================
-              TAB: TEACHERS DIRECTORY (under Người dùng)
-              ========================================================== */}
-          {activeTab === 'users' && userSubTab === 'teachers' && (
-            <div className="animate-fade-in panel table-panel">
-              <div className="table-header-bar">
-                <h3 className="table-title">Chi tiết Giáo viên</h3>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => {
-                    setTeacherForm({ name: '', email: '', subject: '', password: '' });
-                    setTeacherModal({ open: true, mode: 'create', data: null });
-                  }}
-                >
-                  <Plus size={16} />
-                  Thêm giáo viên
-                </button>
-              </div>
-
-              {loading && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Đang tải dữ liệu...</div>}
-
-              {!loading && filteredTeachers.length === 0 ? (
-                <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                  <Users size={48} style={{ opacity: '0.4', marginBottom: '16px' }} />
-                  <p>Không tìm thấy giáo viên nào.</p>
-                </div>
-              ) : (
-                <div className="table-container">
-                  <table className="custom-table">
-                    <thead>
-                      <tr>
-                        <th>Thông tin giáo viên</th>
-                        <th>Môn học</th>
-                        <th>Bằng cấp / Email</th>
-                        <th>Ngày tham gia</th>
-                        <th style={{ width: '150px', textAlign: 'center' }}>Thao tác</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredTeachers.map(teacher => (
-                        <tr key={teacher.id}>
-                          <td>
-                            <div className="teacher-meta">
-                              <div className="avatar-circle" style={{ background: getAvatarColor(teacher.name) }}>
-                                {teacher.name.charAt(0).toUpperCase()}
-                              </div>
-                              <span className="meta-name">{teacher.name}</span>
-                            </div>
-                          </td>
-                          <td>
-                            <span className="badge badge-secondary">{teacher.subject || 'Tiếng Anh'}</span>
-                          </td>
-                          <td style={{ color: 'var(--text-muted)' }}>{teacher.email}</td>
-                          <td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>
-                              <Clock size={12} />
-                              <span>{new Date(teacher.created_at).toLocaleDateString('vi-VN')}</span>
-                            </div>
-                          </td>
-                          <td>
-                            <div className="action-group">
-                              <button 
-                                className="action-btn action-btn-edit"
-                                title="Chỉnh sửa"
-                                onClick={() => {
-                                  setTeacherForm({
-                                    name: teacher.name,
-                                    email: teacher.email,
-                                    subject: teacher.subject || '',
-                                    password: ''
-                                  });
-                                  setTeacherModal({ open: true, mode: 'edit', data: teacher });
-                                }}
-                              >
-                                <Edit3 size={14} />
-                              </button>
-                              <button 
-                                className="action-btn action-btn-edit"
-                                title="Reset mật khẩu"
-                                onClick={() => resetTeacherPassword(teacher.id, teacher.name)}
-                              >
-                                <Key size={14} />
-                              </button>
-                              <button 
-                                className="action-btn action-btn-delete"
-                                title="Xóa"
-                                onClick={() => deleteTeacher(teacher.id)}
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ==========================================================
-              TAB: LEADERBOARD / RANKINGS
-              ========================================================== */}
-          {activeTab === 'leaderboard' && (
-            <div className="animate-fade-in panel">
-              <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                <h3 className="card-title">Bảng vinh danh</h3>
-                <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>Top học sinh xuất sắc nhất hệ thống</p>
-              </div>
-
-              {/* Top 3 Podium */}
-              {podiumStudents.length > 0 && (
-                <div className="podium-container">
-                  {/* 2nd place */}
-                  {podiumStudents[1] && (
-                    <div className="podium-column">
-                      <div className="podium-avatar" style={{ background: getAvatarColor(getStudentName(podiumStudents[1].student_id)) }}>
-                        {getStudentName(podiumStudents[1].student_id).charAt(0).toUpperCase()}
-                        <div className="podium-medal silver-medal">2</div>
-                      </div>
-                      <div className="podium-name">{getStudentName(podiumStudents[1].student_id)}</div>
-                      <div className="podium-score">{podiumStudents[1].score} pts</div>
-                      <div className="podium-block podium-block-2">2</div>
-                    </div>
-                  )}
-
-                  {/* 1st place */}
-                  {podiumStudents[0] && (
-                    <div className="podium-column">
-                      <div className="podium-avatar" style={{ background: getAvatarColor(getStudentName(podiumStudents[0].student_id)) }}>
-                        {getStudentName(podiumStudents[0].student_id).charAt(0).toUpperCase()}
-                        <div className="podium-medal gold-medal">1</div>
-                      </div>
-                      <div className="podium-name" style={{ fontSize: '16px', fontWeight: '800' }}>{getStudentName(podiumStudents[0].student_id)}</div>
-                      <div className="podium-score" style={{ fontSize: '13px' }}>{podiumStudents[0].score} pts</div>
-                      <div className="podium-block podium-block-1">1</div>
-                    </div>
-                  )}
-
-                  {/* 3rd place */}
-                  {podiumStudents[2] && (
-                    <div className="podium-column">
-                      <div className="podium-avatar" style={{ background: getAvatarColor(getStudentName(podiumStudents[2].student_id)) }}>
-                        {getStudentName(podiumStudents[2].student_id).charAt(0).toUpperCase()}
-                        <div className="podium-medal bronze-medal">3</div>
-                      </div>
-                      <div className="podium-name">{getStudentName(podiumStudents[2].student_id)}</div>
-                      <div className="podium-score">{podiumStudents[2].score} pts</div>
-                      <div className="podium-block podium-block-3">3</div>
-                    </div>
-                  )}
-                </div>
               )}
 
-              {/* Complete Leaderboard List */}
-              <div className="table-container" style={{ marginTop: '40px' }}>
-                <table className="custom-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: '80px', textAlign: 'center' }}>Hạng</th>
-                      <th>Thông tin học sinh</th>
-                      <th>Khối</th>
-                      <th>Trình độ</th>
-                      <th style={{ width: '120px' }}>Điểm</th>
-                      <th style={{ width: '180px', textAlign: 'center' }}>Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedRankings.map((rank, index) => (
-                      <tr key={rank.id}>
-                        <td style={{ textAlign: 'center', fontWeight: '800', fontSize: '15px' }}>
-                          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1}
-                        </td>
-                        <td>
-                          <div className="student-meta">
-                            <div className="avatar-circle" style={{ background: getAvatarColor(getStudentName(rank.student_id)) }}>
-                              {getStudentName(rank.student_id).charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="meta-name">{getStudentName(rank.student_id)}</div>
-                              <div className="meta-email">{getStudentEmail(rank.student_id)}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td>{getStudentGrade(rank.student_id) || 'Lớp 6'}</td>
-                        <td>
-                          <span className={`badge ${rank.level === 'Expert' ? 'badge-success' : rank.level === 'Intermediate' ? 'badge-secondary' : (rank.level === 'Beginner' || rank.level === 'Starter') ? 'badge-danger' : 'badge-primary'}`}>
-                            {rank.level}
-                          </span>
-                        </td>
-                        <td style={{ fontWeight: '800', color: '#fb7d5b', fontSize: '15px' }}>
-                          {rank.score} pts
-                        </td>
-                        <td style={{ textAlign: 'center' }}>
-                          <button 
-                            className="btn btn-outline btn-small"
-                            onClick={() => incrementScore(rank)}
-                          >
-                            <TrendingUp size={12} />
-                            +10 Điểm
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {sortedRankings.length === 0 && (
-                      <tr>
-                        <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
-                          Chưa có dữ liệu xếp hạng.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* ==========================================================
+              {/* ==========================================================
               TAB: ASSESSMENT (Đánh giá) — groups survey + test-results + placement-tests
               ========================================================== */}
-          {activeTab === 'assessment' && (
-            <div className="animate-fade-in">
-              <div className="subtab-bar">
-                <button
-                  className={`subtab-btn ${assessmentSubTab === 'test-results' ? 'active' : ''}`}
-                  onClick={() => { setAssessmentSubTab('test-results'); fetchTestResults(); fetchStudents(); }}
-                >
-                  <ClipboardCheck size={16} />
-                  Kết quả
-                </button>
-                <button
-                  className={`subtab-btn ${assessmentSubTab === 'placement-tests' ? 'active' : ''}`}
-                  onClick={() => { setAssessmentSubTab('placement-tests'); fetchPlacementTests(); setSelectedTest(null); }}
-                >
-                  <FileText size={16} />
-                  Bài test
-                </button>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'assessment' && assessmentSubTab === 'survey' && (
-            <div className="animate-fade-in panel survey-card">
-              <div className="survey-top">
-                <BookOpen size={48} />
-                <h2>Khảo sát Năng lực Đầu vào</h2>
-                <p>Cung cấp các thông tin cơ bản để AI cá nhân hóa lộ trình học tiếng Anh cho bạn</p>
-              </div>
-
-              {error && (
-                <div style={{ background: 'var(--danger-bg)', border: '1px solid var(--danger)', color: 'var(--danger)', padding: '14px', borderRadius: '12px', marginBottom: '24px', fontSize: '14px', fontWeight: '600' }}>
-                  {error}
+              {activeTab === 'assessment' && (
+                <div className="animate-fade-in">
+                  <div className="subtab-bar">
+                    <button
+                      className={`subtab-btn ${assessmentSubTab === 'test-results' ? 'active' : ''}`}
+                      onClick={() => { setAssessmentSubTab('test-results'); fetchTestResults(); fetchStudents(); }}
+                    >
+                      <ClipboardCheck size={16} />
+                      Kết quả
+                    </button>
+                    <button
+                      className={`subtab-btn ${assessmentSubTab === 'placement-tests' ? 'active' : ''}`}
+                      onClick={() => { setAssessmentSubTab('placement-tests'); fetchPlacementTests(); setSelectedTest(null); }}
+                    >
+                      <FileText size={16} />
+                      Bài test
+                    </button>
+                  </div>
                 </div>
               )}
 
-              <form onSubmit={handleSurveySubmit} className="form-grid-layout">
-                <div className="form-span-full">
-                  <label>Họ và Tên Học viên</label>
-                  <input 
-                    type="text" 
-                    placeholder="Ví dụ: Nguyễn Văn A" 
-                    value={surveyForm.name}
-                    onChange={e => setSurveyForm({...surveyForm, name: e.target.value})}
-                    required
-                  />
-                </div>
+              {activeTab === 'assessment' && assessmentSubTab === 'survey' && (
+                <div className="animate-fade-in panel survey-card">
+                  <div className="survey-top">
+                    <BookOpen size={48} />
+                    <h2>Khảo sát Năng lực Đầu vào</h2>
+                    <p>Cung cấp các thông tin cơ bản để AI cá nhân hóa lộ trình học tiếng Anh cho bạn</p>
+                  </div>
 
-                <div>
-                  <label>Địa chỉ Email</label>
-                  <input 
-                    type="email" 
-                    placeholder="student@example.com" 
-                    value={surveyForm.email}
-                    onChange={e => setSurveyForm({...surveyForm, email: e.target.value})}
-                    required
-                  />
-                </div>
+                  {error && (
+                    <div style={{ background: 'var(--danger-bg)', border: '1px solid var(--danger)', color: 'var(--danger)', padding: '14px', borderRadius: '12px', marginBottom: '24px', fontSize: '14px', fontWeight: '600' }}>
+                      {error}
+                    </div>
+                  )}
 
-                <div>
-                  <label>Khối lớp</label>
-                  <select 
-                    value={surveyForm.grade}
-                    onChange={e => setSurveyForm({...surveyForm, grade: e.target.value})}
-                  >
-                    <option value="Lớp 6">Lớp 6</option>
-                    <option value="Lớp 7">Lớp 7</option>
-                    <option value="Lớp 8">Lớp 8</option>
-                    <option value="Lớp 9">Lớp 9</option>
-                    <option value="Lớp 10">Lớp 10</option>
-                    <option value="Lớp 11">Lớp 11</option>
-                    <option value="Lớp 12">Lớp 12</option>
-                  </select>
-                </div>
+                  <form onSubmit={handleSurveySubmit} className="form-grid-layout">
+                    <div className="form-span-full">
+                      <label>Họ và Tên Học viên</label>
+                      <input
+                        type="text"
+                        placeholder="Ví dụ: Nguyễn Văn A"
+                        value={surveyForm.name}
+                        onChange={e => setSurveyForm({ ...surveyForm, name: e.target.value })}
+                        required
+                      />
+                    </div>
 
-                <div>
-                  <label>Số năm học Tiếng Anh</label>
-                  <input 
-                    type="number" 
-                    min="0"
-                    value={surveyForm.years_studying_english}
-                    onChange={e => setSurveyForm({...surveyForm, years_studying_english: e.target.value})}
-                    required
-                  />
-                </div>
+                    <div>
+                      <label>Địa chỉ Email</label>
+                      <input
+                        type="email"
+                        placeholder="student@example.com"
+                        value={surveyForm.email}
+                        onChange={e => setSurveyForm({ ...surveyForm, email: e.target.value })}
+                        required
+                      />
+                    </div>
 
-                <div>
-                  <label>Môi trường học tập</label>
-                  <select 
-                    value={surveyForm.learning_environment}
-                    onChange={e => setSurveyForm({...surveyForm, learning_environment: e.target.value})}
-                  >
-                    <option value="school">Chỉ học ở trường</option>
-                    <option value="center">Học ở trung tâm</option>
-                    <option value="self_study">Tự học qua mạng</option>
-                  </select>
-                </div>
+                    <div>
+                      <label>Khối lớp</label>
+                      <select
+                        value={surveyForm.grade}
+                        onChange={e => setSurveyForm({ ...surveyForm, grade: e.target.value })}
+                      >
+                        <option value="Lớp 6">Lớp 6</option>
+                        <option value="Lớp 7">Lớp 7</option>
+                        <option value="Lớp 8">Lớp 8</option>
+                        <option value="Lớp 9">Lớp 9</option>
+                        <option value="Lớp 10">Lớp 10</option>
+                        <option value="Lớp 11">Lớp 11</option>
+                        <option value="Lớp 12">Lớp 12</option>
+                      </select>
+                    </div>
 
-                <div className="form-span-full">
-                  <label>Tự đánh giá trình độ hiện tại</label>
-                  <select 
-                    value={surveyForm.self_assessment_level}
-                    onChange={e => setSurveyForm({...surveyForm, self_assessment_level: e.target.value})}
-                  >
-                    <option value="A1">A1 (Mới bắt đầu - Beginner)</option>
-                    <option value="A2">A2 (Cơ bản - Elementary)</option>
-                    <option value="B1">B1 (Trung cấp - Intermediate)</option>
-                    <option value="B2">B2 (Trên trung cấp)</option>
-                    <option value="C1">C1 (Cao cấp - Advanced)</option>
-                  </select>
-                </div>
+                    <div>
+                      <label>Số năm học Tiếng Anh</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={surveyForm.years_studying_english}
+                        onChange={e => setSurveyForm({ ...surveyForm, years_studying_english: e.target.value })}
+                        required
+                      />
+                    </div>
 
-                <div className="form-span-full">
-                  <label>Mục tiêu học tập của bạn</label>
-                  <textarea 
-                    rows="3" 
-                    placeholder="Ví dụ: Đạt điểm thi học kỳ tốt, rèn luyện kỹ năng nghe nói..."
-                    value={surveyForm.learning_goal}
-                    onChange={e => setSurveyForm({...surveyForm, learning_goal: e.target.value})}
-                  ></textarea>
-                </div>
+                    <div>
+                      <label>Môi trường học tập</label>
+                      <select
+                        value={surveyForm.learning_environment}
+                        onChange={e => setSurveyForm({ ...surveyForm, learning_environment: e.target.value })}
+                      >
+                        <option value="school">Chỉ học ở trường</option>
+                        <option value="center">Học ở trung tâm</option>
+                        <option value="self_study">Tự học qua mạng</option>
+                      </select>
+                    </div>
 
-                <div className="form-span-full" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
-                  <button type="submit" className="btn btn-primary" style={{ padding: '14px 40px' }} disabled={loading}>
-                    {loading ? "Đang xử lý..." : "Nộp khảo sát & Bắt đầu"}
-                    <ArrowRight size={16} />
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
+                    <div className="form-span-full">
+                      <label>Tự đánh giá trình độ hiện tại</label>
+                      <select
+                        value={surveyForm.self_assessment_level}
+                        onChange={e => setSurveyForm({ ...surveyForm, self_assessment_level: e.target.value })}
+                      >
+                        <option value="A1">A1 (Mới bắt đầu - Beginner)</option>
+                        <option value="A2">A2 (Cơ bản - Elementary)</option>
+                        <option value="B1">B1 (Trung cấp - Intermediate)</option>
+                        <option value="B2">B2 (Trên trung cấp)</option>
+                        <option value="C1">C1 (Cao cấp - Advanced)</option>
+                      </select>
+                    </div>
 
-          {/* ==========================================================
+                    <div className="form-span-full">
+                      <label>Mục tiêu học tập của bạn</label>
+                      <textarea
+                        rows="3"
+                        placeholder="Ví dụ: Đạt điểm thi học kỳ tốt, rèn luyện kỹ năng nghe nói..."
+                        value={surveyForm.learning_goal}
+                        onChange={e => setSurveyForm({ ...surveyForm, learning_goal: e.target.value })}
+                      ></textarea>
+                    </div>
+
+                    <div className="form-span-full" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
+                      <button type="submit" className="btn btn-primary" style={{ padding: '14px 40px' }} disabled={loading}>
+                        {loading ? "Đang xử lý..." : "Nộp khảo sát & Bắt đầu"}
+                        <ArrowRight size={16} />
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* ==========================================================
               TAB: TEST RESULTS (under Đánh giá)
               ========================================================== */}
-          {activeTab === 'assessment' && assessmentSubTab === 'test-results' && (
-            <div className="animate-fade-in panel table-panel">
-              {!selectedResult ? (
-                <>
-                  <div className="table-header-bar">
-                    <h3 className="table-title">Kết quả kiểm tra trình độ</h3>
-                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                      {testResults.length} kết quả
-                    </div>
-                  </div>
+              {activeTab === 'assessment' && assessmentSubTab === 'test-results' && (
+                <div className="animate-fade-in panel table-panel">
+                  {!selectedResult ? (
+                    <>
+                      <div className="table-header-bar">
+                        <h3 className="table-title">Kết quả kiểm tra trình độ</h3>
+                        <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                          {testResults.length} kết quả
+                        </div>
+                      </div>
 
-                  {loading && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Đang tải dữ liệu...</div>}
+                      {loading && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Đang tải dữ liệu...</div>}
 
-                  {!loading && testResults.length === 0 ? (
-                    <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                      <ClipboardCheck size={48} style={{ opacity: '0.4', marginBottom: '16px' }} />
-                      <p>Chưa có kết quả kiểm tra nào.</p>
-                    </div>
-                  ) : (
-                    <div className="table-container">
-                      <table className="custom-table">
-                        <thead>
-                          <tr>
-                            <th>Học sinh</th>
-                            <th>Ngày thi</th>
-                            <th style={{ width: '140px' }}>Điểm số</th>
-                            <th>Trình độ</th>
-                            <th>CEFR</th>
-                            <th>Thời gian</th>
-                            <th style={{ width: '120px', textAlign: 'center' }}>Thao tác</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {testResults.map(result => {
-                            const pct = result.percentage || Math.round((result.score / result.max_score) * 100);
-                            return (
-                              <tr key={result.id}>
-                                <td>
-                                  <div className="student-meta">
-                                    <div className="avatar-circle" style={{ background: getAvatarColor(getStudentName(result.user_id)) }}>
-                                      {getStudentName(result.user_id).charAt(0).toUpperCase()}
-                                    </div>
-                                    <div>
-                                      <div className="meta-name">{getStudentName(result.user_id)}</div>
-                                      <div className="meta-email">{getStudentEmail(result.user_id)}</div>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>
-                                    <Calendar size={12} />
-                                    <span>{new Date(result.test_date).toLocaleDateString('vi-VN')}</span>
-                                  </div>
-                                </td>
-                                <td>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <div style={{ flex: 1, height: '8px', background: '#f0eef5', borderRadius: '4px', overflow: 'hidden' }}>
-                                      <div style={{ 
-                                        height: '100%', 
-                                        width: `${pct}%`,
-                                        borderRadius: '4px',
-                                        background: pct >= 70 ? '#27c26c' : pct >= 40 ? '#fb7d5b' : '#ff4d4f',
-                                        transition: 'width 0.5s ease'
-                                      }} />
-                                    </div>
-                                    <span style={{ fontWeight: '800', fontSize: '14px', color: pct >= 70 ? '#27c26c' : pct >= 40 ? '#fb7d5b' : '#ff4d4f', minWidth: '50px', textAlign: 'right' }}>
-                                      {result.score}/{result.max_score}
-                                    </span>
-                                  </div>
-                                </td>
-                                <td>
-                                  <span className={`badge ${result.result_level === 'elementary' ? 'badge-success' : result.result_level === 'starter' ? 'badge-danger' : result.result_level === 'beginner' ? 'badge-secondary' : 'badge-primary'}`}>
-                                    {result.result_level === 'starter' ? '⚠ Starter' : result.result_level === 'beginner' ? 'Beginner' : result.result_level === 'elementary' ? 'Elementary' : result.result_level}
-                                  </span>
-                                </td>
-                                <td style={{ fontWeight: '700', fontSize: '14px' }}>{result.cefr}</td>
-                                <td>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>
-                                    <Clock size={12} />
-                                    <span>{Math.floor(result.time_total_sec / 60)}m {result.time_total_sec % 60}s</span>
-                                  </div>
-                                </td>
-                                <td style={{ textAlign: 'center' }}>
-                                  <button 
-                                    className="btn btn-primary btn-small"
-                                    onClick={() => setSelectedResult(result)}
-                                  >
-                                    <TrendingUp size={12} />
-                                    Chi tiết
-                                  </button>
-                                </td>
+                      {!loading && testResults.length === 0 ? (
+                        <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                          <ClipboardCheck size={48} style={{ opacity: '0.4', marginBottom: '16px' }} />
+                          <p>Chưa có kết quả kiểm tra nào.</p>
+                        </div>
+                      ) : (
+                        <div className="table-container">
+                          <table className="custom-table">
+                            <thead>
+                              <tr>
+                                <th>Học sinh</th>
+                                <th>Ngày thi</th>
+                                <th style={{ width: '140px' }}>Điểm số</th>
+                                <th>Trình độ</th>
+                                <th>CEFR</th>
+                                <th>Thời gian</th>
+                                <th style={{ width: '120px', textAlign: 'center' }}>Thao tác</th>
                               </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  {/* ===== DETAIL VIEW ===== */}
-                  <div className="table-header-bar">
-                    <div className="placement-detail-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-                      <button 
-                        className="btn btn-outline btn-small"
-                        onClick={() => setSelectedResult(null)}
-                      >
-                        ← Quay lại
-                      </button>
-                      <h3 className="table-title" style={{ margin: 0, flex: 1 }}>
-                        Kết quả: {getStudentName(selectedResult.user_id)}
-                      </h3>
-                    </div>
-                  </div>
-
-                  {/* Summary Cards — 2 hàng × 2 cột */}
-                  <div className="detail-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', padding: '24px 32px', borderBottom: '1px solid var(--border)' }}>
-                    {/* Score card */}
-                    <div style={{ 
-                      padding: '20px', borderRadius: '14px', 
-                      background: 'linear-gradient(135deg, rgba(79,69,229,0.06), rgba(79,69,229,0.02))',
-                      border: '1px solid rgba(79,69,229,0.1)'
-                    }}>
-                      <div className="detail-label" style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Điểm số</div>
-                      <div className="detail-score-val" style={{ fontSize: '28px', fontWeight: '800', color: 'var(--primary)' }}>
-                        {selectedResult.score}<span className="detail-sub-val" style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-muted)' }}>/{selectedResult.max_score}</span>
-                      </div>
-                      <div style={{ marginTop: '8px', height: '6px', background: '#f0eef5', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{ 
-                          height: '100%', width: `${selectedResult.percentage || 0}%`, borderRadius: '3px',
-                          background: 'linear-gradient(90deg, #4d44b5, #7c6ff0)'
-                        }} />
-                      </div>
-                      <div className="detail-sub-val" style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{selectedResult.percentage || 0}% đúng</div>
-                    </div>
-
-                    {/* Level card */}
-                    <div style={{ 
-                      padding: '20px', borderRadius: '14px',
-                      background: selectedResult.result_level === 'elementary' ? 'rgba(39,194,108,0.06)' : selectedResult.result_level === 'starter' ? 'rgba(255,77,79,0.08)' : selectedResult.result_level === 'beginner' ? 'rgba(251,125,91,0.06)' : 'rgba(79,69,229,0.06)',
-                      border: `1px solid ${selectedResult.result_level === 'elementary' ? 'rgba(39,194,108,0.15)' : selectedResult.result_level === 'starter' ? 'rgba(255,77,79,0.2)' : selectedResult.result_level === 'beginner' ? 'rgba(251,125,91,0.15)' : 'rgba(79,69,229,0.1)'}`
-                    }}>
-                      <div className="detail-label" style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Trình độ</div>
-                      <div className="detail-level-val" style={{ fontSize: '22px', fontWeight: '800', color: selectedResult.result_level === 'elementary' ? '#27c26c' : selectedResult.result_level === 'starter' ? '#ff4d4f' : selectedResult.result_level === 'beginner' ? '#fb7d5b' : '#4d44b5', textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {selectedResult.result_level}
-                        {selectedResult.result_level === 'starter' && (
-                          <span style={{ fontSize: '10px', fontWeight: '700', padding: '3px 10px', borderRadius: '10px', background: 'rgba(255,77,79,0.12)', color: '#ff4d4f' }}>Cần hỗ trợ khẩn cấp</span>
-                        )}
-                      </div>
-                      <div className="detail-sub-val" style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>CEFR: <strong>{selectedResult.cefr}</strong></div>
-                    </div>
-
-                    {/* Time card */}
-                    <div style={{ 
-                      padding: '20px', borderRadius: '14px',
-                      background: 'rgba(251,125,91,0.06)',
-                      border: '1px solid rgba(251,125,91,0.1)'
-                    }}>
-                      <div className="detail-label" style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Thời gian</div>
-                      <div className="detail-time-val" style={{ fontSize: '28px', fontWeight: '800', color: '#fb7d5b' }}>
-                        {Math.floor(selectedResult.time_total_sec / 60)}<span className="detail-sub-val" style={{ fontSize: '14px', fontWeight: '600' }}> phút </span>{selectedResult.time_total_sec % 60}<span className="detail-sub-val" style={{ fontSize: '14px', fontWeight: '600' }}> giây</span>
-                      </div>
-                      <div className="detail-sub-val" style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        Trung bình {Math.round(selectedResult.time_total_sec / (selectedResult.answers?.length || 1))}s/câu
-                      </div>
-                    </div>
-
-                    {/* Date card */}
-                    <div style={{ 
-                      padding: '20px', borderRadius: '14px',
-                      background: 'rgba(39,194,108,0.06)',
-                      border: '1px solid rgba(39,194,108,0.1)'
-                    }}>
-                      <div className="detail-label" style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ngày thi</div>
-                      <div className="detail-date-val" style={{ fontSize: '18px', fontWeight: '700', color: '#27c26c' }}>
-                        {new Date(selectedResult.test_date).toLocaleDateString('vi-VN')}
-                      </div>
-                      <div className="detail-sub-val" style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        {new Date(selectedResult.test_date).toLocaleTimeString('vi-VN')}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Mastery — full width */}
-                  <div className="detail-mastery-section" style={{ padding: '24px 32px 12px' }}>
-                    <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <TrendingUp size={18} style={{ color: 'var(--primary)' }} />
-                      Mức thuần thục kỹ năng (BKT)
-                    </h4>
-                    <div className="detail-mastery-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '10px' }}>
-                      {selectedResult.mastery && Object.entries(selectedResult.mastery)
-                        .sort((a, b) => (a[1].probability || 0) - (b[1].probability || 0))
-                        .map(([skillId, m]) => {
-                        const pct = Math.round(m.probability * 100);
-                        const color = pct < 20 ? '#ff4d4f' : pct < 40 ? '#fb7d5b' : pct < 60 ? '#f59e0b' : pct < 80 ? '#4d44b5' : '#27c26c';
-                        const statusLabel = pct < 20 ? 'Rất yếu' : pct < 40 ? 'Yếu' : pct < 60 ? 'Đang học' : pct < 80 ? 'Khá' : 'Thành thạo';
-                        const statusBg = pct < 20 ? 'rgba(255,77,79,0.1)' : pct < 40 ? 'rgba(251,125,91,0.1)' : pct < 60 ? 'rgba(245,158,11,0.1)' : pct < 80 ? 'rgba(79,69,229,0.08)' : 'rgba(39,194,108,0.1)';
-                        return (
-                          <div key={skillId} style={{ 
-                            padding: '12px 16px', borderRadius: '10px',
-                            background: pct < 20 ? 'rgba(255,77,79,0.02)' : '#fdfcff',
-                            border: `1px solid ${pct < 20 ? 'rgba(255,77,79,0.12)' : 'var(--border)'}`
-                          }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                              <div>
-                                <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: '700', color: 'var(--primary)', marginRight: '6px' }}>{skillId}</span>
-                                <span style={{ fontSize: '12px', color: 'var(--text-color)', fontWeight: '600' }}>{m.skill_name}</span>
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ fontSize: '13px', fontWeight: '800', color }}>{pct}%</span>
-                                <span style={{ 
-                                  fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px',
-                                  background: statusBg, color
-                                }}>
-                                  {statusLabel}
-                                </span>
-                              </div>
-                            </div>
-                            <div style={{ height: '6px', background: '#f0eef5', borderRadius: '3px', overflow: 'hidden' }}>
-                              <div style={{ height: '100%', width: `${Math.max(pct, 2)}%`, borderRadius: '3px', background: color, transition: 'width 0.5s ease' }} />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Gaps + Recommendations — 2 cột cân bằng */}
-                  <div className="detail-gaps-recs-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', padding: '12px 32px 24px' }}>
-                    {/* Gaps (left) */}
-                    <div>
-                      <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <AlertTriangle size={18} style={{ color: '#ff4d4f' }} />
-                        Lỗ hổng kiến thức ({selectedResult.gaps?.length || 0})
-                      </h4>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {[...(selectedResult.gaps || [])].sort((a, b) => (a.severity === 'high' ? 0 : 1) - (b.severity === 'high' ? 0 : 1)).map((gap, i) => (
-                          <div key={i} style={{ 
-                            padding: '12px 16px', borderRadius: '10px',
-                            background: gap.severity === 'high' ? 'rgba(255,77,79,0.04)' : 'rgba(251,125,91,0.04)',
-                            border: `1px solid ${gap.severity === 'high' ? 'rgba(255,77,79,0.15)' : 'rgba(251,125,91,0.15)'}`
-                          }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                              <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '50%', background: gap.severity === 'high' ? 'rgba(255,77,79,0.12)' : 'rgba(251,125,91,0.12)', color: gap.severity === 'high' ? '#ff4d4f' : '#fb7d5b', fontSize: '10px', fontWeight: '800', flexShrink: 0 }}>{i + 1}</span>
-                              <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: '700', color: 'var(--primary)' }}>{gap.skill_id}</span>
-                              <span style={{ 
-                                fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px',
-                                background: gap.severity === 'high' ? 'rgba(255,77,79,0.12)' : 'rgba(251,125,91,0.12)',
-                                color: gap.severity === 'high' ? '#ff4d4f' : '#fb7d5b'
-                              }}>
-                                {gap.severity === 'high' ? '⚠ Nghiêm trọng' : 'Trung bình'}
-                              </span>
-                            </div>
-                            <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4', marginLeft: '28px' }}>{gap.reason}</div>
-                          </div>
-                        ))}
-                        {(!selectedResult.gaps || selectedResult.gaps.length === 0) && (
-                          <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>Không có lỗ hổng nào</div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Recommendations (right) */}
-                    <div>
-                      <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Lightbulb size={18} style={{ color: '#fb7d5b' }} />
-                        Đề xuất học tập ({selectedResult.recommendations?.length || 0})
-                      </h4>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {selectedResult.recommendations?.map((rec, i) => (
-                          <div key={i} style={{ 
-                            padding: '12px 16px', borderRadius: '10px',
-                            background: rec.priority === 'high' ? 'rgba(251,125,91,0.04)' : 'rgba(79,69,229,0.04)',
-                            border: `1px solid ${rec.priority === 'high' ? 'rgba(251,125,91,0.15)' : 'rgba(79,69,229,0.1)'}`
-                          }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                              {rec.priority === 'high' ? (
-                                <Lightbulb size={14} style={{ color: '#fb7d5b', flexShrink: 0 }} />
-                              ) : (
-                                <BookOpen size={14} style={{ color: '#4d44b5', flexShrink: 0 }} />
-                              )}
-                              <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: '700', color: 'var(--primary)' }}>{rec.skill_id}</span>
-                              <span style={{ 
-                                fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px',
-                                background: rec.priority === 'high' ? 'rgba(251,125,91,0.12)' : 'rgba(79,69,229,0.08)',
-                                color: rec.priority === 'high' ? '#fb7d5b' : '#4d44b5'
-                              }}>
-                                {rec.priority === 'high' ? '🔥 Ưu tiên cao' : '📚 Bình thường'}
-                              </span>
-                            </div>
-                            <div style={{ fontSize: '12px', color: 'var(--text-color)', lineHeight: '1.4', marginLeft: '22px' }}>{rec.action}</div>
-                          </div>
-                        ))}
-                        {(!selectedResult.recommendations || selectedResult.recommendations.length === 0) && (
-                          <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>Không có đề xuất nào</div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Training plan (AI) */}
-                  {selectedResult.training_plan && (
-                    <div style={{ padding: '0 32px 24px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                        <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
-                          <Lightbulb size={18} style={{ color: '#a43c20' }} />
-                          Kế hoạch đào tạo cá nhân hóa (AI)
-                        </h4>
-                        {user?.role === 'giao_vien' && !selectedResult.is_roadmap_approved && (
-                          <button className="btn btn-primary btn-small" onClick={() => handleApproveRoadmap(selectedResult.id)}>
-                            <CheckCircle2 size={16} /> Phê duyệt lộ trình
+                            </thead>
+                            <tbody>
+                              {testResults.map(result => {
+                                const pct = result.percentage || Math.round((result.score / result.max_score) * 100);
+                                return (
+                                  <tr key={result.id}>
+                                    <td>
+                                      <div className="student-meta">
+                                        <div className="avatar-circle" style={{ background: getAvatarColor(getStudentName(result.user_id)) }}>
+                                          {getStudentName(result.user_id).charAt(0).toUpperCase()}
+                                        </div>
+                                        <div>
+                                          <div className="meta-name">{getStudentName(result.user_id)}</div>
+                                          <div className="meta-email">{getStudentEmail(result.user_id)}</div>
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>
+                                        <Calendar size={12} />
+                                        <span>{new Date(result.test_date).toLocaleDateString('vi-VN')}</span>
+                                      </div>
+                                    </td>
+                                    <td>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <div style={{ flex: 1, height: '8px', background: '#f0eef5', borderRadius: '4px', overflow: 'hidden' }}>
+                                          <div style={{
+                                            height: '100%',
+                                            width: `${pct}%`,
+                                            borderRadius: '4px',
+                                            background: pct >= 70 ? '#27c26c' : pct >= 40 ? '#fb7d5b' : '#ff4d4f',
+                                            transition: 'width 0.5s ease'
+                                          }} />
+                                        </div>
+                                        <span style={{ fontWeight: '800', fontSize: '14px', color: pct >= 70 ? '#27c26c' : pct >= 40 ? '#fb7d5b' : '#ff4d4f', minWidth: '50px', textAlign: 'right' }}>
+                                          {result.score}/{result.max_score}
+                                        </span>
+                                      </div>
+                                    </td>
+                                    <td>
+                                      <span className={`badge ${result.result_level === 'elementary' ? 'badge-success' : result.result_level === 'starter' ? 'badge-danger' : result.result_level === 'beginner' ? 'badge-secondary' : 'badge-primary'}`}>
+                                        {result.result_level === 'starter' ? '⚠ Starter' : result.result_level === 'beginner' ? 'Beginner' : result.result_level === 'elementary' ? 'Elementary' : result.result_level}
+                                      </span>
+                                    </td>
+                                    <td style={{ fontWeight: '700', fontSize: '14px' }}>{result.cefr}</td>
+                                    <td>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>
+                                        <Clock size={12} />
+                                        <span>{Math.floor(result.time_total_sec / 60)}m {result.time_total_sec % 60}s</span>
+                                      </div>
+                                    </td>
+                                    <td style={{ textAlign: 'center' }}>
+                                      <div className="action-group" style={{ justifyContent: 'center' }}>
+                                        <button 
+                                          className="action-btn action-btn-view" 
+                                          title="Xem Dashboard Học Sinh"
+                                          onClick={() => startViewingDashboard(result.user_id, 'student')}
+                                        >
+                                          <LayoutDashboard size={14} />
+                                        </button>
+                                        <button
+                                          className="btn btn-primary btn-small"
+                                          onClick={() => setSelectedResult(result)}
+                                        >
+                                          <TrendingUp size={12} />
+                                          Chi tiết
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {/* ===== DETAIL VIEW ===== */}
+                      <div className="table-header-bar">
+                        <div className="placement-detail-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                          <button
+                            className="btn btn-outline btn-small"
+                            onClick={() => setSelectedResult(null)}
+                          >
+                            ← Quay lại
                           </button>
-                        )}
-                        {selectedResult.is_roadmap_approved && (
-                          <span style={{ fontSize: '13px', color: '#27c26c', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <CheckCircle2 size={16} /> Đã phê duyệt
-                          </span>
-                        )}
+                          <h3 className="table-title" style={{ margin: 0, flex: 1 }}>
+                            Kết quả: {getStudentName(selectedResult.user_id)}
+                          </h3>
+                        </div>
                       </div>
-                      <div className="history-training-plan">{selectedResult.training_plan}</div>
-                    </div>
-                  )}
 
-                  {/* Teacher Evaluation Input */}
-                  {user?.role === 'giao_vien' && (
-                    <div style={{ padding: '0 32px 24px' }}>
-                      <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <MessageSquare size={18} style={{ color: '#4d44b5' }} />
-                        Thêm nhận xét giáo viên
-                      </h4>
-                      <div style={{ display: 'flex', gap: '12px' }}>
-                        <input 
-                          type="text" 
-                          className="input-field" 
-                          placeholder="Nhập nhận xét về học sinh này..." 
-                          value={newEvaluation}
-                          onChange={(e) => setNewEvaluation(e.target.value)}
-                          style={{ flex: 1 }}
-                        />
-                        <button className="btn btn-primary" onClick={() => handleTeacherEvaluation(selectedResult.student_id, newEvaluation)}>
-                          Gửi nhận xét
-                        </button>
+                      {/* Summary Cards — 2 hàng × 2 cột */}
+                      <div className="detail-summary-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', padding: '24px 32px', borderBottom: '1px solid var(--border)' }}>
+                        {/* Score card */}
+                        <div style={{
+                          padding: '20px', borderRadius: '14px',
+                          background: 'linear-gradient(135deg, rgba(79,69,229,0.06), rgba(79,69,229,0.02))',
+                          border: '1px solid rgba(79,69,229,0.1)'
+                        }}>
+                          <div className="detail-label" style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Điểm số</div>
+                          <div className="detail-score-val" style={{ fontSize: '28px', fontWeight: '800', color: 'var(--primary)' }}>
+                            {selectedResult.score}<span className="detail-sub-val" style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-muted)' }}>/{selectedResult.max_score}</span>
+                          </div>
+                          <div style={{ marginTop: '8px', height: '6px', background: '#f0eef5', borderRadius: '3px', overflow: 'hidden' }}>
+                            <div style={{
+                              height: '100%', width: `${selectedResult.percentage || 0}%`, borderRadius: '3px',
+                              background: 'linear-gradient(90deg, #4d44b5, #7c6ff0)'
+                            }} />
+                          </div>
+                          <div className="detail-sub-val" style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{selectedResult.percentage || 0}% đúng</div>
+                        </div>
+
+                        {/* Level card */}
+                        <div style={{
+                          padding: '20px', borderRadius: '14px',
+                          background: selectedResult.result_level === 'elementary' ? 'rgba(39,194,108,0.06)' : selectedResult.result_level === 'starter' ? 'rgba(255,77,79,0.08)' : selectedResult.result_level === 'beginner' ? 'rgba(251,125,91,0.06)' : 'rgba(79,69,229,0.06)',
+                          border: `1px solid ${selectedResult.result_level === 'elementary' ? 'rgba(39,194,108,0.15)' : selectedResult.result_level === 'starter' ? 'rgba(255,77,79,0.2)' : selectedResult.result_level === 'beginner' ? 'rgba(251,125,91,0.15)' : 'rgba(79,69,229,0.1)'}`
+                        }}>
+                          <div className="detail-label" style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Trình độ</div>
+                          <div className="detail-level-val" style={{ fontSize: '22px', fontWeight: '800', color: selectedResult.result_level === 'elementary' ? '#27c26c' : selectedResult.result_level === 'starter' ? '#ff4d4f' : selectedResult.result_level === 'beginner' ? '#fb7d5b' : '#4d44b5', textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {selectedResult.result_level}
+                            {selectedResult.result_level === 'starter' && (
+                              <span style={{ fontSize: '10px', fontWeight: '700', padding: '3px 10px', borderRadius: '10px', background: 'rgba(255,77,79,0.12)', color: '#ff4d4f' }}>Cần hỗ trợ khẩn cấp</span>
+                            )}
+                          </div>
+                          <div className="detail-sub-val" style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>CEFR: <strong>{selectedResult.cefr}</strong></div>
+                        </div>
+
+                        {/* Time card */}
+                        <div style={{
+                          padding: '20px', borderRadius: '14px',
+                          background: 'rgba(251,125,91,0.06)',
+                          border: '1px solid rgba(251,125,91,0.1)'
+                        }}>
+                          <div className="detail-label" style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Thời gian</div>
+                          <div className="detail-time-val" style={{ fontSize: '28px', fontWeight: '800', color: '#fb7d5b' }}>
+                            {Math.floor(selectedResult.time_total_sec / 60)}<span className="detail-sub-val" style={{ fontSize: '14px', fontWeight: '600' }}> phút </span>{selectedResult.time_total_sec % 60}<span className="detail-sub-val" style={{ fontSize: '14px', fontWeight: '600' }}> giây</span>
+                          </div>
+                          <div className="detail-sub-val" style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                            Trung bình {Math.round(selectedResult.time_total_sec / (selectedResult.answers?.length || 1))}s/câu
+                          </div>
+                        </div>
+
+                        {/* Date card */}
+                        <div style={{
+                          padding: '20px', borderRadius: '14px',
+                          background: 'rgba(39,194,108,0.06)',
+                          border: '1px solid rgba(39,194,108,0.1)'
+                        }}>
+                          <div className="detail-label" style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ngày thi</div>
+                          <div className="detail-date-val" style={{ fontSize: '18px', fontWeight: '700', color: '#27c26c' }}>
+                            {new Date(selectedResult.test_date).toLocaleDateString('vi-VN')}
+                          </div>
+                          <div className="detail-sub-val" style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                            {new Date(selectedResult.test_date).toLocaleTimeString('vi-VN')}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  )}
 
-                  {/* Answers detail */}
-                  <div className="detail-answers-section" style={{ padding: '0 32px 24px' }}>
-                    <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <FileText size={18} style={{ color: 'var(--primary)' }} />
-                      Chi tiết câu trả lời ({selectedResult.answers?.length || 0} câu)
-                    </h4>
-                    <div className="table-container">
-                      <table className="custom-table">
-                        <thead>
-                          <tr>
-                            <th style={{ width: '4%', textAlign: 'center' }}>STT</th>
-                            <th style={{ width: '10%' }}>Mã câu</th>
-                            <th style={{ width: '13%' }}>Kỹ năng</th>
-                            <th style={{ width: '8%', textAlign: 'center' }}>Độ khó</th>
-                            <th style={{ width: '7%', textAlign: 'center' }}>Trả lời</th>
-                            <th style={{ width: '7%', textAlign: 'center' }}>Kết quả</th>
-                            <th style={{ width: '9%', textAlign: 'center' }}>Thời gian</th>
-                            <th style={{ width: '30%' }}>Lỗi sai</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {selectedResult.answers?.map((a, idx) => {
-                            const isWrong = !a.correct;
-                            const isSlow = a.time_spent_sec > 20;
-                            const diffMap = { q_001:'easy', q_002:'easy', q_003:'easy', q_004:'easy', q_005:'easy', q_006:'easy', q_007:'medium', q_008:'easy', q_009:'medium', q_010:'easy', q_011:'easy', q_012:'medium', q_013:'easy', q_014:'medium' };
-                            const diff = a.difficulty || diffMap[a.question_id] || 'easy';
-                            const diffColor = diff === 'hard' ? '#ff4d4f' : diff === 'medium' ? '#fb7d5b' : '#27c26c';
-                            const diffBg = diff === 'hard' ? 'rgba(255,77,79,0.1)' : diff === 'medium' ? 'rgba(251,125,91,0.1)' : 'rgba(39,194,108,0.1)';
-                            return (
-                            <tr key={idx} style={isWrong ? { background: 'rgba(255,77,79,0.02)' } : {}}>
-                              <td style={{ textAlign: 'center', fontWeight: '800', color: isWrong ? '#ff4d4f' : 'var(--primary)' }}>{idx + 1}</td>
-                              <td>
-                                <span style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: '700', color: 'var(--primary)' }}>{a.question_id}</span>
-                              </td>
-                              <td>
-                                <span className="badge badge-primary" style={{ fontSize: '10px' }}>{a.skill_id}</span>
-                              </td>
-                              <td style={{ textAlign: 'center' }}>
-                                <span style={{ fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px', background: diffBg, color: diffColor, textTransform: 'capitalize' }}>
-                                  {diff === 'easy' ? 'Dễ' : diff === 'medium' ? 'Trung bình' : 'Khó'}
-                                </span>
-                              </td>
-                              <td style={{ textAlign: 'center', fontWeight: '700', fontSize: '15px' }}>
-                                {a.selected?.toUpperCase()}
-                              </td>
-                              <td style={{ textAlign: 'center' }}>
-                                <span style={{ 
-                                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                  width: '28px', height: '28px', borderRadius: '50%', fontWeight: '800', fontSize: '13px',
-                                  background: a.correct ? 'rgba(39,194,108,0.12)' : 'rgba(255,77,79,0.12)',
-                                  color: a.correct ? '#27c26c' : '#ff4d4f'
+                      {/* Mastery — full width */}
+                      <div className="detail-mastery-section" style={{ padding: '24px 32px 12px' }}>
+                        <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <TrendingUp size={18} style={{ color: 'var(--primary)' }} />
+                          Mức thuần thục kỹ năng (BKT)
+                        </h4>
+                        <div className="detail-mastery-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '10px' }}>
+                          {selectedResult.mastery && Object.entries(selectedResult.mastery)
+                            .sort((a, b) => (a[1].probability || 0) - (b[1].probability || 0))
+                            .map(([skillId, m]) => {
+                              const pct = Math.round(m.probability * 100);
+                              const color = pct < 20 ? '#ff4d4f' : pct < 40 ? '#fb7d5b' : pct < 60 ? '#f59e0b' : pct < 80 ? '#4d44b5' : '#27c26c';
+                              const statusLabel = pct < 20 ? 'Rất yếu' : pct < 40 ? 'Yếu' : pct < 60 ? 'Đang học' : pct < 80 ? 'Khá' : 'Thành thạo';
+                              const statusBg = pct < 20 ? 'rgba(255,77,79,0.1)' : pct < 40 ? 'rgba(251,125,91,0.1)' : pct < 60 ? 'rgba(245,158,11,0.1)' : pct < 80 ? 'rgba(79,69,229,0.08)' : 'rgba(39,194,108,0.1)';
+                              return (
+                                <div key={skillId} style={{
+                                  padding: '12px 16px', borderRadius: '10px',
+                                  background: pct < 20 ? 'rgba(255,77,79,0.02)' : '#fdfcff',
+                                  border: `1px solid ${pct < 20 ? 'rgba(255,77,79,0.12)' : 'var(--border)'}`
                                 }}>
-                                  {a.correct ? '✓' : '✗'}
-                                </span>
-                              </td>
-                              <td style={{ textAlign: 'center', fontSize: '12px', fontWeight: isSlow ? '700' : '400', color: isSlow ? '#fb7d5b' : 'var(--text-muted)' }}>
-                                {a.time_spent_sec}s{isSlow && ' ⏱'}
-                              </td>
-                              <td style={{ fontSize: '12px' }}>
-                                {a.error_tag ? (
-                                  <span style={{ color: '#ff4d4f', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    <AlertTriangle size={11} />
-                                    {a.error_tag.replace(/_/g, ' ')}
-                                  </span>
-                                ) : (
-                                  <span style={{ color: 'var(--text-muted)' }}>—</span>
-                                )}
-                              </td>
-                            </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                                    <div>
+                                      <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: '700', color: 'var(--primary)', marginRight: '6px' }}>{skillId}</span>
+                                      <span style={{ fontSize: '12px', color: 'var(--text-color)', fontWeight: '600' }}>{m.skill_name}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      <span style={{ fontSize: '13px', fontWeight: '800', color }}>{pct}%</span>
+                                      <span style={{
+                                        fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px',
+                                        background: statusBg, color
+                                      }}>
+                                        {statusLabel}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div style={{ height: '6px', background: '#f0eef5', borderRadius: '3px', overflow: 'hidden' }}>
+                                    <div style={{ height: '100%', width: `${Math.max(pct, 2)}%`, borderRadius: '3px', background: color, transition: 'width 0.5s ease' }} />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                        </div>
+                      </div>
 
-          {/* ==========================================================
+                      {/* Gaps + Recommendations — 2 cột cân bằng */}
+                      <div className="detail-gaps-recs-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', padding: '12px 32px 24px' }}>
+                        {/* Gaps (left) */}
+                        <div>
+                          <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <AlertTriangle size={18} style={{ color: '#ff4d4f' }} />
+                            Lỗ hổng kiến thức ({selectedResult.gaps?.length || 0})
+                          </h4>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {[...(selectedResult.gaps || [])].sort((a, b) => (a.severity === 'high' ? 0 : 1) - (b.severity === 'high' ? 0 : 1)).map((gap, i) => (
+                              <div key={i} style={{
+                                padding: '12px 16px', borderRadius: '10px',
+                                background: gap.severity === 'high' ? 'rgba(255,77,79,0.04)' : 'rgba(251,125,91,0.04)',
+                                border: `1px solid ${gap.severity === 'high' ? 'rgba(255,77,79,0.15)' : 'rgba(251,125,91,0.15)'}`
+                              }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '50%', background: gap.severity === 'high' ? 'rgba(255,77,79,0.12)' : 'rgba(251,125,91,0.12)', color: gap.severity === 'high' ? '#ff4d4f' : '#fb7d5b', fontSize: '10px', fontWeight: '800', flexShrink: 0 }}>{i + 1}</span>
+                                  <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: '700', color: 'var(--primary)' }}>{gap.skill_id}</span>
+                                  <span style={{
+                                    fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px',
+                                    background: gap.severity === 'high' ? 'rgba(255,77,79,0.12)' : 'rgba(251,125,91,0.12)',
+                                    color: gap.severity === 'high' ? '#ff4d4f' : '#fb7d5b'
+                                  }}>
+                                    {gap.severity === 'high' ? '⚠ Nghiêm trọng' : 'Trung bình'}
+                                  </span>
+                                </div>
+                                <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4', marginLeft: '28px' }}>{gap.reason}</div>
+                              </div>
+                            ))}
+                            {(!selectedResult.gaps || selectedResult.gaps.length === 0) && (
+                              <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>Không có lỗ hổng nào</div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Recommendations (right) */}
+                        <div>
+                          <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Lightbulb size={18} style={{ color: '#fb7d5b' }} />
+                            Đề xuất học tập ({selectedResult.recommendations?.length || 0})
+                          </h4>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {selectedResult.recommendations?.map((rec, i) => (
+                              <div key={i} style={{
+                                padding: '12px 16px', borderRadius: '10px',
+                                background: rec.priority === 'high' ? 'rgba(251,125,91,0.04)' : 'rgba(79,69,229,0.04)',
+                                border: `1px solid ${rec.priority === 'high' ? 'rgba(251,125,91,0.15)' : 'rgba(79,69,229,0.1)'}`
+                              }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                  {rec.priority === 'high' ? (
+                                    <Lightbulb size={14} style={{ color: '#fb7d5b', flexShrink: 0 }} />
+                                  ) : (
+                                    <BookOpen size={14} style={{ color: '#4d44b5', flexShrink: 0 }} />
+                                  )}
+                                  <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: '700', color: 'var(--primary)' }}>{rec.skill_id}</span>
+                                  <span style={{
+                                    fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px',
+                                    background: rec.priority === 'high' ? 'rgba(251,125,91,0.12)' : 'rgba(79,69,229,0.08)',
+                                    color: rec.priority === 'high' ? '#fb7d5b' : '#4d44b5'
+                                  }}>
+                                    {rec.priority === 'high' ? '🔥 Ưu tiên cao' : '📚 Bình thường'}
+                                  </span>
+                                </div>
+                                <div style={{ fontSize: '12px', color: 'var(--text-color)', lineHeight: '1.4', marginLeft: '22px' }}>{rec.action}</div>
+                              </div>
+                            ))}
+                            {(!selectedResult.recommendations || selectedResult.recommendations.length === 0) && (
+                              <div style={{ padding: '16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>Không có đề xuất nào</div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Training plan (AI) */}
+                      {selectedResult.training_plan && (
+                        <div style={{ padding: '0 32px 24px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                            <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                              <Lightbulb size={18} style={{ color: '#a43c20' }} />
+                              Kế hoạch đào tạo cá nhân hóa (AI)
+                            </h4>
+                            {user?.role === 'giao_vien' && !selectedResult.is_roadmap_approved && (
+                              <button className="btn btn-primary btn-small" onClick={() => handleApproveRoadmap(selectedResult.id)}>
+                                <CheckCircle2 size={16} /> Phê duyệt lộ trình
+                              </button>
+                            )}
+                            {selectedResult.is_roadmap_approved && (
+                              <span style={{ fontSize: '13px', color: '#27c26c', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <CheckCircle2 size={16} /> Đã phê duyệt
+                              </span>
+                            )}
+                          </div>
+                          <BeautifulRoadmap planText={selectedResult.training_plan} studentKey={"result_" + selectedResult.id} />
+                        </div>
+                      )}
+
+                      {/* Teacher Evaluation Input */}
+                      {user?.role === 'giao_vien' && (
+                        <div style={{ padding: '0 32px 24px' }}>
+                          <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <MessageSquare size={18} style={{ color: '#4d44b5' }} />
+                            Thêm nhận xét giáo viên
+                          </h4>
+                          <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+                            <input
+                              type="text"
+                              className="input-field"
+                              placeholder="Nhập nhận xét về học sinh này..."
+                              value={newEvaluation}
+                              onChange={(e) => setNewEvaluation(e.target.value)}
+                              style={{ flex: 1 }}
+                            />
+                            <button className="btn btn-primary" onClick={() => handleTeacherEvaluation(selectedResult.user_id, newEvaluation)}>
+                              Gửi nhận xét
+                            </button>
+                          </div>
+
+                          {/* Past evaluations list */}
+                          {parentEvaluations && parentEvaluations.length > 0 && (
+                            <div>
+                              <h5 style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '12px' }}>Các nhận xét đã gửi:</h5>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {parentEvaluations.map(ev => (
+                                  <div key={ev.id} style={{ background: '#f5f6fa', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '14px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                                      <span>{new Date(ev.created_at).toLocaleString('vi-VN')}</span>
+                                    </div>
+                                    <div style={{ color: 'var(--text-color)', lineHeight: '1.4' }}>{ev.comment}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Answers detail */}
+                      <div className="detail-answers-section" style={{ padding: '0 32px 24px' }}>
+                        <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <FileText size={18} style={{ color: 'var(--primary)' }} />
+                          Chi tiết câu trả lời ({selectedResult.answers?.length || 0} câu)
+                        </h4>
+                        <div className="table-container">
+                          <table className="custom-table">
+                            <thead>
+                              <tr>
+                                <th style={{ width: '4%', textAlign: 'center' }}>STT</th>
+                                <th style={{ width: '10%' }}>Mã câu</th>
+                                <th style={{ width: '13%' }}>Kỹ năng</th>
+                                <th style={{ width: '8%', textAlign: 'center' }}>Độ khó</th>
+                                <th style={{ width: '7%', textAlign: 'center' }}>Trả lời</th>
+                                <th style={{ width: '7%', textAlign: 'center' }}>Kết quả</th>
+                                <th style={{ width: '9%', textAlign: 'center' }}>Thời gian</th>
+                                <th style={{ width: '30%' }}>Lỗi sai</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {selectedResult.answers?.map((a, idx) => {
+                                const isWrong = !a.correct;
+                                const isSlow = a.time_spent_sec > 20;
+                                const diffMap = { q_001: 'easy', q_002: 'easy', q_003: 'easy', q_004: 'easy', q_005: 'easy', q_006: 'easy', q_007: 'medium', q_008: 'easy', q_009: 'medium', q_010: 'easy', q_011: 'easy', q_012: 'medium', q_013: 'easy', q_014: 'medium' };
+                                const diff = a.difficulty || diffMap[a.question_id] || 'easy';
+                                const diffColor = diff === 'hard' ? '#ff4d4f' : diff === 'medium' ? '#fb7d5b' : '#27c26c';
+                                const diffBg = diff === 'hard' ? 'rgba(255,77,79,0.1)' : diff === 'medium' ? 'rgba(251,125,91,0.1)' : 'rgba(39,194,108,0.1)';
+                                return (
+                                  <tr key={idx} style={isWrong ? { background: 'rgba(255,77,79,0.02)' } : {}}>
+                                    <td style={{ textAlign: 'center', fontWeight: '800', color: isWrong ? '#ff4d4f' : 'var(--primary)' }}>{idx + 1}</td>
+                                    <td>
+                                      <span style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: '700', color: 'var(--primary)' }}>{a.question_id}</span>
+                                    </td>
+                                    <td>
+                                      <span className="badge badge-primary" style={{ fontSize: '10px' }}>{a.skill_id}</span>
+                                    </td>
+                                    <td style={{ textAlign: 'center' }}>
+                                      <span style={{ fontSize: '10px', fontWeight: '700', padding: '2px 8px', borderRadius: '10px', background: diffBg, color: diffColor, textTransform: 'capitalize' }}>
+                                        {diff === 'easy' ? 'Dễ' : diff === 'medium' ? 'Trung bình' : 'Khó'}
+                                      </span>
+                                    </td>
+                                    <td style={{ textAlign: 'center', fontWeight: '700', fontSize: '15px' }}>
+                                      {a.selected?.toUpperCase()}
+                                    </td>
+                                    <td style={{ textAlign: 'center' }}>
+                                      <span style={{
+                                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                        width: '28px', height: '28px', borderRadius: '50%', fontWeight: '800', fontSize: '13px',
+                                        background: a.correct ? 'rgba(39,194,108,0.12)' : 'rgba(255,77,79,0.12)',
+                                        color: a.correct ? '#27c26c' : '#ff4d4f'
+                                      }}>
+                                        {a.correct ? '✓' : '✗'}
+                                      </span>
+                                    </td>
+                                    <td style={{ textAlign: 'center', fontSize: '12px', fontWeight: isSlow ? '700' : '400', color: isSlow ? '#fb7d5b' : 'var(--text-muted)' }}>
+                                      {a.time_spent_sec}s{isSlow && ' ⏱'}
+                                    </td>
+                                    <td style={{ fontSize: '12px' }}>
+                                      {a.error_tag ? (
+                                        <span style={{ color: '#ff4d4f', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                          <AlertTriangle size={11} />
+                                          {a.error_tag.replace(/_/g, ' ')}
+                                        </span>
+                                      ) : (
+                                        <span style={{ color: 'var(--text-muted)' }}>—</span>
+                                      )}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* ==========================================================
               TAB: ROADMAPS (Lộ trình học)
               ========================================================== */}
-          {activeTab === 'roadmaps' && (
-            <div className="animate-fade-in panel table-panel">
-              <div className="table-header-bar">
-                <h3 className="table-title">Lộ trình cần phê duyệt</h3>
-              </div>
-              <div className="table-container">
-                <table className="custom-table">
-                  <thead>
-                    <tr>
-                      <th>Học sinh</th>
-                      <th>Ngày nộp</th>
-                      <th>Khung tham chiếu</th>
-                      <th style={{ textAlign: 'center' }}>Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {testResults.filter(r => !r.is_roadmap_approved && r.training_plan && (user?.role === 'admin' || (students.find(s => s.id === r.user_id)?.primary_teacher_id === user?.id))).map(result => (
-                      <tr key={result.id}>
-                        <td>
-                          <div className="student-meta">
-                            <div className="avatar-circle" style={{ background: getAvatarColor(getStudentName(result.user_id)) }}>
-                              {getStudentName(result.user_id).charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="meta-name">{getStudentName(result.user_id)}</div>
-                              <div className="meta-email">{getStudentEmail(result.user_id)}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>
-                            <Calendar size={12} />
-                            <span>{new Date(result.test_date).toLocaleDateString('vi-VN')}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <span className="badge badge-primary">{result.cefr}</span>
-                        </td>
-                        <td style={{ textAlign: 'center' }}>
-                          <button 
-                            className="btn btn-primary btn-small"
-                            onClick={() => {
-                              setSelectedResult(result);
-                              setActiveTab('assessment');
-                              setAssessmentSubTab('test-results');
-                            }}
-                          >
-                            <Sparkles size={12} />
-                            Phê duyệt
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {testResults.filter(r => !r.is_roadmap_approved && r.training_plan && (user?.role === 'admin' || (students.find(s => s.id === r.user_id)?.primary_teacher_id === user?.id))).length === 0 && (
-                      <tr>
-                        <td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                          <Sparkles size={48} style={{ opacity: '0.4', marginBottom: '16px', margin: '0 auto' }} />
-                          <p>Không có lộ trình nào cần phê duyệt.</p>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* ==========================================================
-              TAB: QUESTION BANK (Ngân hàng câu hỏi)
-              ========================================================== */}
-          {activeTab === 'questions' && (
-            <div className="animate-fade-in panel table-panel">
-              <div className="table-header-bar">
-                <h3 className="table-title">Ngân hàng câu hỏi ({questions.length} câu)</h3>
-                <div className="question-header-filters" style={{ display: 'flex', gap: '8px' }}>
-                  <select 
-                    value={questionSkillFilter} 
-                    onChange={e => setQuestionSkillFilter(e.target.value)}
-                    style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', fontWeight: '600' }}
-                  >
-                    <option value="">Tất cả kỹ năng</option>
-                    {[...new Set(questions.map(q => q.skill_id))].sort().map(sid => (
-                      <option key={sid} value={sid}>{sid}</option>
-                    ))}
-                  </select>
-                  <select 
-                    value={questionDiffFilter} 
-                    onChange={e => setQuestionDiffFilter(e.target.value)}
-                    style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', fontWeight: '600' }}
-                  >
-                    <option value="">Tất cả độ khó</option>
-                    <option value="easy">Dễ</option>
-                    <option value="medium">Trung bình</option>
-                    <option value="hard">Khó</option>
-                  </select>
-                </div>
-              </div>
-
-              {loading && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Đang tải dữ liệu...</div>}
-
-              {!loading && (
-                <div className="table-container">
-                  <table className="custom-table">
-                    <thead>
-                      <tr>
-                        <th style={{ width: '90px' }}>Mã câu</th>
-                        <th>Câu hỏi</th>
-                        <th style={{ width: '140px' }}>Kỹ năng</th>
-                        <th style={{ width: '100px' }}>Độ khó</th>
-                        <th style={{ width: '80px' }}>Đáp án</th>
-                        <th style={{ width: '80px' }}>Loại</th>
-                        <th style={{ width: '100px', textAlign: 'center' }}>Thao tác</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {questions
-                        .filter(q => {
-                          if (questionSearch) {
-                            const s = questionSearch.toLowerCase();
-                            if (!q.prompt?.text?.toLowerCase().includes(s) && 
-                                !q.skill_name?.toLowerCase().includes(s) &&
-                                !q.skill_id?.toLowerCase().includes(s) &&
-                                !q.question_id?.toLowerCase().includes(s)) return false;
-                          }
-                          if (questionSkillFilter && q.skill_id !== questionSkillFilter) return false;
-                          if (questionDiffFilter && q.difficulty !== questionDiffFilter) return false;
-                          return true;
-                        })
-                        .map(q => (
-                          <tr key={q.id}>
+              {activeTab === 'roadmaps' && (
+                <div className="animate-fade-in panel table-panel">
+                  <div className="table-header-bar">
+                    <h3 className="table-title">Lộ trình cần phê duyệt</h3>
+                  </div>
+                  <div className="table-container">
+                    <table className="custom-table">
+                      <thead>
+                        <tr>
+                          <th>Học sinh</th>
+                          <th>Ngày nộp</th>
+                          <th>Khung tham chiếu</th>
+                          <th style={{ textAlign: 'center' }}>Thao tác</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {testResults.filter(r => !r.is_roadmap_approved && r.training_plan && (user?.role === 'admin' || (students.find(s => s.id === r.user_id)?.primary_teacher_id === user?.id))).map(result => (
+                          <tr key={result.id}>
                             <td>
-                              <span style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: '700', color: 'var(--primary)' }}>
-                                {q.question_id}
-                              </span>
-                            </td>
-                            <td>
-                              <div style={{ maxWidth: '350px' }}>
-                                <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '2px' }}>
-                                  {q.prompt?.text || '—'}
+                              <div className="student-meta">
+                                <div className="avatar-circle" style={{ background: getAvatarColor(getStudentName(result.user_id)) }}>
+                                  {getStudentName(result.user_id).charAt(0).toUpperCase()}
                                 </div>
-                                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                                  {q.options?.map(o => `${o.option_id}) ${o.label}`).join('  |  ')}
+                                <div>
+                                  <div className="meta-name">{getStudentName(result.user_id)}</div>
+                                  <div className="meta-email">{getStudentEmail(result.user_id)}</div>
                                 </div>
                               </div>
                             </td>
                             <td>
-                              <div>
-                                <span className="badge badge-primary" style={{ fontSize: '11px' }}>{q.skill_id}</span>
-                                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px', lineHeight: '1.2' }}>
-                                  {q.skill_name}
-                                </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)' }}>
+                                <Calendar size={12} />
+                                <span>{new Date(result.test_date).toLocaleDateString('vi-VN')}</span>
                               </div>
                             </td>
                             <td>
-                              <span className={`badge ${q.difficulty === 'easy' ? 'badge-success' : q.difficulty === 'hard' ? 'badge-danger' : 'badge-secondary'}`}>
-                                {q.difficulty === 'easy' ? 'Dễ' : q.difficulty === 'hard' ? 'Khó' : 'TB'}
-                              </span>
-                            </td>
-                            <td style={{ fontWeight: '800', color: '#27c26c', textAlign: 'center' }}>
-                              {q.correct_option_id}
-                            </td>
-                            <td>
-                              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                                {q.type === 'read_choice' ? 'Đọc' : 'Nghe'}
-                              </span>
+                              <span className="badge badge-primary">{result.cefr}</span>
                             </td>
                             <td style={{ textAlign: 'center' }}>
-                              <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-                                <button 
-                                  className="btn btn-primary btn-small"
-                                  style={{ padding: '4px 8px', fontSize: '11px' }}
-                                  onClick={() => setEditQuestionModal({ open: true, data: { ...q } })}
-                                >
-                                  Sửa
-                                </button>
-                                <button 
-                                  className="btn btn-danger btn-small"
-                                  style={{ padding: '4px 8px', fontSize: '11px' }}
-                                  onClick={() => handleDeleteQuestion(q.id)}
-                                >
-                                  Xóa
-                                </button>
-                              </div>
+                              <button
+                                className="btn btn-primary btn-small"
+                                onClick={() => {
+                                  setSelectedResult(result);
+                                  setActiveTab('assessment');
+                                  setAssessmentSubTab('test-results');
+                                }}
+                              >
+                                <Sparkles size={12} />
+                                Phê duyệt
+                              </button>
                             </td>
                           </tr>
-                      ))}
-                      {questions.filter(q => {
-                        if (questionSearch) {
-                          const s = questionSearch.toLowerCase();
-                          if (!q.prompt?.text?.toLowerCase().includes(s) && 
-                              !q.skill_name?.toLowerCase().includes(s) &&
-                              !q.skill_id?.toLowerCase().includes(s)) return false;
-                        }
-                        if (questionSkillFilter && q.skill_id !== questionSkillFilter) return false;
-                        if (questionDiffFilter && q.difficulty !== questionDiffFilter) return false;
-                        return true;
-                      }).length === 0 && (
-                        <tr>
-                          <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
-                            Không tìm thấy câu hỏi nào.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                        ))}
+                        {testResults.filter(r => !r.is_roadmap_approved && r.training_plan && (user?.role === 'admin' || (students.find(s => s.id === r.user_id)?.primary_teacher_id === user?.id))).length === 0 && (
+                          <tr>
+                            <td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                              <Sparkles size={48} style={{ opacity: '0.4', marginBottom: '16px', margin: '0 auto' }} />
+                              <p>Không có lộ trình nào cần phê duyệt.</p>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
-            </div>
-          )}
 
-          {/* ==========================================================
-              TAB: PLACEMENT TESTS (under Đánh giá)
+              {/* ==========================================================
+              TAB: QUESTION BANK (Ngân hàng câu hỏi)
               ========================================================== */}
-          {activeTab === 'assessment' && assessmentSubTab === 'placement-tests' && (
-            <div className="animate-fade-in panel table-panel">
-              {!selectedTest ? (
-                <>
+              {activeTab === 'questions' && (
+                <div className="animate-fade-in panel table-panel">
                   <div className="table-header-bar">
-                    <h3 className="table-title">Danh sách bài kiểm tra trình độ</h3>
+                    <h3 className="table-title">Ngân hàng câu hỏi ({questions.length} câu)</h3>
+                    <div className="question-header-filters" style={{ display: 'flex', gap: '8px' }}>
+                      <select
+                        value={questionSkillFilter}
+                        onChange={e => setQuestionSkillFilter(e.target.value)}
+                        style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', fontWeight: '600' }}
+                      >
+                        <option value="">Tất cả kỹ năng</option>
+                        {[...new Set(questions.map(q => q.skill_id))].sort().map(sid => (
+                          <option key={sid} value={sid}>{sid}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={questionDiffFilter}
+                        onChange={e => setQuestionDiffFilter(e.target.value)}
+                        style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', fontWeight: '600' }}
+                      >
+                        <option value="">Tất cả độ khó</option>
+                        <option value="easy">Dễ</option>
+                        <option value="medium">Trung bình</option>
+                        <option value="hard">Khó</option>
+                      </select>
+                    </div>
                   </div>
 
                   {loading && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Đang tải dữ liệu...</div>}
@@ -2663,217 +2872,340 @@ function DashboardApp({ user, logout }) {
                       <table className="custom-table">
                         <thead>
                           <tr>
-                            <th style={{ width: '100px' }}>Mã bài</th>
-                            <th>Tên bài kiểm tra</th>
-                            <th>Số câu hỏi</th>
-                            <th>Chiến lược</th>
-                            <th style={{ width: '120px', textAlign: 'center' }}>Thao tác</th>
+                            <th style={{ width: '90px' }}>Mã câu</th>
+                            <th>Câu hỏi</th>
+                            <th style={{ width: '140px' }}>Kỹ năng</th>
+                            <th style={{ width: '100px' }}>Độ khó</th>
+                            <th style={{ width: '80px' }}>Đáp án</th>
+                            <th style={{ width: '80px' }}>Loại</th>
+                            <th style={{ width: '100px', textAlign: 'center' }}>Thao tác</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {placementTests.map(test => (
-                            <tr key={test.id}>
-                              <td>
-                                <span style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: '700', color: 'var(--primary)' }}>
-                                  {test.test_id}
-                                </span>
-                              </td>
-                              <td>
-                                <div>
-                                  <div style={{ fontSize: '14px', fontWeight: '700' }}>{test.title}</div>
-                                  {test.mascot && (
-                                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                                      {test.mascot.name} {test.mascot.icon === 'bee' ? '🐝' : '📖'}
+                          {questions
+                            .filter(q => {
+                              if (questionSearch) {
+                                const s = questionSearch.toLowerCase();
+                                if (!q.prompt?.text?.toLowerCase().includes(s) &&
+                                  !q.skill_name?.toLowerCase().includes(s) &&
+                                  !q.skill_id?.toLowerCase().includes(s) &&
+                                  !q.question_id?.toLowerCase().includes(s)) return false;
+                              }
+                              if (questionSkillFilter && q.skill_id !== questionSkillFilter) return false;
+                              if (questionDiffFilter && q.difficulty !== questionDiffFilter) return false;
+                              return true;
+                            })
+                            .map(q => (
+                              <tr key={q.id}>
+                                <td>
+                                  <span style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: '700', color: 'var(--primary)' }}>
+                                    {q.question_id}
+                                  </span>
+                                </td>
+                                <td>
+                                  <div style={{ maxWidth: '350px' }}>
+                                    <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '2px' }}>
+                                      {q.prompt?.text || '—'}
                                     </div>
-                                  )}
-                                </div>
-                              </td>
-                              <td>
-                                <span className="badge badge-primary">
-                                  {test.adaptive_config?.questions_per_level 
-                                    ? Object.values(test.adaptive_config.questions_per_level).reduce((a, b) => a + b, 0)
-                                    : '?'} câu
-                                </span>
-                              </td>
-                              <td>
-                                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                                  {test.adaptive_config?.strategy === 'level_sequential' ? 'Tuyến tính theo level' : test.adaptive_config?.strategy || '—'}
-                                </span>
-                              </td>
-                              <td style={{ textAlign: 'center' }}>
-                                <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-                                  <button 
-                                    className="btn btn-primary btn-small"
-                                    onClick={() => {
-                                      setSelectedTest(test);
-                                      fetchTestQuestions(test.id);
-                                    }}
-                                  >
-                                    <FileText size={12} />
-                                    Chi tiết
-                                  </button>
-                                  <button 
-                                    className="btn btn-outline btn-small"
-                                    onClick={() => setEditTestModal({ open: true, data: { ...test } })}
-                                  >
-                                    Sửa
-                                  </button>
-                                  <button 
-                                    className="btn btn-danger btn-small"
-                                    onClick={() => handleDeleteTest(test.id)}
-                                  >
-                                    Xóa
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                          {placementTests.length === 0 && (
-                            <tr>
-                              <td colSpan="5" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
-                                Chưa có bài test nào.
-                              </td>
-                            </tr>
-                          )}
+                                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                                      {q.options?.map(o => `${o.option_id}) ${o.label}`).join('  |  ')}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td>
+                                  <div>
+                                    <span className="badge badge-primary" style={{ fontSize: '11px' }}>{q.skill_id}</span>
+                                    <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px', lineHeight: '1.2' }}>
+                                      {q.skill_name}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td>
+                                  <span className={`badge ${q.difficulty === 'easy' ? 'badge-success' : q.difficulty === 'hard' ? 'badge-danger' : 'badge-secondary'}`}>
+                                    {q.difficulty === 'easy' ? 'Dễ' : q.difficulty === 'hard' ? 'Khó' : 'TB'}
+                                  </span>
+                                </td>
+                                <td style={{ fontWeight: '800', color: '#27c26c', textAlign: 'center' }}>
+                                  {q.correct_option_id}
+                                </td>
+                                <td>
+                                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                                    {q.type === 'read_choice' ? 'Đọc' : 'Nghe'}
+                                  </span>
+                                </td>
+                                <td style={{ textAlign: 'center' }}>
+                                  <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                                    <button
+                                      className="btn btn-primary btn-small"
+                                      style={{ padding: '4px 8px', fontSize: '11px' }}
+                                      onClick={() => setEditQuestionModal({ open: true, data: { ...q } })}
+                                    >
+                                      Sửa
+                                    </button>
+                                    <button
+                                      className="btn btn-danger btn-small"
+                                      style={{ padding: '4px 8px', fontSize: '11px' }}
+                                      onClick={() => handleDeleteQuestion(q.id)}
+                                    >
+                                      Xóa
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          {questions.filter(q => {
+                            if (questionSearch) {
+                              const s = questionSearch.toLowerCase();
+                              if (!q.prompt?.text?.toLowerCase().includes(s) &&
+                                !q.skill_name?.toLowerCase().includes(s) &&
+                                !q.skill_id?.toLowerCase().includes(s)) return false;
+                            }
+                            if (questionSkillFilter && q.skill_id !== questionSkillFilter) return false;
+                            if (questionDiffFilter && q.difficulty !== questionDiffFilter) return false;
+                            return true;
+                          }).length === 0 && (
+                              <tr>
+                                <td colSpan="7" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
+                                  Không tìm thấy câu hỏi nào.
+                                </td>
+                              </tr>
+                            )}
                         </tbody>
                       </table>
                     </div>
                   )}
-
-                  {/* Levels info */}
-                  {placementTests.length > 0 && placementTests[0].levels && (
-                    <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border)' }}>
-                      <h4 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '12px', color: 'var(--text-color)' }}>Cấp độ bài kiểm tra</h4>
-                      <div className="levels-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-                        {placementTests[0].levels.map(lvl => (
-                          <div key={lvl.level_id} style={{ 
-                            padding: '14px 16px', 
-                            borderRadius: '10px', 
-                            background: lvl.level_id === 'starter' ? '#e6e4f6' : lvl.level_id === 'beginner' ? '#fff2eb' : '#e1f6e8',
-                            border: '1px solid transparent'
-                          }}>
-                            <div style={{ fontSize: '13px', fontWeight: '800', color: lvl.level_id === 'starter' ? '#4d44b5' : lvl.level_id === 'beginner' ? '#fb7d5b' : '#27c26c' }}>
-                              {lvl.label}
-                            </div>
-                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                              CEFR: {lvl.cefr_equivalent}
-                            </div>
-                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', lineHeight: '1.3' }}>
-                              {lvl.description}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  {/* Test Detail View */}
-                  <div className="table-header-bar">
-                    <div className="placement-detail-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-                      <button 
-                        className="btn btn-outline btn-small"
-                        onClick={() => { setSelectedTest(null); setTestQuestions([]); }}
-                      >
-                        ← Quay lại
-                      </button>
-                      <h3 className="table-title" style={{ margin: 0, flex: 1 }}>
-                        {selectedTest.title} <span style={{ fontWeight: '400', fontSize: '13px', color: 'var(--text-muted)' }}>({testQuestions.length} câu hỏi)</span>
-                      </h3>
-                      <button 
-                        className="btn btn-primary btn-small"
-                        onClick={() => setShowAddQuestionModal(true)}
-                      >
-                        + Thêm câu hỏi
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="table-container">
-                    <table className="custom-table">
-                      <thead>
-                        <tr>
-                          <th style={{ width: '50px', textAlign: 'center' }}>STT</th>
-                          <th style={{ width: '140px' }}>Kỹ năng</th>
-                          <th>Câu hỏi</th>
-                          <th style={{ width: '80px' }}>Độ khó</th>
-                          <th style={{ width: '80px' }}>Đáp án</th>
-                          <th>Giải thích</th>
-                          <th style={{ width: '70px', textAlign: 'center' }}>Thao tác</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {testQuestions.map((q, idx) => (
-                          <tr key={q.id}>
-                            <td style={{ textAlign: 'center', fontWeight: '800', color: 'var(--primary)' }}>
-                              {idx + 1}
-                            </td>
-                            <td>
-                              <span className="badge badge-primary" style={{ fontSize: '11px' }}>{q.skill_id}</span>
-                              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                                {q.skill_name}
-                              </div>
-                            </td>
-                            <td>
-                              <div style={{ fontSize: '13px', fontWeight: '600' }}>
-                                {q.prompt?.text || '—'}
-                              </div>
-                              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                                {q.options?.map(o => (
-                                  <span key={o.option_id} style={{ 
-                                    marginRight: '8px',
-                                    color: o.option_id === q.correct_option_id ? '#27c26c' : 'var(--text-muted)',
-                                    fontWeight: o.option_id === q.correct_option_id ? '700' : '400'
-                                  }}>
-                                    {o.option_id}) {o.label}
-                                  </span>
-                                ))}
-                              </div>
-                            </td>
-                            <td>
-                              <span className={`badge ${q.difficulty === 'easy' ? 'badge-success' : q.difficulty === 'hard' ? 'badge-danger' : 'badge-secondary'}`}>
-                                {q.difficulty === 'easy' ? 'Dễ' : q.difficulty === 'hard' ? 'Khó' : 'TB'}
-                              </span>
-                            </td>
-                            <td style={{ fontWeight: '800', color: '#27c26c', textAlign: 'center', fontSize: '15px' }}>
-                              {q.correct_option_id}
-                            </td>
-                            <td>
-                              <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4', maxWidth: '250px' }}>
-                                {q.explanation || '—'}
-                              </div>
-                            </td>
-                            <td style={{ textAlign: 'center' }}>
-                              <button 
-                                className="btn btn-danger btn-small"
-                                style={{ padding: '4px 8px', fontSize: '11px' }}
-                                onClick={() => handleRemoveQuestionFromTest(selectedTest.id, q.id)}
-                              >
-                                Xóa
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Scoring info */}
-                  {selectedTest.adaptive_config && (
-                    <div className="scoring-info-bar" style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: '24px', alignItems: 'center' }}>
-                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                        <strong>Chiến lược:</strong> {selectedTest.adaptive_config.strategy === 'level_sequential' ? 'Tuyến tính theo level' : selectedTest.adaptive_config.strategy}
-                      </div>
-                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                        <strong>Số câu/level:</strong> {Object.entries(selectedTest.adaptive_config.questions_per_level || {}).map(([k, v]) => `${k}: ${v}`).join(', ')}
-                      </div>
-                    </div>
-                  )}
-                </>
+                </div>
               )}
-            </div>
-          )}
+
+              {/* ==========================================================
+              TAB: PLACEMENT TESTS (under Đánh giá)
+              ========================================================== */}
+              {activeTab === 'assessment' && assessmentSubTab === 'placement-tests' && (
+                <div className="animate-fade-in panel table-panel">
+                  {!selectedTest ? (
+                    <>
+                      <div className="table-header-bar">
+                        <h3 className="table-title">Danh sách bài kiểm tra trình độ</h3>
+                      </div>
+
+                      {loading && <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Đang tải dữ liệu...</div>}
+
+                      {!loading && (
+                        <div className="table-container">
+                          <table className="custom-table">
+                            <thead>
+                              <tr>
+                                <th style={{ width: '100px' }}>Mã bài</th>
+                                <th>Tên bài kiểm tra</th>
+                                <th>Số câu hỏi</th>
+                                <th>Chiến lược</th>
+                                <th style={{ width: '120px', textAlign: 'center' }}>Thao tác</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {placementTests.map(test => (
+                                <tr key={test.id}>
+                                  <td>
+                                    <span style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: '700', color: 'var(--primary)' }}>
+                                      {test.test_id}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <div>
+                                      <div style={{ fontSize: '14px', fontWeight: '700' }}>{test.title}</div>
+                                      {test.mascot && (
+                                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                          {test.mascot.name} {test.mascot.icon === 'bee' ? '🐝' : '📖'}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td>
+                                    <span className="badge badge-primary">
+                                      {test.adaptive_config?.questions_per_level
+                                        ? Object.values(test.adaptive_config.questions_per_level).reduce((a, b) => a + b, 0)
+                                        : '?'} câu
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                                      {test.adaptive_config?.strategy === 'level_sequential' ? 'Tuyến tính theo level' : test.adaptive_config?.strategy || '—'}
+                                    </span>
+                                  </td>
+                                  <td style={{ textAlign: 'center' }}>
+                                    <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                                      <button
+                                        className="btn btn-primary btn-small"
+                                        onClick={() => {
+                                          setSelectedTest(test);
+                                          fetchTestQuestions(test.id);
+                                        }}
+                                      >
+                                        <FileText size={12} />
+                                        Chi tiết
+                                      </button>
+                                      <button
+                                        className="btn btn-outline btn-small"
+                                        onClick={() => setEditTestModal({ open: true, data: { ...test } })}
+                                      >
+                                        Sửa
+                                      </button>
+                                      <button
+                                        className="btn btn-danger btn-small"
+                                        onClick={() => handleDeleteTest(test.id)}
+                                      >
+                                        Xóa
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                              {placementTests.length === 0 && (
+                                <tr>
+                                  <td colSpan="5" style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>
+                                    Chưa có bài test nào.
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+
+                      {/* Levels info */}
+                      {placementTests.length > 0 && placementTests[0].levels && (
+                        <div style={{ padding: '20px 24px', borderTop: '1px solid var(--border)' }}>
+                          <h4 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '12px', color: 'var(--text-color)' }}>Cấp độ bài kiểm tra</h4>
+                          <div className="levels-grid-mobile" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                            {placementTests[0].levels.map(lvl => (
+                              <div key={lvl.level_id} style={{
+                                padding: '14px 16px',
+                                borderRadius: '10px',
+                                background: lvl.level_id === 'starter' ? '#e6e4f6' : lvl.level_id === 'beginner' ? '#fff2eb' : '#e1f6e8',
+                                border: '1px solid transparent'
+                              }}>
+                                <div style={{ fontSize: '13px', fontWeight: '800', color: lvl.level_id === 'starter' ? '#4d44b5' : lvl.level_id === 'beginner' ? '#fb7d5b' : '#27c26c' }}>
+                                  {lvl.label}
+                                </div>
+                                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                  CEFR: {lvl.cefr_equivalent}
+                                </div>
+                                <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px', lineHeight: '1.3' }}>
+                                  {lvl.description}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      {/* Test Detail View */}
+                      <div className="table-header-bar">
+                        <div className="placement-detail-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                          <button
+                            className="btn btn-outline btn-small"
+                            onClick={() => { setSelectedTest(null); setTestQuestions([]); }}
+                          >
+                            ← Quay lại
+                          </button>
+                          <h3 className="table-title" style={{ margin: 0, flex: 1 }}>
+                            {selectedTest.title} <span style={{ fontWeight: '400', fontSize: '13px', color: 'var(--text-muted)' }}>({testQuestions.length} câu hỏi)</span>
+                          </h3>
+                          <button
+                            className="btn btn-primary btn-small"
+                            onClick={() => setShowAddQuestionModal(true)}
+                          >
+                            + Thêm câu hỏi
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="table-container">
+                        <table className="custom-table">
+                          <thead>
+                            <tr>
+                              <th style={{ width: '50px', textAlign: 'center' }}>STT</th>
+                              <th style={{ width: '140px' }}>Kỹ năng</th>
+                              <th>Câu hỏi</th>
+                              <th style={{ width: '80px' }}>Độ khó</th>
+                              <th style={{ width: '80px' }}>Đáp án</th>
+                              <th>Giải thích</th>
+                              <th style={{ width: '70px', textAlign: 'center' }}>Thao tác</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {testQuestions.map((q, idx) => (
+                              <tr key={q.id}>
+                                <td style={{ textAlign: 'center', fontWeight: '800', color: 'var(--primary)' }}>
+                                  {idx + 1}
+                                </td>
+                                <td>
+                                  <span className="badge badge-primary" style={{ fontSize: '11px' }}>{q.skill_id}</span>
+                                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                    {q.skill_name}
+                                  </div>
+                                </td>
+                                <td>
+                                  <div style={{ fontSize: '13px', fontWeight: '600' }}>
+                                    {q.prompt?.text || '—'}
+                                  </div>
+                                  <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                                    {q.options?.map(o => (
+                                      <span key={o.option_id} style={{
+                                        marginRight: '8px',
+                                        color: o.option_id === q.correct_option_id ? '#27c26c' : 'var(--text-muted)',
+                                        fontWeight: o.option_id === q.correct_option_id ? '700' : '400'
+                                      }}>
+                                        {o.option_id}) {o.label}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </td>
+                                <td>
+                                  <span className={`badge ${q.difficulty === 'easy' ? 'badge-success' : q.difficulty === 'hard' ? 'badge-danger' : 'badge-secondary'}`}>
+                                    {q.difficulty === 'easy' ? 'Dễ' : q.difficulty === 'hard' ? 'Khó' : 'TB'}
+                                  </span>
+                                </td>
+                                <td style={{ fontWeight: '800', color: '#27c26c', textAlign: 'center', fontSize: '15px' }}>
+                                  {q.correct_option_id}
+                                </td>
+                                <td>
+                                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4', maxWidth: '250px' }}>
+                                    {q.explanation || '—'}
+                                  </div>
+                                </td>
+                                <td style={{ textAlign: 'center' }}>
+                                  <button
+                                    className="btn btn-danger btn-small"
+                                    style={{ padding: '4px 8px', fontSize: '11px' }}
+                                    onClick={() => handleRemoveQuestionFromTest(selectedTest.id, q.id)}
+                                  >
+                                    Xóa
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Scoring info */}
+                      {selectedTest.adaptive_config && (
+                        <div className="scoring-info-bar" style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: '24px', alignItems: 'center' }}>
+                          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                            <strong>Chiến lược:</strong> {selectedTest.adaptive_config.strategy === 'level_sequential' ? 'Tuyến tính theo level' : selectedTest.adaptive_config.strategy}
+                          </div>
+                          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                            <strong>Số câu/level:</strong> {Object.entries(selectedTest.adaptive_config.questions_per_level || {}).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
 
             </>
           )}
@@ -2887,8 +3219,8 @@ function DashboardApp({ user, logout }) {
       {studentModal.open && (
         <div className="modal-overlay">
           <div className="modal-card animate-fade-in">
-            <button 
-              className="modal-close-btn" 
+            <button
+              className="modal-close-btn"
               onClick={() => setStudentModal({ open: false, mode: 'create', data: null })}
             >
               <X size={24} />
@@ -2900,8 +3232,8 @@ function DashboardApp({ user, logout }) {
             <form onSubmit={handleStudentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
                 <label>Họ và Tên</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={studentForm.name}
                   onChange={e => setStudentForm({ ...studentForm, name: e.target.value })}
                   required
@@ -2910,8 +3242,8 @@ function DashboardApp({ user, logout }) {
 
               <div>
                 <label>Địa chỉ Email</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   value={studentForm.email}
                   onChange={e => setStudentForm({ ...studentForm, email: e.target.value })}
                   required
@@ -2920,7 +3252,7 @@ function DashboardApp({ user, logout }) {
 
               <div>
                 <label>Khối lớp</label>
-                <select 
+                <select
                   value={studentForm.grade}
                   onChange={e => setStudentForm({ ...studentForm, grade: e.target.value })}
                 >
@@ -2936,7 +3268,7 @@ function DashboardApp({ user, logout }) {
 
               <div>
                 <label>Giáo viên phụ trách</label>
-                <select 
+                <select
                   value={studentForm.primary_teacher_id}
                   onChange={e => setStudentForm({ ...studentForm, primary_teacher_id: e.target.value ? parseInt(e.target.value) : '' })}
                 >
@@ -2949,7 +3281,7 @@ function DashboardApp({ user, logout }) {
 
               <div>
                 <label>Phụ huynh liên kết</label>
-                <select 
+                <select
                   value={studentForm.parent_id}
                   onChange={e => setStudentForm({ ...studentForm, parent_id: e.target.value ? parseInt(e.target.value) : '' })}
                 >
@@ -2962,7 +3294,7 @@ function DashboardApp({ user, logout }) {
 
               <div>
                 <label>Mật khẩu</label>
-                <input 
+                <input
                   type="password"
                   placeholder={studentModal.mode === 'create' ? 'Mặc định: 88888888' : 'Để trống nếu không đổi'}
                   value={studentForm.password}
@@ -2971,8 +3303,8 @@ function DashboardApp({ user, logout }) {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="btn btn-outline"
                   onClick={() => setStudentModal({ open: false, mode: 'create', data: null })}
                 >
@@ -2993,8 +3325,8 @@ function DashboardApp({ user, logout }) {
       {teacherModal.open && (
         <div className="modal-overlay">
           <div className="modal-card animate-fade-in">
-            <button 
-              className="modal-close-btn" 
+            <button
+              className="modal-close-btn"
               onClick={() => setTeacherModal({ open: false, mode: 'create', data: null })}
             >
               <X size={24} />
@@ -3006,8 +3338,8 @@ function DashboardApp({ user, logout }) {
             <form onSubmit={handleTeacherSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
                 <label>Họ và Tên</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={teacherForm.name}
                   onChange={e => setTeacherForm({ ...teacherForm, name: e.target.value })}
                   required
@@ -3016,8 +3348,8 @@ function DashboardApp({ user, logout }) {
 
               <div>
                 <label>Địa chỉ Email</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   value={teacherForm.email}
                   onChange={e => setTeacherForm({ ...teacherForm, email: e.target.value })}
                   required
@@ -3026,9 +3358,9 @@ function DashboardApp({ user, logout }) {
 
               <div>
                 <label>Môn giảng dạy</label>
-                <input 
-                  type="text" 
-                  placeholder="Ví dụ: Tiếng Anh THCS, Tiếng Anh THPT..." 
+                <input
+                  type="text"
+                  placeholder="Ví dụ: Tiếng Anh THCS, Tiếng Anh THPT..."
                   value={teacherForm.subject}
                   onChange={e => setTeacherForm({ ...teacherForm, subject: e.target.value })}
                   required
@@ -3037,7 +3369,7 @@ function DashboardApp({ user, logout }) {
 
               <div>
                 <label>Mật khẩu</label>
-                <input 
+                <input
                   type="password"
                   placeholder={teacherModal.mode === 'create' ? 'Mặc định: 88888888' : 'Để trống nếu không đổi'}
                   value={teacherForm.password}
@@ -3046,10 +3378,101 @@ function DashboardApp({ user, logout }) {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="btn btn-outline"
                   onClick={() => setTeacherModal({ open: false, mode: 'create', data: null })}
+                >
+                  Hủy
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={loading}>
+                  Lưu lại
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================================
+          MODALS: PARENT (CREATE / EDIT)
+          ========================================================== */}
+      {parentModal.open && (
+        <div className="modal-overlay">
+          <div className="modal-card animate-fade-in" style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h3>{parentModal.mode === 'create' ? "Thêm mới Phụ huynh" : "Cập nhật thông tin Phụ huynh"}</h3>
+              <button className="icon-btn" onClick={() => setParentModal({ open: false, mode: 'create', data: null })}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={saveParent} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div>
+                <label>Họ và Tên</label>
+                <input
+                  type="text"
+                  value={parentForm.name}
+                  onChange={e => setParentForm({ ...parentForm, name: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div>
+                <label>Địa chỉ Email</label>
+                <input
+                  type="email"
+                  value={parentForm.email}
+                  onChange={e => setParentForm({ ...parentForm, email: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div>
+                <label>Số điện thoại</label>
+                <input
+                  type="text"
+                  placeholder="Ví dụ: 0912345678"
+                  value={parentForm.phone_number}
+                  onChange={e => setParentForm({ ...parentForm, phone_number: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label>Học sinh liên kết</label>
+                <select
+                  multiple
+                  className="form-select"
+                  style={{ height: '100px', width: '100%', padding: '8px', border: '1px solid var(--border-color)', borderRadius: '6px', background: 'var(--bg-card)', color: 'var(--text-color)' }}
+                  value={parentForm.student_ids}
+                  onChange={e => {
+                    const options = Array.from(e.target.options);
+                    const selected = options.filter(opt => opt.selected).map(opt => parseInt(opt.value));
+                    setParentForm({ ...parentForm, student_ids: selected });
+                  }}
+                >
+                  {students.map(s => (
+                    <option key={s.id} value={s.id}>{s.name} ({s.email})</option>
+                  ))}
+                </select>
+                <small style={{ color: 'var(--text-muted)' }}>Giữ Ctrl (Windows) hoặc Cmd (Mac) để chọn nhiều học sinh</small>
+              </div>
+
+              <div>
+                <label>Mật khẩu</label>
+                <input
+                  type="password"
+                  placeholder={parentModal.mode === 'create' ? 'Mặc định: 88888888' : 'Để trống nếu không đổi'}
+                  value={parentForm.password}
+                  onChange={e => setParentForm({ ...parentForm, password: e.target.value })}
+                />
+              </div>
+
+              <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => setParentModal({ open: false, mode: 'create', data: null })}
                 >
                   Hủy
                 </button>
@@ -3068,8 +3491,8 @@ function DashboardApp({ user, logout }) {
       {editQuestionModal.open && editQuestionModal.data && (
         <div className="modal-overlay">
           <div className="modal-card animate-fade-in" style={{ maxWidth: '640px' }}>
-            <button 
-              className="modal-close-btn" 
+            <button
+              className="modal-close-btn"
               onClick={() => setEditQuestionModal({ open: false, data: null })}
             >
               <X size={24} />
@@ -3081,8 +3504,8 @@ function DashboardApp({ user, logout }) {
               <div className="modal-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Mã câu (question_id)</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={editQuestionModal.data.question_id || ''}
                     onChange={e => setEditQuestionModal({ ...editQuestionModal, data: { ...editQuestionModal.data, question_id: e.target.value } })}
                     style={{ width: '100%' }}
@@ -3090,7 +3513,7 @@ function DashboardApp({ user, logout }) {
                 </div>
                 <div>
                   <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Loại</label>
-                  <select 
+                  <select
                     value={editQuestionModal.data.type || 'read_choice'}
                     onChange={e => setEditQuestionModal({ ...editQuestionModal, data: { ...editQuestionModal.data, type: e.target.value } })}
                     style={{ width: '100%' }}
@@ -3104,8 +3527,8 @@ function DashboardApp({ user, logout }) {
               <div className="modal-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Skill ID</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={editQuestionModal.data.skill_id || ''}
                     onChange={e => setEditQuestionModal({ ...editQuestionModal, data: { ...editQuestionModal.data, skill_id: e.target.value } })}
                     style={{ width: '100%' }}
@@ -3113,8 +3536,8 @@ function DashboardApp({ user, logout }) {
                 </div>
                 <div>
                   <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Tên kỹ năng</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={editQuestionModal.data.skill_name || ''}
                     onChange={e => setEditQuestionModal({ ...editQuestionModal, data: { ...editQuestionModal.data, skill_name: e.target.value } })}
                     style={{ width: '100%' }}
@@ -3125,7 +3548,7 @@ function DashboardApp({ user, logout }) {
               <div className="modal-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Độ khó</label>
-                  <select 
+                  <select
                     value={editQuestionModal.data.difficulty || 'medium'}
                     onChange={e => setEditQuestionModal({ ...editQuestionModal, data: { ...editQuestionModal.data, difficulty: e.target.value } })}
                     style={{ width: '100%' }}
@@ -3137,23 +3560,23 @@ function DashboardApp({ user, logout }) {
                 </div>
                 <div>
                   <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Đáp án đúng</label>
-                  <select 
+                  <select
                     value={editQuestionModal.data.correct_option_id || 'A'}
                     onChange={e => setEditQuestionModal({ ...editQuestionModal, data: { ...editQuestionModal.data, correct_option_id: e.target.value } })}
                     style={{ width: '100%' }}
                   >
-                    {['A','B','C','D'].map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    {['A', 'B', 'C', 'D'].map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
                 </div>
               </div>
 
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Nội dung câu hỏi (prompt.text)</label>
-                <textarea 
+                <textarea
                   rows={2}
                   value={editQuestionModal.data.prompt?.text || ''}
-                  onChange={e => setEditQuestionModal({ 
-                    ...editQuestionModal, 
+                  onChange={e => setEditQuestionModal({
+                    ...editQuestionModal,
                     data: { ...editQuestionModal.data, prompt: { ...editQuestionModal.data.prompt, text: e.target.value } }
                   })}
                   style={{ width: '100%', resize: 'vertical' }}
@@ -3166,8 +3589,8 @@ function DashboardApp({ user, logout }) {
                 {(editQuestionModal.data.options || []).map((opt, idx) => (
                   <div key={opt.option_id} style={{ display: 'flex', gap: '8px', marginBottom: '6px', alignItems: 'center' }}>
                     <span style={{ fontWeight: '800', fontSize: '13px', color: 'var(--primary)', width: '20px' }}>{opt.option_id})</span>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={opt.label}
                       onChange={e => {
                         const newOpts = [...editQuestionModal.data.options];
@@ -3182,7 +3605,7 @@ function DashboardApp({ user, logout }) {
 
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Giải thích</label>
-                <textarea 
+                <textarea
                   rows={2}
                   value={editQuestionModal.data.explanation || ''}
                   onChange={e => setEditQuestionModal({ ...editQuestionModal, data: { ...editQuestionModal.data, explanation: e.target.value } })}
@@ -3191,13 +3614,13 @@ function DashboardApp({ user, logout }) {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
-                <button 
+                <button
                   className="btn btn-outline"
                   onClick={() => setEditQuestionModal({ open: false, data: null })}
                 >
                   Hủy
                 </button>
-                <button 
+                <button
                   className="btn btn-primary"
                   onClick={() => handleUpdateQuestion(editQuestionModal.data.id, editQuestionModal.data)}
                 >
@@ -3215,8 +3638,8 @@ function DashboardApp({ user, logout }) {
       {editTestModal.open && editTestModal.data && (
         <div className="modal-overlay">
           <div className="modal-card animate-fade-in" style={{ maxWidth: '560px' }}>
-            <button 
-              className="modal-close-btn" 
+            <button
+              className="modal-close-btn"
               onClick={() => setEditTestModal({ open: false, data: null })}
             >
               <X size={24} />
@@ -3227,8 +3650,8 @@ function DashboardApp({ user, logout }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Tên bài kiểm tra</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={editTestModal.data.title || ''}
                   onChange={e => setEditTestModal({ ...editTestModal, data: { ...editTestModal.data, title: e.target.value } })}
                   style={{ width: '100%' }}
@@ -3238,22 +3661,22 @@ function DashboardApp({ user, logout }) {
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Mascot (icon + tên)</label>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={editTestModal.data.mascot?.icon || ''}
                     placeholder="bee hoặc book"
-                    onChange={e => setEditTestModal({ 
-                      ...editTestModal, 
+                    onChange={e => setEditTestModal({
+                      ...editTestModal,
                       data: { ...editTestModal.data, mascot: { ...editTestModal.data.mascot, icon: e.target.value } }
                     })}
                     style={{ width: '100%' }}
                   />
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={editTestModal.data.mascot?.name || ''}
                     placeholder="Tên mascot"
-                    onChange={e => setEditTestModal({ 
-                      ...editTestModal, 
+                    onChange={e => setEditTestModal({
+                      ...editTestModal,
                       data: { ...editTestModal.data, mascot: { ...editTestModal.data.mascot, name: e.target.value } }
                     })}
                     style={{ width: '100%' }}
@@ -3263,10 +3686,10 @@ function DashboardApp({ user, logout }) {
 
               <div>
                 <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Chiến lược thi</label>
-                <select 
+                <select
                   value={editTestModal.data.adaptive_config?.strategy || 'level_sequential'}
-                  onChange={e => setEditTestModal({ 
-                    ...editTestModal, 
+                  onChange={e => setEditTestModal({
+                    ...editTestModal,
                     data: { ...editTestModal.data, adaptive_config: { ...editTestModal.data.adaptive_config, strategy: e.target.value } }
                   })}
                   style={{ width: '100%' }}
@@ -3283,15 +3706,15 @@ function DashboardApp({ user, logout }) {
                   return (
                     <div key={lvl.level_id} style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '6px' }}>
                       <span style={{ fontSize: '13px', fontWeight: '700', minWidth: '100px' }}>{lvl.label}</span>
-                      <input 
-                        type="number" 
+                      <input
+                        type="number"
                         min={1}
                         max={20}
                         value={qpl[lvl.level_id] || 5}
                         onChange={e => {
                           const newQpl = { ...qpl, [lvl.level_id]: parseInt(e.target.value) || 5 };
-                          setEditTestModal({ 
-                            ...editTestModal, 
+                          setEditTestModal({
+                            ...editTestModal,
                             data: { ...editTestModal.data, adaptive_config: { ...editTestModal.data.adaptive_config, questions_per_level: newQpl } }
                           });
                         }}
@@ -3304,13 +3727,13 @@ function DashboardApp({ user, logout }) {
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
-                <button 
+                <button
                   className="btn btn-outline"
                   onClick={() => setEditTestModal({ open: false, data: null })}
                 >
                   Hủy
                 </button>
-                <button 
+                <button
                   className="btn btn-primary"
                   onClick={() => handleUpdateTest(editTestModal.data.id, editTestModal.data)}
                 >
@@ -3328,8 +3751,8 @@ function DashboardApp({ user, logout }) {
       {showAddQuestionModal && selectedTest && (
         <div className="modal-overlay">
           <div className="modal-card animate-fade-in" style={{ maxWidth: '820px', maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}>
-            <button 
-              className="modal-close-btn" 
+            <button
+              className="modal-close-btn"
               onClick={() => setShowAddQuestionModal(false)}
             >
               <X size={24} />
@@ -3340,14 +3763,14 @@ function DashboardApp({ user, logout }) {
 
             {/* Filters */}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-              <input 
+              <input
                 type="text"
                 placeholder="Tìm kiếm câu hỏi..."
                 value={addQuestionSearch}
                 onChange={e => setAddQuestionSearch(e.target.value)}
                 style={{ flex: 1, minWidth: '200px', padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px' }}
               />
-              <select 
+              <select
                 value={addQuestionSkillFilter}
                 onChange={e => setAddQuestionSkillFilter(e.target.value)}
                 style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', fontWeight: '600' }}
@@ -3357,7 +3780,7 @@ function DashboardApp({ user, logout }) {
                   <option key={sid} value={sid}>{sid}</option>
                 ))}
               </select>
-              <select 
+              <select
                 value={addQuestionDiffFilter}
                 onChange={e => setAddQuestionDiffFilter(e.target.value)}
                 style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '13px', fontWeight: '600' }}
@@ -3375,10 +3798,10 @@ function DashboardApp({ user, logout }) {
               const filtered = questions.filter(q => {
                 if (addQuestionSearch) {
                   const s = addQuestionSearch.toLowerCase();
-                  if (!q.prompt?.text?.toLowerCase().includes(s) && 
-                      !q.skill_name?.toLowerCase().includes(s) &&
-                      !q.skill_id?.toLowerCase().includes(s) &&
-                      !q.question_id?.toLowerCase().includes(s)) return false;
+                  if (!q.prompt?.text?.toLowerCase().includes(s) &&
+                    !q.skill_name?.toLowerCase().includes(s) &&
+                    !q.skill_id?.toLowerCase().includes(s) &&
+                    !q.question_id?.toLowerCase().includes(s)) return false;
                 }
                 if (addQuestionSkillFilter && q.skill_id !== addQuestionSkillFilter) return false;
                 if (addQuestionDiffFilter && q.difficulty !== addQuestionDiffFilter) return false;
@@ -3398,7 +3821,7 @@ function DashboardApp({ user, logout }) {
                       <thead>
                         <tr>
                           <th style={{ width: '40px', textAlign: 'center' }}>
-                            <input 
+                            <input
                               type="checkbox"
                               checked={filtered.length > 0 && filtered.every(q => currentIds.has(q.id))}
                               onChange={e => {
@@ -3423,9 +3846,9 @@ function DashboardApp({ user, logout }) {
                         {filtered.map(q => {
                           const isInTest = currentIds.has(q.id);
                           return (
-                            <tr 
+                            <tr
                               key={q.id}
-                              style={{ 
+                              style={{
                                 background: isInTest ? 'rgba(79, 69, 229, 0.04)' : 'transparent',
                                 cursor: 'pointer'
                               }}
@@ -3440,7 +3863,7 @@ function DashboardApp({ user, logout }) {
                               }}
                             >
                               <td style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
-                                <input 
+                                <input
                                   type="checkbox"
                                   checked={isInTest}
                                   onChange={() => {
@@ -3499,7 +3922,7 @@ function DashboardApp({ user, logout }) {
 
             {/* Footer */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
-              <button 
+              <button
                 className="btn btn-outline"
                 onClick={() => setShowAddQuestionModal(false)}
               >
