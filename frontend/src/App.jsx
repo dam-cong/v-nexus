@@ -37,10 +37,13 @@ import StudentSurvey from './StudentSurvey';
 import StudentHistory from './StudentHistory';
 import StudentRoadmap from './StudentRoadmap';
 import BeautifulRoadmap from './BeautifulRoadmap';
+import useOnlineStatus from './offline/useOnlineStatus';
+import { saveQuestions, savePlacementTests, saveTestQuestions, clearOfflineData, getQuestions as getOfflineQuestions, getPlacementTests as getOfflineTests } from './offline/db.js';
+import { Download, WifiOff, Wifi } from 'lucide-react';
 import './App.css';
 
 // Base API URL
-const API_BASE = "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 function App() {
   const { user, logout, isAuthenticated } = useAuth();
@@ -86,8 +89,15 @@ function DashboardApp({ user, logout }) {
   const [openGroup, setOpenGroup] = useState(null);
 
   // Student survey state
-  const [studentActiveTab, setStudentActiveTab] = useState('survey');
+  const [studentActiveTab, setStudentActiveTab] = useState('student-dashboard');
   const [studentTestResults, setStudentTestResults] = useState([]);
+
+  // Offline state
+  const isOnline = useOnlineStatus();
+  const [downloading, setDownloading] = useState(false);
+  const [offlineReady, setOfflineReady] = useState(() => {
+    try { return !!localStorage.getItem('vnexus_offline_ready'); } catch { return false; }
+  });
 
   // Search queries
   const [studentSearch, setStudentSearch] = useState('');
@@ -138,6 +148,65 @@ function DashboardApp({ user, logout }) {
     subject: '',
     password: ''
   });
+
+  // ── Offline download handler ──────────────────────────────────────────────
+  const handleDownloadApp = async () => {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      // 1. Wait for service worker if available (skip in dev mode)
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration().catch(() => null);
+        if (reg) {
+          await navigator.serviceWorker.ready;
+        } else {
+          // No SW registered yet — register manually
+          try { await navigator.serviceWorker.register('/sw.js'); } catch (_) { /* dev mode may fail */ }
+        }
+      }
+
+      // 2. Fetch questions + tests from API
+      const [qRes, ptRes] = await Promise.all([
+        apiFetch('/api/questions'),
+        apiFetch('/api/placement-tests'),
+      ]);
+      if (!qRes.ok || !ptRes.ok) throw new Error('Không thể tải dữ liệu');
+      const allQuestions = await qRes.json();
+      const tests = await ptRes.json();
+
+      // 3. Save to IndexedDB
+      await saveQuestions(allQuestions);
+      await savePlacementTests(tests);
+
+      // 4. Fetch questions for each test and save
+      for (const test of tests) {
+        try {
+          const tqRes = await apiFetch(`/api/placement-tests/${test.id}/questions`);
+          if (tqRes.ok) {
+            const tqData = await tqRes.json();
+            await saveTestQuestions(test.id, tqData);
+          }
+        } catch (e) { /* skip individual test errors */ }
+      }
+
+      // 5. Mark ready
+      localStorage.setItem('vnexus_offline_ready', new Date().toISOString());
+      setOfflineReady(true);
+      triggerNotification('Đã tải xong! Bây giờ em có thể dùng offline.');
+    } catch (e) {
+      console.error('Download failed:', e);
+      triggerNotification('Tải dữ liệu offline thất bại, thử lại sau.', 'error');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handleClearOffline = async () => {
+    await clearOfflineData();
+    localStorage.removeItem('vnexus_offline_ready');
+    setOfflineReady(false);
+    triggerNotification('Đã xóa dữ liệu offline.');
+  };
 
   // Fetch all data
   const fetchStudents = async () => {
@@ -245,6 +314,11 @@ function DashboardApp({ user, logout }) {
 
   const fetchQuestions = async () => {
     try {
+      if (!navigator.onLine) {
+        const data = await getOfflineQuestions();
+        setQuestions(data);
+        return;
+      }
       const res = await apiFetch('/api/questions');
       if (res.ok) {
         const data = await res.json();
@@ -257,6 +331,11 @@ function DashboardApp({ user, logout }) {
 
   const fetchPlacementTests = async () => {
     try {
+      if (!navigator.onLine) {
+        const data = await getOfflineTests();
+        setPlacementTests(data);
+        return;
+      }
       const res = await apiFetch('/api/placement-tests');
       if (res.ok) {
         const data = await res.json();
@@ -870,6 +949,37 @@ function DashboardApp({ user, logout }) {
             )}
             
             <div className="icon-buttons">
+              {isOnline ? (
+                <span className="online-badge" title="Đang kết nối mạng">
+                  <Wifi size={14} /> Online
+                </span>
+              ) : (
+                <span className="offline-badge" title="Đang offline — dữ liệu đã tải vẫn sử dụng được">
+                  <WifiOff size={14} /> Offline
+                </span>
+              )}
+              {user?.role === 'hoc_sinh' && (
+                offlineReady ? (
+                  <button
+                    className="icon-btn offline-ready"
+                    onClick={handleClearOffline}
+                    title="Đã sẵn sàng offline — bấm để xóa"
+                  >
+                    <Download size={18} />
+                  </button>
+                ) : (
+                  <button
+                    className="icon-btn"
+                    onClick={handleDownloadApp}
+                    disabled={downloading}
+                    title={downloading ? 'Đang tải...' : 'Tải app để dùng offline'}
+                  >
+                    {downloading
+                      ? <span className="download-spinner" />
+                      : <Download size={18} />}
+                  </button>
+                )
+              )}
               <button className="icon-btn"><Bell size={18} /></button>
               <button className="icon-btn"><Settings size={18} /></button>
             </div>

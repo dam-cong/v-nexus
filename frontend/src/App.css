@@ -178,6 +178,50 @@
   transform: scale(1.05);
 }
 
+.offline-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #fee2e2;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.online-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #dcfce7;
+  color: #16a34a;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.icon-btn.offline-ready {
+  color: #16a34a;
+  box-shadow: 0 0 0 2px #bbf7d0;
+}
+
+.download-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #e5e7eb;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .user-profile {
   display: flex;
   align-items: center;
