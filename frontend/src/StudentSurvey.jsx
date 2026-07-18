@@ -6,6 +6,8 @@ import {
   GraduationCap, BookOpen, Sparkles
 } from 'lucide-react';
 import { apiFetch } from './api';
+import { run_assessment, generate_offline_plan } from './offline/bkt';
+import { savePendingResult, getQuestions as getOfflineQuestions, getPlacementTests as getOfflineTests, getTestQuestions as getOfflineTestQuestions } from './offline/db.js';
 import './StudentSurvey.css';
 import BeautifulRoadmap from './BeautifulRoadmap';
 
@@ -70,34 +72,17 @@ const SKILL_LABELS = {
 function computeResult(answers, questions) {
   let score = 0;
   const answersArr = [];
-  const mastery = {};
-
-  questions.forEach(q => {
-    const skillId = q.skill_id;
-    if (!skillId) return;
-    if (!mastery[skillId]) {
-      mastery[skillId] = { probability: 0.5, correct: 0, total: 0, skill_name: q.skill_name || SKILL_LABELS[skillId] || skillId };
-    }
-    mastery[skillId].total += 1;
-  });
 
   questions.forEach(q => {
     const selected = answers[q.question_id] || null;
     const correct = selected === q.correct_option_id;
     if (correct) score += 1;
-
-    const skillId = q.skill_id;
-    if (mastery[skillId]) {
-      mastery[skillId].correct += 1;
-      mastery[skillId].probability = mastery[skillId].correct / mastery[skillId].total;
-    }
-
     const opt = q.options?.find(o => o.option_id === selected);
     answersArr.push({
       question_id: q.question_id,
-      selected: selected || '',
+      skill_id: q.skill_id,
       correct,
-      skill_id: skillId,
+      selected: selected || '',
       time_spent_sec: Math.floor(Math.random() * 15) + 5,
       error_tag: correct ? null : opt?.error_tag || null,
     });
@@ -110,21 +95,7 @@ function computeResult(answers, questions) {
   if (percentage >= 60) { resultLevel = 'elementary'; cefr = 'A2'; }
   else if (percentage >= 30) { resultLevel = 'beginner'; cefr = 'A1'; }
 
-  Object.keys(mastery).forEach(k => {
-    const m = mastery[k];
-    if (m.probability >= 0.7) m.status = 'mastered';
-    else if (m.probability >= 0.3) m.status = 'developing';
-    else m.status = 'weak';
-  });
-
-  const gaps = Object.entries(mastery)
-    .filter(([, m]) => m.probability < 0.3)
-    .map(([skillId, m]) => ({
-      skill_id: skillId,
-      skill_name: m.skill_name,
-      severity: m.probability < 0.15 ? 'high' : 'medium',
-      reason: `Chưa nắm vững ${m.skill_name}`,
-    }));
+  const { mastery, gaps } = run_assessment(answersArr);
 
   const recommendations = Object.entries(mastery)
     .filter(([, m]) => m.probability < 0.7)
@@ -150,6 +121,12 @@ function usePlacementTests() {
   useEffect(() => {
     const load = async () => {
       try {
+        if (!navigator.onLine) {
+          const data = await getOfflineTests();
+          const sorted = [...data].sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+          setTests(sorted);
+          return;
+        }
         const res = await apiFetch('/api/placement-tests');
         if (res.ok) {
           const data = await res.json();
@@ -181,6 +158,18 @@ function useTestQuestions(testId) {
       }
       setLoading(true);
       try {
+        if (!navigator.onLine) {
+          const data = await getOfflineTestQuestions(testId);
+          const normalized = data.map(q => ({
+            ...q,
+            prompt: typeof q.prompt === 'string'
+              ? q.prompt
+              : (q.prompt?.text || q.prompt?.audio_transcript || ''),
+          }));
+          setQuestions(normalized);
+          setLoading(false);
+          return;
+        }
         const res = await apiFetch(`/api/placement-tests/${testId}/questions`);
         if (res.ok) {
           const data = await res.json();
@@ -854,6 +843,15 @@ export default function StudentSurvey({ user, onTabChange }) {
     const res = computeResult(answers, questions);
     setResult(res);
     setScreen('results');
+
+    // If offline: save to IndexedDB + generate offline plan
+    if (!navigator.onLine) {
+      const offlinePlan = generate_offline_plan(res.mastery, res.gaps, '');
+      const enriched = { ...res, training_plan: JSON.stringify(offlinePlan) };
+      setResult(enriched);
+      try { await savePendingResult(enriched); } catch (e) { console.error('IndexedDB save failed:', e); }
+      return;
+    }
 
     try {
       const submitRes = await apiFetch(`/api/placement-tests/${selectedTest.id}/submit`, {
