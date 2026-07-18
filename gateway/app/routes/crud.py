@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db.connector import get_session
 from db.models import (
     Role, User, Student, Teacher, Ranking,
-    Question, PlacementTest, PlacementTestQuestion, StudentTestResult,
+    Question, PlacementTest, PlacementTestQuestion, StudentTestResult, Parent, TeacherEvaluation
 )
 from domain.bkt import run_assessment
 from app.auth import get_current_user, require_role
@@ -128,9 +128,11 @@ class ParentBase(BaseModel):
 
 class ParentCreate(ParentBase):
     password: Optional[str] = None
+    student_ids: Optional[list[int]] = []
 
 class ParentResponse(ParentBase):
     id: int
+    students: Optional[list[dict]] = []
     created_at: datetime
     class Config:
         from_attributes = True
@@ -141,6 +143,7 @@ class TeacherEvaluationResponse(BaseModel):
     id: int
     student_id: int
     teacher_id: int
+    teacher_name: Optional[str] = None
     comment: str
     created_at: datetime
     class Config:
@@ -280,19 +283,7 @@ async def create_role(
 # API ENDPOINTS: STUDENTS
 # =====================================================================
 
-@router.get("/students", response_model=List[StudentResponse])
-async def get_students(
-    db: AsyncSession = Depends(get_session),
-    user: dict = Depends(get_current_user),
-):
-    # Students can only see themselves
-    if user["role"] == "hoc_sinh":
-        result = await db.execute(select(User).where(User.id == user["id"]))
-        users = list(result.scalars().all())
-    else:
-        result = await db.execute(select(User).where(User.role_id == 1))
-        users = list(result.scalars().all())
-
+async def _format_students(db: AsyncSession, users: list[User]) -> list[dict]:
     student_list = []
     for u in users:
         rank_res = await db.execute(select(Ranking).where(Ranking.user_id == u.id))
@@ -328,8 +319,23 @@ async def get_students(
             "created_at": u.created_at,
             "ranking": ranking_obj,
             "test_results": test_results_obj,
+            "training_plan": profile.training_plan if profile else None,
         })
     return student_list
+
+@router.get("/students", response_model=List[StudentResponse])
+async def get_students(
+    db: AsyncSession = Depends(get_session),
+    user: dict = Depends(get_current_user),
+):
+    if user["role"] == "hoc_sinh":
+        result = await db.execute(select(User).where(User.id == user["id"]))
+        users = list(result.scalars().all())
+    else:
+        result = await db.execute(select(User).where(User.role_id == 1))
+        users = list(result.scalars().all())
+
+    return await _format_students(db, users)
 
 @router.get("/students/{student_id}", response_model=StudentResponse)
 async def get_student(
@@ -604,15 +610,185 @@ async def get_parents(
     for u in users:
         p_res = await db.execute(select(Parent).where(Parent.user_id == u.id))
         profile = p_res.scalar_one_or_none()
+        
+        linked_students = []
+        if profile:
+            students_res = await db.execute(select(User).join(Student, User.id == Student.user_id).where(Student.parent_id == profile.id))
+            linked_students = [{"id": s.id, "name": s.name} for s in students_res.scalars().all()]
+
         parent_list.append({
             "id": u.id,
             "name": u.name,
             "email": u.email,
             "phone_number": profile.phone_number if profile else None,
             "role_id": u.role_id,
+            "students": linked_students,
             "created_at": u.created_at,
         })
     return parent_list
+
+
+@router.get("/parents/{parent_id}", response_model=ParentResponse)
+async def get_parent(
+    parent_id: int,
+    db: AsyncSession = Depends(get_session),
+    _user: dict = Depends(get_current_user),
+):
+    result = await db.execute(select(User).where(User.id == parent_id, User.role_id == 4))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="Parent not found")
+    p_res = await db.execute(select(Parent).where(Parent.user_id == user.id))
+    profile = p_res.scalar_one_or_none()
+    
+    linked_students = []
+    if profile:
+        students_res = await db.execute(select(User).join(Student, User.id == Student.user_id).where(Student.parent_id == profile.id))
+        linked_students = [{"id": s.id, "name": s.name} for s in students_res.scalars().all()]
+
+    return {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "phone_number": profile.phone_number if profile else None,
+        "role_id": user.role_id,
+        "students": linked_students,
+        "created_at": user.created_at,
+    }
+
+@router.post("/parents", response_model=ParentResponse, status_code=status.HTTP_201_CREATED)
+async def create_parent(
+    parent: ParentCreate,
+    db: AsyncSession = Depends(get_session),
+    _admin: dict = Depends(require_role("admin")),
+):
+    from db.password import hash_password
+    db_user = User(
+        name=parent.name,
+        email=parent.email,
+        role_id=4,
+        hashed_password=hash_password(parent.password or "88888888"),
+    )
+    db.add(db_user)
+    await db.commit()
+    await db.refresh(db_user)
+
+    db_profile = Parent(user_id=db_user.id, phone_number=parent.phone_number)
+    db.add(db_profile)
+    await db.commit()
+    await db.refresh(db_user)
+
+    linked_students = []
+    if parent.student_ids:
+        for s_id in parent.student_ids:
+            s_res = await db.execute(select(Student).where(Student.user_id == s_id))
+            student_profile = s_res.scalar_one_or_none()
+            if student_profile:
+                student_profile.parent_id = db_profile.id
+        await db.commit()
+        
+        students_res = await db.execute(select(User).join(Student, User.id == Student.user_id).where(Student.parent_id == db_profile.id))
+        linked_students = [{"id": s.id, "name": s.name} for s in students_res.scalars().all()]
+
+    return {
+        "id": db_user.id,
+        "name": db_user.name,
+        "email": db_user.email,
+        "phone_number": db_profile.phone_number,
+        "role_id": db_user.role_id,
+        "students": linked_students,
+        "created_at": db_user.created_at,
+    }
+
+@router.put("/parents/{parent_id}", response_model=ParentResponse)
+async def update_parent(
+    parent_id: int,
+    parent_data: ParentCreate,
+    db: AsyncSession = Depends(get_session),
+    _admin: dict = Depends(require_role("admin")),
+):
+    result = await db.execute(select(User).where(User.id == parent_id, User.role_id == 4))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="Parent not found")
+
+    user.name = parent_data.name
+    user.email = parent_data.email
+    if parent_data.password:
+        from db.password import hash_password
+        user.hashed_password = hash_password(parent_data.password)
+
+    p_res = await db.execute(select(Parent).where(Parent.user_id == user.id))
+    profile = p_res.scalar_one_or_none()
+    if profile:
+        profile.phone_number = parent_data.phone_number
+    else:
+        profile = Parent(user_id=user.id, phone_number=parent_data.phone_number)
+        db.add(profile)
+        await db.commit()
+
+    if parent_data.student_ids is not None and profile:
+        # Clear existing
+        await db.execute(
+            update(Student)
+            .where(Student.parent_id == profile.id)
+            .values(parent_id=None)
+        )
+        # Set new
+        if parent_data.student_ids:
+            for s_id in parent_data.student_ids:
+                s_res = await db.execute(select(Student).where(Student.user_id == s_id))
+                student_profile = s_res.scalar_one_or_none()
+                if student_profile:
+                    student_profile.parent_id = profile.id
+
+    await db.commit()
+    await db.refresh(user)
+    
+    linked_students = []
+    if profile:
+        students_res = await db.execute(select(User).join(Student, User.id == Student.user_id).where(Student.parent_id == profile.id))
+        linked_students = [{"id": s.id, "name": s.name} for s in students_res.scalars().all()]
+
+    return {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "phone_number": profile.phone_number if profile else None,
+        "role_id": user.role_id,
+        "students": linked_students,
+        "created_at": user.created_at,
+    }
+
+@router.delete("/parents/{parent_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_parent(
+    parent_id: int,
+    db: AsyncSession = Depends(get_session),
+    _admin: dict = Depends(require_role("admin")),
+):
+    result = await db.execute(select(User).where(User.id == parent_id, User.role_id == 4))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="Parent not found")
+    await db.delete(user)
+    await db.commit()
+    return None
+
+@router.post("/parents/{parent_id}/reset-password")
+async def reset_parent_password(
+    parent_id: int,
+    db: AsyncSession = Depends(get_session),
+    _admin: dict = Depends(require_role("admin")),
+):
+    result = await db.execute(select(User).where(User.id == parent_id, User.role_id == 4))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="Parent not found")
+    from db.password import hash_password
+    default_pw = "88888888"
+    user.hashed_password = hash_password(default_pw)
+    await db.commit()
+    return {"message": "Đã reset mật khẩu thành công", "new_password": default_pw}
 
 @router.get("/teachers/{teacher_id}", response_model=TeacherResponse)
 async def get_teacher(
@@ -1467,8 +1643,19 @@ async def get_teacher_students(
     if not teacher:
         raise HTTPException(status_code=404, detail="Teacher profile not found")
         
-    result = await db.execute(select(Student).where(Student.primary_teacher_id == teacher.id))
-    return list(result.scalars().all())
+    # Get students
+    students_res = await db.execute(select(Student).where(Student.primary_teacher_id == teacher.id))
+    students = list(students_res.scalars().all())
+    
+    # Get corresponding users
+    user_ids = [s.user_id for s in students]
+    if not user_ids:
+        return []
+        
+    users_res = await db.execute(select(User).where(User.id.in_(user_ids)))
+    users = list(users_res.scalars().all())
+    
+    return await _format_students(db, users)
 
 @router.get("/parents/{parent_user_id}/students", response_model=List[StudentResponse])
 async def get_parent_students(
@@ -1482,13 +1669,27 @@ async def get_parent_students(
     if not parent:
         raise HTTPException(status_code=404, detail="Parent profile not found")
         
-    result = await db.execute(select(Student).where(Student.parent_id == parent.id))
-    return list(result.scalars().all())
+    # Get students
+    students_res = await db.execute(select(Student).where(Student.parent_id == parent.id))
+    students = list(students_res.scalars().all())
+    
+    # Get corresponding users
+    user_ids = [s.user_id for s in students]
+    if not user_ids:
+        return []
+        
+    users_res = await db.execute(select(User).where(User.id.in_(user_ids)))
+    users = list(users_res.scalars().all())
+    
+    return await _format_students(db, users)
 
-@router.post("/students/{student_id}/evaluations", response_model=TeacherEvaluationResponse)
+class EvaluationCreate(BaseModel):
+    comment: str
+
+@router.post("/students/{user_id}/evaluations", response_model=TeacherEvaluationResponse)
 async def create_teacher_evaluation(
-    student_id: int,
-    comment: str,
+    user_id: int,
+    payload: EvaluationCreate,
     db: AsyncSession = Depends(get_session),
     user: dict = Depends(require_role("giao_vien")),
 ):
@@ -1497,21 +1698,56 @@ async def create_teacher_evaluation(
     if not teacher:
         raise HTTPException(status_code=404, detail="Teacher profile not found")
         
-    eval_entry = TeacherEvaluation(student_id=student_id, teacher_id=teacher.id, comment=comment)
+    s_res = await db.execute(select(Student).where(Student.user_id == user_id))
+    student = s_res.scalar_one_or_none()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+        
+    eval_entry = TeacherEvaluation(student_id=student.id, teacher_id=teacher.id, comment=payload.comment)
     db.add(eval_entry)
     await db.commit()
     await db.refresh(eval_entry)
-    return eval_entry
+    
+    t_user_res = await db.execute(select(User).where(User.id == user["id"]))
+    t_user = t_user_res.scalar_one()
+    
+    return {
+        "id": eval_entry.id,
+        "student_id": eval_entry.student_id,
+        "teacher_id": eval_entry.teacher_id,
+        "teacher_name": t_user.name,
+        "comment": eval_entry.comment,
+        "created_at": eval_entry.created_at
+    }
 
-@router.get("/students/{student_id}/evaluations", response_model=List[TeacherEvaluationResponse])
+@router.get("/students/{user_id}/evaluations", response_model=List[TeacherEvaluationResponse])
 async def get_student_evaluations(
-    student_id: int,
+    user_id: int,
     db: AsyncSession = Depends(get_session),
     user: dict = Depends(get_current_user),
 ):
+    s_res = await db.execute(select(Student).where(Student.user_id == user_id))
+    student = s_res.scalar_one_or_none()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+
     result = await db.execute(
-        select(TeacherEvaluation)
-        .where(TeacherEvaluation.student_id == student_id)
+        select(TeacherEvaluation, User.name)
+        .join(Teacher, TeacherEvaluation.teacher_id == Teacher.id)
+        .join(User, Teacher.user_id == User.id)
+        .where(TeacherEvaluation.student_id == student.id)
         .order_by(TeacherEvaluation.created_at.desc())
     )
-    return list(result.scalars().all())
+    
+    evals = []
+    for row in result.all():
+        eval_item, name = row
+        evals.append({
+            "id": eval_item.id,
+            "student_id": eval_item.student_id,
+            "teacher_id": eval_item.teacher_id,
+            "teacher_name": name,
+            "comment": eval_item.comment,
+            "created_at": eval_item.created_at
+        })
+    return evals

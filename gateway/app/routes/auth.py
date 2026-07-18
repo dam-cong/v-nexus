@@ -19,7 +19,7 @@ from db.password import hash_password, verify_password
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 
-ROLE_BY_ID = {1: "hoc_sinh", 2: "giao_vien", 3: "admin"}
+ROLE_BY_ID = {1: "hoc_sinh", 2: "giao_vien", 3: "admin", 4: "phu_huynh"}
 
 
 def _entity_type(role_name: str) -> str:
@@ -27,6 +27,8 @@ def _entity_type(role_name: str) -> str:
         return "student"
     if role_name == "giao_vien":
         return "teacher"
+    if role_name == "phu_huynh":
+        return "parent"
     return "admin"
 
 
