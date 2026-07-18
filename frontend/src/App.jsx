@@ -710,7 +710,7 @@ function DashboardApp({ user, logout }) {
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-logo">
-          <div className="sidebar-logo-icon">V</div>
+          <div className="sidebar-logo-icon"><img src="/logo-mark.png" alt="V-NEXUS SCHOOL" /></div>
           <span>V-NEXUS SCHOOL</span>
         </div>
         

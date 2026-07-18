@@ -2,7 +2,7 @@
 set -e
 
 echo "========================================="
-echo "  V-Nexus Tutor - Server Setup Script"
+echo "  V-NEXUS SCHOOL - Server Setup Script"
 echo "========================================="
 
 PROJECT_DIR="/opt/sourecode/v-nexus"

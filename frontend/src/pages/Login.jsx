@@ -1,11 +1,35 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  BarChart3,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  GraduationCap,
+  Lock,
+  Mail,
+  ShieldCheck,
+  Sparkles,
+  WifiOff,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { LogIn, Mail, Lock, AlertCircle, WifiOff } from 'lucide-react';
+import './Login.css';
+
+const demoAccounts = [
+  { label: 'Quản trị viên', email: 'admin@vnexus.vn', icon: ShieldCheck },
+  { label: 'Giáo viên', email: 'teacher1@vnexus.vn', icon: BarChart3 },
+  { label: 'Học sinh', email: 'hs01@vnexus.vn', icon: GraduationCap },
+];
 
 export default function Login() {
   const { login, loginOfflineDemo, loading } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
@@ -20,204 +44,103 @@ export default function Login() {
     };
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setError('');
     try {
       await login(email, password);
+      navigate('/app', { replace: true });
     } catch (err) {
       setError(err.message);
     }
   };
 
+  const fillDemoAccount = (accountEmail) => {
+    setEmail(accountEmail);
+    setPassword('123456');
+    setError('');
+  };
+
   const handleOfflineLogin = () => {
     loginOfflineDemo();
+    navigate('/app', { replace: true });
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #4d44b5 0%, #6c5ce7 50%, #a29bfe 100%)',
-      padding: '20px',
-    }}>
-      <div style={{
-        width: '100%',
-        maxWidth: '420px',
-        background: 'white',
-        borderRadius: '20px',
-        padding: '48px 40px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
-      }}>
-        {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: '14px',
-            background: '#fb7d5b',
-            color: 'white',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '24px',
-            fontWeight: '900',
-            marginBottom: '16px',
-            boxShadow: '0 4px 12px rgba(251,125,91,0.3)',
-          }}>
-            V
-          </div>
-          <h1 style={{ fontSize: '24px', fontWeight: '800', color: '#303972', margin: 0 }}>
-            V-NEXUS SCHOOL
-          </h1>
-          <p style={{ fontSize: '13px', color: '#6c5ce7', fontWeight: '600', marginTop: '4px' }}>
-            AI-powered Adaptive Learning Platform
-          </p>
-          <p style={{ fontSize: '14px', color: '#a0a3bd', marginTop: '8px' }}>
-            Đăng nhập vào hệ thống
-          </p>
-        </div>
-
-        {/* Error */}
-        {error && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: '#ffe8ec',
-            color: '#ff5b5b',
-            padding: '12px 16px',
-            borderRadius: '12px',
-            marginBottom: '20px',
-            fontSize: '13px',
-            fontWeight: '600',
-          }}>
-            <AlertCircle size={16} />
-            {error}
-          </div>
-        )}
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: '#303972' }}>
-              Email
-            </label>
-            <div style={{ position: 'relative' }}>
-              <Mail size={18} style={{ position: 'absolute', left: '14px', top: '12px', color: '#a0a3bd' }} />
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="email@vnexus.vn"
-                required
-                style={{
-                  width: '100%',
-                  padding: '12px 16px 12px 44px',
-                  border: '1px solid #c1bbeb',
-                  borderRadius: '12px',
-                  fontSize: '14px',
-                  outline: 'none',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: '#303972' }}>
-              Mật khẩu
-            </label>
-            <div style={{ position: 'relative' }}>
-              <Lock size={18} style={{ position: 'absolute', left: '14px', top: '12px', color: '#a0a3bd' }} />
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                style={{
-                  width: '100%',
-                  padding: '12px 16px 12px 44px',
-                  border: '1px solid #c1bbeb',
-                  borderRadius: '12px',
-                  fontSize: '14px',
-                  outline: 'none',
-                  fontFamily: 'inherit',
-                  boxSizing: 'border-box',
-                }}
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              padding: '14px',
-              background: '#4d44b5',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              fontSize: '15px',
-              fontWeight: '700',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.7 : 1,
-              fontFamily: 'inherit',
-              marginTop: '8px',
-            }}
-          >
-            <LogIn size={18} />
-            {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
-          </button>
-        </form>
-
-        {/* Offline mode button */}
-        {isOffline && (
-          <button
-            onClick={handleOfflineLogin}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              padding: '14px',
-              background: '#f8f7ff',
-              color: '#4d44b5',
-              border: '2px solid #c1bbeb',
-              borderRadius: '12px',
-              fontSize: '15px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              marginTop: '12px',
-              width: '100%',
-            }}
-          >
-            <WifiOff size={18} />
-            Dùng offline (học sinh)
-          </button>
-        )}
-
-        {/* Demo accounts */}
-        <div style={{ marginTop: '28px', padding: '16px', background: '#f8f7ff', borderRadius: '12px' }}>
-          <p style={{ fontSize: '12px', fontWeight: '700', color: '#a0a3bd', marginBottom: '10px', textTransform: 'uppercase' }}>
-            Tài khoản demo (mật khẩu: 123456)
-          </p>
-          <div style={{ fontSize: '12px', color: '#303972', lineHeight: '1.8' }}>
-            <div><b>Admin:</b> admin@vnexus.vn</div>
-            <div><b>Giáo viên:</b> teacher1@vnexus.vn</div>
-            <div><b>Học sinh:</b> hs01@vnexus.vn</div>
+    <div className="login-page">
+      <section className="login-story-panel">
+        <Link className="login-back-home" to="/"><ArrowLeft size={16} /> Trở về trang chủ</Link>
+        <div className="login-story-content">
+          <div className="login-story-brand"><span><img src="/logo-mark.png" alt="" /></span> V-NEXUS SCHOOL</div>
+          <span className="login-story-kicker">ADAPTIVE LEARNING PLATFORM</span>
+          <h1>Hiểu đúng năng lực.<br /><em>Học đúng điều cần thiết.</em></h1>
+          <p>Một không gian chung để giáo viên dẫn dắt bằng dữ liệu và học sinh tiến bộ theo cách của riêng mình.</p>
+          <div className="login-story-points">
+            <div><CheckCircle2 /><span><strong>Lộ trình cá nhân hóa</strong><small>Đi từ lỗ hổng thực sự của từng học sinh</small></span></div>
+            <div><CheckCircle2 /><span><strong>Tiến bộ nhìn thấy được</strong><small>Rõ ràng với học sinh, hữu ích với giáo viên</small></span></div>
           </div>
         </div>
-      </div>
+        <div className="login-story-visual" aria-hidden="true">
+          <div className="login-visual-card card-main"><span>Tiến độ học tập</span><strong>+24%</strong><div><i /><i /><i /><i /><i /></div></div>
+          <div className="login-visual-card card-float"><Sparkles /><span><b>Lộ trình mới</b><small>Đã sẵn sàng cho em</small></span></div>
+        </div>
+        <div className="login-story-glow" />
+      </section>
+
+      <main className="login-form-panel">
+        <div className="login-mobile-brand"><span><img src="/logo-mark.png" alt="" /></span> V-NEXUS SCHOOL</div>
+        <div className="login-form-wrap">
+          <div className="login-heading">
+            <span>CHÀO MỪNG TRỞ LẠI</span>
+            <h2>Đăng nhập vào V-NEXUS SCHOOL</h2>
+            <p>Tiếp tục hành trình học tập và quản lý của bạn.</p>
+          </div>
+
+          {error && <div className="login-error"><AlertCircle size={17} /><span>{error}</span></div>}
+
+          <form onSubmit={handleSubmit} className="login-form">
+            <label>
+              <span>Địa chỉ email</span>
+              <div className="login-input-wrap">
+                <Mail size={18} />
+                <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="tenban@vnexus.vn" autoComplete="email" required />
+              </div>
+            </label>
+            <label>
+              <span>Mật khẩu</span>
+              <div className="login-input-wrap">
+                <Lock size={18} />
+                <input type={showPassword ? 'text' : 'password'} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Nhập mật khẩu" autoComplete="current-password" required />
+                <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+              </div>
+            </label>
+            <div className="login-form-options"><label><input type="checkbox" /> <span>Ghi nhớ đăng nhập</span></label><button type="button">Quên mật khẩu?</button></div>
+            <button className="login-submit" type="submit" disabled={loading}>
+              {loading ? <><span className="login-spinner" /> Đang đăng nhập...</> : <>Đăng nhập <ArrowRight size={18} /></>}
+            </button>
+          </form>
+
+          <div className="login-demo-section">
+            <div className="login-divider"><span>Hoặc dùng tài khoản trải nghiệm</span></div>
+            <div className="login-demo-grid">
+              {demoAccounts.map(({ label, email: accountEmail, icon: Icon }) => (
+                <button key={accountEmail} type="button" onClick={() => fillDemoAccount(accountEmail)} className={email === accountEmail ? 'active' : ''}>
+                  <Icon size={17} /><span><b>{label}</b><small>{accountEmail}</small></span>
+                </button>
+              ))}
+            </div>
+            <p className="login-demo-note">Mật khẩu chung cho tài khoản trải nghiệm: <strong>123456</strong></p>
+          </div>
+
+          {isOffline && (
+            <button type="button" className="login-offline-btn" onClick={handleOfflineLogin}>
+              <WifiOff size={18} />
+              <span>Dùng offline (học sinh)</span>
+            </button>
+          )}
+        </div>
+        <p className="login-form-footer">Bằng việc đăng nhập, bạn đồng ý với điều khoản sử dụng của V-NEXUS SCHOOL.</p>
+      </main>
     </div>
   );
 }

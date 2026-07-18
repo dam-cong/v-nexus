@@ -870,7 +870,35 @@ export default function StudentSurvey({ user, onTabChange }) {
 
     setResult(res);
     setScreen('results');
-    setIsGeneratingPlan(true);
+
+    // If offline: save to IndexedDB + generate offline plan
+    if (!navigator.onLine) {
+      const offlinePlan = generate_offline_plan(res.mastery, res.gaps, '');
+      const enriched = { ...res, training_plan: JSON.stringify(offlinePlan) };
+      setResult(enriched);
+      try {
+        await savePendingResult({
+          kind: 'survey-submit',
+          endpoint: `/api/placement-tests/${selectedTest.id}/submit`,
+          method: 'POST',
+          body: JSON.stringify({
+            answers: res.answers,
+            score: res.score,
+            max_score: res.max_score,
+            percentage: res.percentage,
+            result_level: res.result_level,
+            cefr: res.cefr,
+            time_total_sec: res.time_total_sec,
+            mastery: res.mastery,
+            gaps: res.gaps,
+            recommendations: res.recommendations,
+            test_date: res.test_date,
+          }),
+          payload: enriched
+        });
+      } catch (e) { console.error('IndexedDB save failed:', e); }
+      return;
+    }
 
     try {
       const submitRes = await apiFetch(`/api/placement-tests/${selectedTest.id}/submit`, {

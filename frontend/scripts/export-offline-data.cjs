@@ -45,7 +45,24 @@ async function main() {
   fs.writeFileSync(path.join(dataDir, 'placement-tests.json'), JSON.stringify(tests));
   console.log(`  placement-tests.json: ${tests.length} items`);
 
-  // 3. Test questions per test
+  // 3. Students, Teachers, Rankings, Test Results
+  const students = await fetchJSON(`${GATEWAY}/api/students`);
+  fs.writeFileSync(path.join(dataDir, 'students.json'), JSON.stringify(students));
+  console.log(`  students.json: ${students.length} items`);
+
+  const teachers = await fetchJSON(`${GATEWAY}/api/teachers`);
+  fs.writeFileSync(path.join(dataDir, 'teachers.json'), JSON.stringify(teachers));
+  console.log(`  teachers.json: ${teachers.length} items`);
+
+  const rankings = await fetchJSON(`${GATEWAY}/api/rankings`);
+  fs.writeFileSync(path.join(dataDir, 'rankings.json'), JSON.stringify(rankings));
+  console.log(`  rankings.json: ${rankings.length} items`);
+
+  const testResults = await fetchJSON(`${GATEWAY}/api/test-results`);
+  fs.writeFileSync(path.join(dataDir, 'test-results.json'), JSON.stringify(testResults));
+  console.log(`  test-results.json: ${testResults.length} items`);
+
+  // 4. Test questions per test
   const tqDir = path.join(dataDir, 'test-questions');
   fs.mkdirSync(tqDir, { recursive: true });
   for (const test of tests) {
