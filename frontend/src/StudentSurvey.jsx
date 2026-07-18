@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { apiFetch } from './api';
 import { run_assessment, generate_offline_plan } from './offline/bkt';
-import { savePendingResult, getQuestions as getOfflineQuestions, getPlacementTests as getOfflineTests, getTestQuestions as getOfflineTestQuestions } from './offline/db.js';
+import { savePendingResult, getQuestions as getOfflineQuestions, getPlacementTests as getOfflineTests, getTestQuestions as getOfflineTestQuestions, seedFromStaticData } from './offline/db.js';
 import './StudentSurvey.css';
 import BeautifulRoadmap from './BeautifulRoadmap';
 
@@ -131,6 +131,7 @@ function usePlacementTests() {
     const load = async () => {
       try {
         if (!navigator.onLine) {
+          await seedFromStaticData();
           const data = await getOfflineTests();
           const sorted = [...data].sort((a, b) => (a.title || '').localeCompare(b.title || ''));
           setTests(sorted);
@@ -280,7 +281,7 @@ function ScreenLanding({ onStart }) {
           <span className="survey-mascot-icon">&#x1F41D;</span>
         </div>
         <div className="survey-hero-text">
-          <h2>Cùng V-Nexus Tutor khám phá trình độ Tiếng Anh của em!</h2>
+          <h2>Cùng V-NEXUS SCHOOL khám phá trình độ Tiếng Anh của em!</h2>
           <p>Bài khảo sát giúp tìm ra những kỹ năng em đã làm tốt và những nội dung nên luyện thêm.</p>
         </div>
       </div>

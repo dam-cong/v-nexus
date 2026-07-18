@@ -1,4 +1,4 @@
-# Đề xuất phương pháp tối ưu Prompt cho Lộ trình học tập cá nhân hoá theo Style học tập — V-Nexus Adaptive Tutoring
+# Đề xuất phương pháp tối ưu Prompt cho Lộ trình học tập cá nhân hoá theo Style học tập — V-NEXUS SCHOOL Adaptive Learning Platform
 
 > Mở rộng từ tầng LLM Output Layer đã có (diễn giải kết quả BKT thành lộ trình), bổ sung thêm một trục dữ liệu đầu vào mới: **phong cách học tập (learning style)** của từng học sinh, thu thập qua một bộ câu hỏi khảo sát ngắn, để lộ trình không chỉ đúng về nội dung (dựa trên mastery/gap) mà còn đúng về cách trình bày, phù hợp với từng học sinh.
 
