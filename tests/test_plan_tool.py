@@ -26,3 +26,36 @@ def test_generate_training_plan_from_survey():
     assert plan is not None
     assert len(plan) > 0
     assert "Học sinh" in plan or "Khảo sát" in plan or "lộ trình" in plan or "ôn" in plan
+
+
+def test_generate_alternative_plans():
+    from tools.plan_tool import generate_alternative_plans
+    
+    gaps = [
+        {"skill_id": "SKILL_MATH_08", "skill_name": "Phân tích đa thức thành nhân tử", "severity": "medium", "root_causes": [], "probability": 0.42},
+        {"skill_id": "SKILL_MATH_05", "skill_name": "Hằng đẳng thức đáng nhớ", "severity": "high", "root_causes": [], "probability": 0.35}
+    ]
+    mastery = {
+        "SKILL_MATH_08": {"skill_name": "Phân tích đa thức thành nhân tử", "probability": 0.42, "status": "weak"},
+        "SKILL_MATH_05": {"skill_name": "Hằng đẳng thức đáng nhớ", "probability": 0.35, "status": "weak"}
+    }
+    
+    plans = generate_alternative_plans(
+        gaps=gaps,
+        mastery=mastery,
+        student_name="Nguyễn Văn A",
+        level="A1",
+        old_plan="Ôn tập lý thuyết cũ"
+    )
+    
+    assert plans is not None
+    assert "alternative_paths" in plans
+    assert "path_1_back_to_roots" in plans["alternative_paths"]
+    assert "path_2_pacing_density" in plans["alternative_paths"]
+    assert "path_3_alternative_modality" in plans["alternative_paths"]
+    assert "teacher_summary_comparison" in plans
+    
+    p1 = plans["alternative_paths"]["path_1_back_to_roots"]
+    assert p1["target_prerequisite_skills"] is not None
+    assert len(p1["action_steps"]) > 0
+
