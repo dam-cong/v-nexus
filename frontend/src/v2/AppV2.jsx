@@ -37,7 +37,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { apiFetch, OfflineError } from '../api';
 import Login from '../pages/Login';
-import LandingPage from '../pages/LandingPage';
+import LandingPage from './pages/LandingPage';
 import StudentSurvey from '../StudentSurvey';
 import StudentHistory from '../StudentHistory';
 import StudentRoadmap from '../StudentRoadmap';
