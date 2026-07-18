@@ -154,7 +154,7 @@ function useQuestions() {
           let testQuestionIds = [];
           if (testQRes.ok) {
             const tests = await testQRes.json();
-            const test = tests.find(t => t.test_id === 'placement-test-en-2026');
+        const test = tests[0];
             if (test) {
               const tqRes = await apiFetch(`/api/placement-tests/${test.id}/questions`);
               if (tqRes.ok) {
@@ -166,7 +166,13 @@ function useQuestions() {
           const filtered = testQuestionIds.length > 0
             ? all.filter(q => testQuestionIds.includes(q.question_id))
             : all.slice(0, 14);
-          setQuestions(filtered);
+          const normalized = filtered.map(q => ({
+            ...q,
+            prompt: typeof q.prompt === 'string'
+              ? q.prompt
+              : (q.prompt?.text || q.prompt?.audio_transcript || ''),
+          }));
+          setQuestions(normalized);
         }
       } catch (e) {
         console.error('Error loading questions:', e);
@@ -478,7 +484,7 @@ function ScreenTestTaking({ questions, answers, setAnswers, currentIdx, setCurre
               <span className={`survey-tag survey-tag-diff ${diffClass}`}>{diffLabel}</span>
             </div>
             <div className="survey-question-text">
-              {q?.prompt?.text || q?.prompt || ''}
+              {q?.prompt || ''}
             </div>
             <div className="survey-options">
               {q?.options?.map(opt => {
@@ -694,7 +700,7 @@ function ScreenReview({ questions, answers, marked, onBack, onSubmit }) {
   );
 }
 
-function ScreenResults({ result, onRestart }) {
+function ScreenResults({ result, onRestart, onTabChange }) {
   if (!result) return null;
   const masteryArr = Object.entries(result.mastery || {}).map(([id, m]) => ({
     id, ...m,
@@ -824,7 +830,7 @@ export default function StudentSurvey({ user, onTabChange }) {
       const placementTestRes = await apiFetch('/api/placement-tests');
       if (placementTestRes.ok) {
         const tests = await placementTestRes.json();
-        const test = tests.find(t => t.test_id === 'placement-test-en-2026');
+        const test = tests[0];
         if (test) {
           const submitRes = await apiFetch(`/api/placement-tests/${test.id}/submit`, {
             method: 'POST',
@@ -913,7 +919,7 @@ export default function StudentSurvey({ user, onTabChange }) {
         />
       )}
       {screen === 'results' && (
-        <ScreenResults result={result} onRestart={handleRestart} />
+        <ScreenResults result={result} onRestart={handleRestart} onTabChange={onTabChange} />
       )}
     </div>
   );

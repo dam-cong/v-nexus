@@ -26,33 +26,44 @@ class Role(Base):
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     # Relationships
-    students: Mapped[list["Student"]] = relationship("Student", back_populates="role")
-    teachers: Mapped[list["Teacher"]] = relationship("Teacher", back_populates="role")
+    users: Mapped[list["User"]] = relationship("User", back_populates="role")
 
 
-class Teacher(Base):
-    __tablename__ = "teachers"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
-    email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
-    role_id: Mapped[int] = mapped_column(Integer, ForeignKey("roles.id"), default=2)
-    subject: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
-
-    # Relationships
-    role: Mapped["Role"] = relationship("Role", back_populates="teachers")
-
-
-class Student(Base):
-    __tablename__ = "students"
+class User(Base):
+    __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     role_id: Mapped[int] = mapped_column(Integer, ForeignKey("roles.id"), default=1)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    # Relationships
+    role: Mapped["Role"] = relationship("Role", back_populates="users")
+    student_profile: Mapped[Optional["Student"]] = relationship("Student", back_populates="user", cascade="all, delete-orphan")
+    teacher_profile: Mapped[Optional["Teacher"]] = relationship("Teacher", back_populates="user", cascade="all, delete-orphan")
+    ranking: Mapped[Optional["Ranking"]] = relationship("Ranking", back_populates="user", cascade="all, delete-orphan")
+    test_results: Mapped[list["StudentTestResult"]] = relationship("StudentTestResult", back_populates="user", cascade="all, delete-orphan")
+
+
+class Teacher(Base):
+    __tablename__ = "teachers"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
+    subject: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", back_populates="teacher_profile")
+
+
+class Student(Base):
+    __tablename__ = "students"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
     grade: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     years_studying_english: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     learning_environment: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
@@ -62,22 +73,20 @@ class Student(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     # Relationships
-    role: Mapped["Role"] = relationship("Role", back_populates="students")
-    ranking: Mapped[Optional["Ranking"]] = relationship("Ranking", back_populates="student", cascade="all, delete-orphan")
-    test_results: Mapped[list["StudentTestResult"]] = relationship("StudentTestResult", back_populates="student", cascade="all, delete-orphan")
+    user: Mapped["User"] = relationship("User", back_populates="student_profile")
 
 
 class Ranking(Base):
     __tablename__ = "rankings"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    student_id: Mapped[int] = mapped_column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     score: Mapped[int] = mapped_column(Integer, default=0)
     level: Mapped[str] = mapped_column(String(50), default="Beginner")
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
     # Relationships
-    student: Mapped["Student"] = relationship("Student", back_populates="ranking")
+    user: Mapped["User"] = relationship("User", back_populates="ranking")
 
 
 class Question(Base):
@@ -136,7 +145,7 @@ class StudentTestResult(Base):
     __tablename__ = "student_test_results"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    student_id: Mapped[int] = mapped_column(Integer, ForeignKey("students.id", ondelete="CASCADE"), nullable=False)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     test_id: Mapped[int] = mapped_column(Integer, ForeignKey("placement_tests.id"), nullable=False)
     answers: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     score: Mapped[int] = mapped_column(Integer, default=0)
@@ -155,5 +164,5 @@ class StudentTestResult(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     # Relationships
-    student: Mapped["Student"] = relationship("Student", back_populates="test_results")
+    user: Mapped["User"] = relationship("User", back_populates="test_results")
     test: Mapped["PlacementTest"] = relationship("PlacementTest", back_populates="test_results")

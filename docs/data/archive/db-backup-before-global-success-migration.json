@@ -1,0 +1,5048 @@
+{
+  "questions": [
+    {
+      "id": 2,
+      "question_id": "qb_002",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u1.l3",
+      "skill_name": "Present Simple vs Present Continuous",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Look! The children ___ in the garden.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "play",
+          "icon": null,
+          "error_tag": "uses_simple_instead_of_continuous"
+        },
+        {
+          "option_id": "b",
+          "label": "are playing",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "c",
+          "label": "plays",
+          "icon": null,
+          "error_tag": "wrong_subject_verb_agreement"
+        }
+      ],
+      "correct_option_id": "b",
+      "explanation": "'Look!' bao hieu hanh dong dang dien ra -> dung Present Continuous (are playing)."
+    },
+    {
+      "id": 3,
+      "question_id": "qb_003",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u1.l3",
+      "skill_name": "Present Simple vs Present Continuous",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "She usually ___ breakfast at 7, but now she ___ toast.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "eats ... is eating",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "eat ... eating",
+          "icon": null,
+          "error_tag": "missing_third_person_s"
+        },
+        {
+          "option_id": "c",
+          "label": "is eating ... eats",
+          "icon": null,
+          "error_tag": "swaps_simple_and_continuous"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Usually' -> Present Simple (eats); 'now' -> Present Continuous (is eating)."
+    },
+    {
+      "id": 4,
+      "question_id": "qb_004",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u2.l3",
+      "skill_name": "Adverbs of Frequency",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "I ___ brush my teeth before bed.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "always",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "never",
+          "icon": null,
+          "error_tag": "opposite_meaning"
+        },
+        {
+          "option_id": "c",
+          "label": "yesterday",
+          "icon": null,
+          "error_tag": "uses_time_word_not_frequency"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Danh rang truoc khi di ngu la thoi quen tot -> 'always' (luon luon) phu hop nhat."
+    },
+    {
+      "id": 5,
+      "question_id": "qb_005",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u2.l3",
+      "skill_name": "Adverbs of Frequency",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "My sister ___ watches TV because she prefers reading.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "always",
+          "icon": null,
+          "error_tag": "opposite_meaning"
+        },
+        {
+          "option_id": "b",
+          "label": "sometimes",
+          "icon": null,
+          "error_tag": "weak_frequency"
+        },
+        {
+          "option_id": "c",
+          "label": "hardly ever",
+          "icon": null,
+          "error_tag": null
+        }
+      ],
+      "correct_option_id": "c",
+      "explanation": "Chi ay thich doc sach hon xem TV -> tan suat thap nhat: 'hardly ever' (gan nhu khong bao gio)."
+    },
+    {
+      "id": 6,
+      "question_id": "qb_006",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u2.l3",
+      "skill_name": "Adverbs of Frequency",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "How ___ do you play football? - Three times a week.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "much",
+          "icon": null,
+          "error_tag": "uses_quantity_not_frequency"
+        },
+        {
+          "option_id": "b",
+          "label": "often",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "c",
+          "label": "long",
+          "icon": null,
+          "error_tag": "uses_duration_not_frequency"
+        }
+      ],
+      "correct_option_id": "b",
+      "explanation": "Tra loi 'three times a week' -> hoi ve tan suat -> 'How often'."
+    },
+    {
+      "id": 7,
+      "question_id": "qb_007",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u3.l3",
+      "skill_name": "To Be (Present and Past)",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "They ___ happy yesterday.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "are",
+          "icon": null,
+          "error_tag": "uses_present_instead_of_past"
+        },
+        {
+          "option_id": "b",
+          "label": "was",
+          "icon": null,
+          "error_tag": "wrong_singular_plural"
+        },
+        {
+          "option_id": "c",
+          "label": "were",
+          "icon": null,
+          "error_tag": null
+        }
+      ],
+      "correct_option_id": "c",
+      "explanation": "'Yesterday' -> qua khu. 'They' (so nhieu) dung 'were'."
+    },
+    {
+      "id": 8,
+      "question_id": "qb_008",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u3.l3",
+      "skill_name": "To Be (Present and Past)",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "___ there a library near your house? - Yes, there ___.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "Are ... are",
+          "icon": null,
+          "error_tag": "plural_for_singular"
+        },
+        {
+          "option_id": "b",
+          "label": "Was ... was",
+          "icon": null,
+          "error_tag": "uses_past_for_present"
+        },
+        {
+          "option_id": "c",
+          "label": "Is ... is",
+          "icon": null,
+          "error_tag": null
+        }
+      ],
+      "correct_option_id": "c",
+      "explanation": "Cau hoi hien tai ve su ton tai: 'Is there...?' -> tra loi 'Yes, there is.'"
+    },
+    {
+      "id": 9,
+      "question_id": "qb_009",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u3.l3",
+      "skill_name": "To Be (Present and Past)",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "The students ___ in the classroom now, but they ___ at the playground yesterday.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "are ... are",
+          "icon": null,
+          "error_tag": "uses_present_twice"
+        },
+        {
+          "option_id": "b",
+          "label": "are ... were",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "c",
+          "label": "were ... were",
+          "icon": null,
+          "error_tag": "uses_past_twice"
+        }
+      ],
+      "correct_option_id": "b",
+      "explanation": "'Now' -> hien tai (are); 'yesterday' -> qua khu (were). 'Students' la so nhieu."
+    },
+    {
+      "id": 10,
+      "question_id": "qb_010",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u4.l3",
+      "skill_name": "Some/Any with Countable/Uncountable Nouns",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "I have ___ apples in my bag.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "some",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "any",
+          "icon": null,
+          "error_tag": "uses_any_in_affirmative"
+        },
+        {
+          "option_id": "c",
+          "label": "a",
+          "icon": null,
+          "error_tag": "uses_article_with_plural"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Cau khang dinh, 'apples' la danh tu dem duoc so nhieu -> dung 'some'."
+    },
+    {
+      "id": 11,
+      "question_id": "qb_011",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u4.l3",
+      "skill_name": "Some/Any with Countable/Uncountable Nouns",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Would you like ___ water? - No, thank you.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "some",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "any",
+          "icon": null,
+          "error_tag": "uses_any_in_offer"
+        },
+        {
+          "option_id": "c",
+          "label": "a",
+          "icon": null,
+          "error_tag": "uses_article_with_uncountable"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Cau offer (moi): 'Would you like...?' dung 'some' vi khong phi cau phu dinh."
+    },
+    {
+      "id": 12,
+      "question_id": "qb_012",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u4.l3",
+      "skill_name": "Some/Any with Countable/Uncountable Nouns",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "There aren't ___ oranges on the table. Can you bring ___?",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "some ... any",
+          "icon": null,
+          "error_tag": "swaps_some_and_any"
+        },
+        {
+          "option_id": "b",
+          "label": "any ... some",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "c",
+          "label": "any ... any",
+          "icon": null,
+          "error_tag": "uses_any_in_request"
+        }
+      ],
+      "correct_option_id": "b",
+      "explanation": "Cau phu dinh 'aren't' -> 'any'; cau yeu cau/offer thu hai -> 'some'."
+    },
+    {
+      "id": 13,
+      "question_id": "qb_013",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u5.l3",
+      "skill_name": "Past Simple Regular Verbs",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "We ___ (watch) a movie last night.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "watched",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "watch",
+          "icon": null,
+          "error_tag": "no_past_tense_marker"
+        },
+        {
+          "option_id": "c",
+          "label": "watching",
+          "icon": null,
+          "error_tag": "uses_gerund"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Last night' -> qua khu. 'Watch' la dong tu quy tac -> them -ed -> 'watched'."
+    },
+    {
+      "id": 14,
+      "question_id": "qb_014",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u5.l3",
+      "skill_name": "Past Simple Regular Verbs",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "She ___ (play) piano at the concert yesterday.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "plays",
+          "icon": null,
+          "error_tag": "uses_present_for_past"
+        },
+        {
+          "option_id": "b",
+          "label": "played",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "c",
+          "label": "play",
+          "icon": null,
+          "error_tag": "no_tense_marker"
+        }
+      ],
+      "correct_option_id": "b",
+      "explanation": "'Yesterday' -> qua khu. 'Play' la dong tu quy tac -> 'played'."
+    },
+    {
+      "id": 15,
+      "question_id": "qb_015",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u5.l3",
+      "skill_name": "Past Simple Regular Verbs",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "They ___ (study) English and ___ (listen) to music last Sunday.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "studied ... listened",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "study ... listen",
+          "icon": null,
+          "error_tag": "no_past_tense"
+        },
+        {
+          "option_id": "c",
+          "label": "studied ... listen",
+          "icon": null,
+          "error_tag": "inconsistent_tense"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Ca hai dong tu deu o qua khu vi 'last Sunday'. 'Study' -> 'studied', 'listen' -> 'listened'."
+    },
+    {
+      "id": 16,
+      "question_id": "qb_016",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u6.l3",
+      "skill_name": "Comparatives",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "An elephant is ___ than a mouse.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "bigger",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "biggest",
+          "icon": null,
+          "error_tag": "uses_superlative_not_comparative"
+        },
+        {
+          "option_id": "c",
+          "label": "more big",
+          "icon": null,
+          "error_tag": "wrong_comparative_form"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "So sanh 2 doi tuong -> dang comparative. 'Big' ngan -> them -er -> 'bigger'."
+    },
+    {
+      "id": 17,
+      "question_id": "qb_017",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u6.l3",
+      "skill_name": "Comparatives",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "This book is ___ interesting than that one.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "more",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "most",
+          "icon": null,
+          "error_tag": "uses_superlative"
+        },
+        {
+          "option_id": "c",
+          "label": "very",
+          "icon": null,
+          "error_tag": "uses_degree_not_comparison"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Interesting' la tu dai (2 syllable+) -> dung 'more' truoc tu de tao comparative."
+    },
+    {
+      "id": 18,
+      "question_id": "qb_018",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u6.l3",
+      "skill_name": "Comparatives",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "My sister is ___ (tall) than me, but I am ___ (good) at sports.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "taller ... better",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "more tall ... more good",
+          "icon": null,
+          "error_tag": "wrong_comparative_forms"
+        },
+        {
+          "option_id": "c",
+          "label": "taller ... more good",
+          "icon": null,
+          "error_tag": "inconsistent_irregular"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Tall' -> 'taller'; 'good' la ngoai le -> 'better'. Cau ket hop 2 comparative."
+    },
+    {
+      "id": 19,
+      "question_id": "qb_019",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u7.l3",
+      "skill_name": "Past Simple Irregular Verbs",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Yesterday I ___ to the zoo.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "going",
+          "icon": null,
+          "error_tag": "confuses_gerund_with_past"
+        },
+        {
+          "option_id": "b",
+          "label": "go",
+          "icon": null,
+          "error_tag": "uses_present_for_past"
+        },
+        {
+          "option_id": "c",
+          "label": "went",
+          "icon": null,
+          "error_tag": null
+        }
+      ],
+      "correct_option_id": "c",
+      "explanation": "'Yesterday' -> qua khu. 'Go' la dong tu bat quy tac -> 'went'."
+    },
+    {
+      "id": 20,
+      "question_id": "qb_020",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u7.l3",
+      "skill_name": "Past Simple Irregular Verbs",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "She ___ (see) a beautiful bird in the garden this morning.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "seed",
+          "icon": null,
+          "error_tag": "creates_regular_form"
+        },
+        {
+          "option_id": "b",
+          "label": "saw",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "c",
+          "label": "see",
+          "icon": null,
+          "error_tag": "no_past_tense"
+        }
+      ],
+      "correct_option_id": "b",
+      "explanation": "'See' la dong tu bat quy tac -> qua khu la 'saw', khong phai 'seed'."
+    },
+    {
+      "id": 21,
+      "question_id": "qb_021",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u7.l3",
+      "skill_name": "Past Simple Irregular Verbs",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "We ___ (eat) pizza and ___ (drink) juice at the party last night.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "eat ... drink",
+          "icon": null,
+          "error_tag": "no_past_tense"
+        },
+        {
+          "option_id": "b",
+          "label": "eated ... drinked",
+          "icon": null,
+          "error_tag": "applies_regular_to_irregular"
+        },
+        {
+          "option_id": "c",
+          "label": "ate ... drank",
+          "icon": null,
+          "error_tag": null
+        }
+      ],
+      "correct_option_id": "c",
+      "explanation": "'Eat' -> 'ate', 'drink' -> 'drank'. Ca hai deu la dong tu bat quy tac."
+    },
+    {
+      "id": 22,
+      "question_id": "qb_022",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u8.l3",
+      "skill_name": "There Was / There Were",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "There ___ a cat under the table.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "was",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "were",
+          "icon": null,
+          "error_tag": "wrong_singular_plural"
+        },
+        {
+          "option_id": "c",
+          "label": "is",
+          "icon": null,
+          "error_tag": "uses_present_for_past"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'A cat' la so it -> dung 'was'."
+    },
+    {
+      "id": 23,
+      "question_id": "qb_023",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u8.l3",
+      "skill_name": "There Was / There Were",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "There ___ many students in the classroom yesterday.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "was",
+          "icon": null,
+          "error_tag": "wrong_singular_plural"
+        },
+        {
+          "option_id": "b",
+          "label": "were",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "c",
+          "label": "are",
+          "icon": null,
+          "error_tag": "uses_present_for_past"
+        }
+      ],
+      "correct_option_id": "b",
+      "explanation": "'Many students' la so nhieu -> dung 'were'. 'Yesterday' -> qua khu."
+    },
+    {
+      "id": 24,
+      "question_id": "qb_024",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u8.l3",
+      "skill_name": "There Was / There Were",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "___ there any cookies left? - No, there ___.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "Was ... wasn't",
+          "icon": null,
+          "error_tag": "singular_for_uncountable_quantity"
+        },
+        {
+          "option_id": "b",
+          "label": "Were ... weren't",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "c",
+          "label": "Were ... wasn't",
+          "icon": null,
+          "error_tag": "inconsistent_number"
+        }
+      ],
+      "correct_option_id": "b",
+      "explanation": "'Any cookies' la so nhieu -> 'Were there...?' va 'No, there weren't.'"
+    },
+    {
+      "id": 25,
+      "question_id": "qb_025",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u9.l3",
+      "skill_name": "Have to / Don't Have to",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "You ___ wear a uniform at school.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "have to",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "don't have to",
+          "icon": null,
+          "error_tag": "opposite_obligation"
+        },
+        {
+          "option_id": "c",
+          "label": "can",
+          "icon": null,
+          "error_tag": "uses_ability_not_obligation"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Mac dong phuc la bat buoc -> 'have to'."
+    },
+    {
+      "id": 26,
+      "question_id": "qb_026",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u9.l3",
+      "skill_name": "Have to / Don't Have to",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "It's a holiday tomorrow. You ___ get up early.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "have to",
+          "icon": null,
+          "error_tag": "wrong_obligation"
+        },
+        {
+          "option_id": "b",
+          "label": "don't have to",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "c",
+          "label": "mustn't",
+          "icon": null,
+          "error_tag": "confuses_no_obligation_with_prohibition"
+        }
+      ],
+      "correct_option_id": "b",
+      "explanation": "Ngay nghi -> khong bat buoc phai day som -> 'don't have to' (khong can thiet)."
+    },
+    {
+      "id": 27,
+      "question_id": "qb_027",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u9.l3",
+      "skill_name": "Have to / Don't Have to",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "She ___ (not have to) bring lunch because the school provides free meals.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "has to",
+          "icon": null,
+          "error_tag": "opposite_meaning"
+        },
+        {
+          "option_id": "b",
+          "label": "doesn't have to",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "c",
+          "label": "mustn't",
+          "icon": null,
+          "error_tag": "confuses_no_obligation_with_prohibition"
+        }
+      ],
+      "correct_option_id": "b",
+      "explanation": "Truong cung cap com mien phi -> khong can mang -> 'doesn't have to' (so 3 nguoi)."
+    },
+    {
+      "id": 28,
+      "question_id": "qb_028",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u10.l3",
+      "skill_name": "Going To (Future Plans)",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "We ___ visit our grandmother this weekend.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "are going to",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "goes to",
+          "icon": null,
+          "error_tag": "wrong_subject_and_tense"
+        },
+        {
+          "option_id": "c",
+          "label": "going to",
+          "icon": null,
+          "error_tag": "missing_auxiliary"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Ke hoach tuong lai -> dung 'be + going to'. 'We' -> 'are going to'."
+    },
+    {
+      "id": 29,
+      "question_id": "qb_029",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u10.l3",
+      "skill_name": "Going To (Future Plans)",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Look at those clouds. It ___ rain.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "is going to",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "will going to",
+          "icon": null,
+          "error_tag": "double_future_marker"
+        },
+        {
+          "option_id": "c",
+          "label": "goes to",
+          "icon": null,
+          "error_tag": "wrong_tense"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Du doan dua tren bang chung (may dam) -> 'is going to' (se)."
+    },
+    {
+      "id": 30,
+      "question_id": "qb_030",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u10.l3",
+      "skill_name": "Going To (Future Plans)",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "What ___ you ___ (do) tomorrow? - I ___ (play) football with my friends.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "are ... going to do ... am going to play",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "do ... going to do ... play",
+          "icon": null,
+          "error_tag": "wrong_question_and_answer_tense"
+        },
+        {
+          "option_id": "c",
+          "label": "are ... do ... am going to play",
+          "icon": null,
+          "error_tag": "incomplete_future_form"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Cau hoi: 'What are you going to do...?' Tra loi: 'I am going to play...'"
+    },
+    {
+      "id": 31,
+      "question_id": "qb_031",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u1.l3",
+      "skill_name": "Past Simple Question Forms",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "___ you go to school yesterday?",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "Do",
+          "icon": null,
+          "error_tag": "uses_present_for_past"
+        },
+        {
+          "option_id": "b",
+          "label": "Did",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "c",
+          "label": "Are",
+          "icon": null,
+          "error_tag": "wrong_tense_and_auxiliary"
+        }
+      ],
+      "correct_option_id": "b",
+      "explanation": "'Yesterday' -> qua khu. Cau hoi voi 'did' + dang goc cua dong tu."
+    },
+    {
+      "id": 32,
+      "question_id": "qb_032",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u1.l3",
+      "skill_name": "Past Simple Question Forms",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Where ___ she ___ (live) before she moved here?",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "did ... live",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "does ... live",
+          "icon": null,
+          "error_tag": "uses_present_for_past"
+        },
+        {
+          "option_id": "c",
+          "label": "did ... lived",
+          "icon": null,
+          "error_tag": "double_past_tense"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Cau hoi qua khu: 'Where did + S + dong tu goc?' Dong tu giu dang goc, khong them -ed."
+    },
+    {
+      "id": 33,
+      "question_id": "qb_033",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u1.l3",
+      "skill_name": "Past Simple Question Forms",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "___ your father ___ (buy) a new car? - No, he ___.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "Did ... buy ... didn't",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "Did ... bought ... didn't",
+          "icon": null,
+          "error_tag": "double_past_tense"
+        },
+        {
+          "option_id": "c",
+          "label": "Does ... buy ... doesn't",
+          "icon": null,
+          "error_tag": "uses_present_for_past"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Cau hoi: 'Did + S + dong tu goc?' Tra loi: 'No, he didn't.'"
+    },
+    {
+      "id": 34,
+      "question_id": "qb_034",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u2.l3",
+      "skill_name": "Verbs with To + Infinitive",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "I want ___ (go) to the park.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "to go",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "go",
+          "icon": null,
+          "error_tag": "missing_to_infinitive"
+        },
+        {
+          "option_id": "c",
+          "label": "going",
+          "icon": null,
+          "error_tag": "uses_gerund_after_want"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Want' luon dung truoc 'to + V' -> 'want to go'."
+    },
+    {
+      "id": 35,
+      "question_id": "qb_035",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u2.l3",
+      "skill_name": "Verbs with To + Infinitive",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "She needs ___ (finish) her homework before dinner.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "to finish",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "finishing",
+          "icon": null,
+          "error_tag": "uses_gerund_after_need"
+        },
+        {
+          "option_id": "c",
+          "label": "finish",
+          "icon": null,
+          "error_tag": "missing_to_infinitive"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Needs' + 'to + V' -> 'needs to finish'."
+    },
+    {
+      "id": 36,
+      "question_id": "qb_036",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u2.l3",
+      "skill_name": "Verbs with To + Infinitive",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "He decided ___ (not watch) TV and ___ (read) a book instead.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "not to watch ... to read",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "to not watch ... read",
+          "icon": null,
+          "error_tag": "inconsistent_infinitive_form"
+        },
+        {
+          "option_id": "c",
+          "label": "not watching ... reading",
+          "icon": null,
+          "error_tag": "uses_gerund"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Decided' + 'to + V'. Phu dinh: 'not to + V'. Ca hai vế deu dung to-infinitive."
+    },
+    {
+      "id": 37,
+      "question_id": "qb_037",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u3.l3",
+      "skill_name": "Must / Mustn't",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "You ___ eat too much candy. It's bad for your teeth.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "must",
+          "icon": null,
+          "error_tag": "opposite_prohibition"
+        },
+        {
+          "option_id": "b",
+          "label": "mustn't",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "c",
+          "label": "don't have to",
+          "icon": null,
+          "error_tag": "confuses_prohibition_with_no_obligation"
+        }
+      ],
+      "correct_option_id": "b",
+      "explanation": "Anh kha nhieu keo tot cho rang -> cam -> 'mustn't' (khong duoc)."
+    },
+    {
+      "id": 38,
+      "question_id": "qb_038",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u3.l3",
+      "skill_name": "Must / Mustn't",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "We ___ be quiet in the library.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "must",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "mustn't",
+          "icon": null,
+          "error_tag": "opposite_obligation"
+        },
+        {
+          "option_id": "c",
+          "label": "don't have to",
+          "icon": null,
+          "error_tag": "confuses_obligation_with_no_obligation"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Thu vien phai im lang -> bat buoc -> 'must'."
+    },
+    {
+      "id": 39,
+      "question_id": "qb_039",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as4.u3.l3",
+      "skill_name": "Must / Mustn't",
+      "difficulty": "hard",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "You ___ touch the wet paint, and you ___ wear shoes in the gym.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "mustn't ... must",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "must ... mustn't",
+          "icon": null,
+          "error_tag": "swaps_prohibition_and_obligation"
+        },
+        {
+          "option_id": "c",
+          "label": "mustn't ... mustn't",
+          "icon": null,
+          "error_tag": "double_prohibition"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Cam cham son (mustn't); bat buoc mang giay (must)."
+    },
+    {
+      "id": 40,
+      "question_id": "qb_040",
+      "type": "listen_choice",
+      "instruction_label": "NGHE & CHON",
+      "skill_id": "as3.u1.l1",
+      "skill_name": "School Vocabulary",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "What subject do you study with numbers?",
+        "audio_url": "audio/qb_040.mp3",
+        "audio_transcript": "What subject do you study with numbers?"
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "music",
+          "icon": null,
+          "error_tag": "wrong_school_subject"
+        },
+        {
+          "option_id": "b",
+          "label": "maths",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "c",
+          "label": "art",
+          "icon": null,
+          "error_tag": "wrong_school_subject"
+        }
+      ],
+      "correct_option_id": "b",
+      "explanation": "Mon hoc dung voi so la 'maths' (toan hoc)."
+    },
+    {
+      "id": 41,
+      "question_id": "qb_041",
+      "type": "listen_choice",
+      "instruction_label": "NGHE & CHON",
+      "skill_id": "as3.u3.l1",
+      "skill_name": "Places Around Town",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Where do you go to borrow books?",
+        "audio_url": "audio/qb_041.mp3",
+        "audio_transcript": "Where do you go to borrow books?"
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "hospital",
+          "icon": null,
+          "error_tag": "wrong_place"
+        },
+        {
+          "option_id": "b",
+          "label": "cinema",
+          "icon": null,
+          "error_tag": "wrong_place"
+        },
+        {
+          "option_id": "c",
+          "label": "library",
+          "icon": null,
+          "error_tag": null
+        }
+      ],
+      "correct_option_id": "c",
+      "explanation": "Noi muon sach la 'library' (thu vien)."
+    },
+    {
+      "id": 42,
+      "question_id": "qb_042",
+      "type": "listen_choice",
+      "instruction_label": "NGHE & CHON",
+      "skill_id": "as3.u4.l1",
+      "skill_name": "Food and Tableware",
+      "difficulty": "easy",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "Which one is a vegetable?",
+        "audio_url": "audio/qb_042.mp3",
+        "audio_transcript": "Which one is a vegetable?"
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "spinach",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "biscuit",
+          "icon": null,
+          "error_tag": "not_vegetable"
+        },
+        {
+          "option_id": "c",
+          "label": "cheese",
+          "icon": null,
+          "error_tag": "not_vegetable"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "'Spinach' (rau binh minh) la rau. 'Biscuit' la banh, 'cheese' la pho mai."
+    },
+    {
+      "id": 1,
+      "question_id": "qb_001",
+      "type": "read_choice",
+      "instruction_label": "DOC & CHON",
+      "skill_id": "as3.u1.l3",
+      "skill_name": "Present Simple vs Present Continuous",
+      "difficulty": "medium",
+      "purpose": "diagnostic",
+      "prompt": {
+        "text": "I ___ to school every day.",
+        "audio_url": null,
+        "audio_transcript": null
+      },
+      "options": [
+        {
+          "option_id": "a",
+          "label": "go",
+          "icon": null,
+          "error_tag": null
+        },
+        {
+          "option_id": "b",
+          "label": "goes",
+          "icon": null,
+          "error_tag": "wrong_subject_verb_agreement"
+        },
+        {
+          "option_id": "c",
+          "label": "going",
+          "icon": null,
+          "error_tag": "uses_gerund_instead_of_base_form"
+        }
+      ],
+      "correct_option_id": "a",
+      "explanation": "Moi ngay chi hanh dong lap lai -> dung Present Simple. Chu 'I' dong tu giu nguyen dang 'go'."
+    }
+  ],
+  "placement_tests": [
+    {
+      "id": 1,
+      "test_id": "placement-test-en-2026",
+      "title": "Bài kiểm tra trình độ Tiếng Anh",
+      "mascot": {
+        "name": "Medi Bee",
+        "icon": "bee"
+      },
+      "steps": [
+        {
+          "order": 1,
+          "key": "choose_level",
+          "label": "Chon cap do"
+        },
+        {
+          "order": 2,
+          "key": "take_test",
+          "label": "Lam bai"
+        },
+        {
+          "order": 3,
+          "key": "get_result",
+          "label": "Nhan ket qua"
+        }
+      ],
+      "levels": [
+        {
+          "level_id": "starter",
+          "label": "Moi bat dau",
+          "cefr_equivalent": "Pre-A1",
+          "description": "Hoc sinh moi tiep xuc Tieng Anh, biet so dem, chu cai, cau don gian."
+        },
+        {
+          "level_id": "beginner",
+          "label": "Co ban",
+          "cefr_equivalent": "A1",
+          "description": "Hoc sinh hieu cau don gian, tu vung hang ngay, nghe hieu y chinh."
+        },
+        {
+          "level_id": "elementary",
+          "label": "So cap",
+          "cefr_equivalent": "A2",
+          "description": "Hoc sinh su dung ngu phap co ban, giao tiep hang ngay, doc hieu doan ngan."
+        }
+      ],
+      "adaptive_config": {
+        "strategy": "level_sequential",
+        "description": "Hoc sinh chon cap do, lam tu cau 1 den cau 14. Co the tuyen tinh hoac chon theo entropy (CAT) cho phien ban sau.",
+        "questions_per_level": {
+          "starter": 5,
+          "beginner": 5,
+          "elementary": 4
+        }
+      },
+      "created_at": "2026-07-17T12:54:06.067227"
+    }
+  ],
+  "placement_test_questions": [
+    {
+      "id": 1,
+      "test_id": 1,
+      "question_id": 1,
+      "order_num": 1
+    },
+    {
+      "id": 2,
+      "test_id": 1,
+      "question_id": 4,
+      "order_num": 2
+    },
+    {
+      "id": 3,
+      "test_id": 1,
+      "question_id": 7,
+      "order_num": 3
+    },
+    {
+      "id": 4,
+      "test_id": 1,
+      "question_id": 40,
+      "order_num": 4
+    },
+    {
+      "id": 5,
+      "test_id": 1,
+      "question_id": 41,
+      "order_num": 5
+    },
+    {
+      "id": 6,
+      "test_id": 1,
+      "question_id": 10,
+      "order_num": 6
+    },
+    {
+      "id": 7,
+      "test_id": 1,
+      "question_id": 14,
+      "order_num": 7
+    },
+    {
+      "id": 8,
+      "test_id": 1,
+      "question_id": 16,
+      "order_num": 8
+    },
+    {
+      "id": 9,
+      "test_id": 1,
+      "question_id": 23,
+      "order_num": 9
+    },
+    {
+      "id": 10,
+      "test_id": 1,
+      "question_id": 42,
+      "order_num": 10
+    },
+    {
+      "id": 11,
+      "test_id": 1,
+      "question_id": 19,
+      "order_num": 11
+    },
+    {
+      "id": 12,
+      "test_id": 1,
+      "question_id": 32,
+      "order_num": 12
+    },
+    {
+      "id": 13,
+      "test_id": 1,
+      "question_id": 34,
+      "order_num": 13
+    },
+    {
+      "id": 14,
+      "test_id": 1,
+      "question_id": 38,
+      "order_num": 14
+    }
+  ],
+  "student_test_results": [
+    {
+      "id": 1,
+      "student_id": 1,
+      "test_id": 1,
+      "answers": [
+        {
+          "question_id": "q_001",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u1.l3",
+          "time_spent_sec": 8
+        },
+        {
+          "question_id": "q_002",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u2.l3",
+          "time_spent_sec": 5
+        },
+        {
+          "question_id": "q_003",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u3.l3",
+          "time_spent_sec": 7
+        },
+        {
+          "question_id": "q_004",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u1.l1",
+          "time_spent_sec": 4
+        },
+        {
+          "question_id": "q_005",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u3.l1",
+          "time_spent_sec": 6
+        },
+        {
+          "question_id": "q_006",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l3",
+          "time_spent_sec": 9
+        },
+        {
+          "question_id": "q_007",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u5.l3",
+          "time_spent_sec": 10
+        },
+        {
+          "question_id": "q_008",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u6.l3",
+          "time_spent_sec": 12
+        },
+        {
+          "question_id": "q_009",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u8.l3",
+          "time_spent_sec": 8
+        },
+        {
+          "question_id": "q_010",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l1",
+          "time_spent_sec": 5
+        },
+        {
+          "question_id": "q_011",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u7.l3",
+          "time_spent_sec": 11
+        },
+        {
+          "question_id": "q_012",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u1.l3",
+          "time_spent_sec": 14
+        },
+        {
+          "question_id": "q_013",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u2.l3",
+          "time_spent_sec": 13
+        },
+        {
+          "question_id": "q_014",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u3.l3",
+          "time_spent_sec": 15
+        }
+      ],
+      "score": 14,
+      "max_score": 14,
+      "percentage": 100,
+      "result_level": "elementary",
+      "cefr": "A2",
+      "time_total_sec": 127,
+      "mastery": {
+        "as3.u1.l3": {
+          "probability": 0.95,
+          "skill_name": "Present Simple vs Present Continuous",
+          "status": "mastered"
+        },
+        "as3.u2.l3": {
+          "probability": 0.92,
+          "skill_name": "Adverbs of Frequency",
+          "status": "mastered"
+        },
+        "as3.u3.l3": {
+          "probability": 0.93,
+          "skill_name": "To Be (Present and Past)",
+          "status": "mastered"
+        },
+        "as3.u4.l3": {
+          "probability": 0.9,
+          "skill_name": "Some/Any with Countable/Uncountable Nouns",
+          "status": "mastered"
+        },
+        "as3.u5.l3": {
+          "probability": 0.88,
+          "skill_name": "Past Simple Regular Verbs",
+          "status": "mastered"
+        },
+        "as3.u6.l3": {
+          "probability": 0.85,
+          "skill_name": "Comparatives",
+          "status": "mastered"
+        },
+        "as3.u7.l3": {
+          "probability": 0.82,
+          "skill_name": "Past Simple Irregular Verbs",
+          "status": "mastered"
+        },
+        "as3.u8.l3": {
+          "probability": 0.87,
+          "skill_name": "There Was / There Were",
+          "status": "mastered"
+        },
+        "as4.u1.l3": {
+          "probability": 0.78,
+          "skill_name": "Past Simple Question Forms",
+          "status": "developing"
+        },
+        "as4.u2.l3": {
+          "probability": 0.75,
+          "skill_name": "Verbs with To + Infinitive",
+          "status": "developing"
+        },
+        "as4.u3.l3": {
+          "probability": 0.72,
+          "skill_name": "Must / Mustn't",
+          "status": "developing"
+        }
+      },
+      "gaps": [],
+      "recommendations": [
+        {
+          "skill_id": "as4.u1.l3",
+          "action": "Luyen tap cau hoi qua khu",
+          "priority": "low"
+        },
+        {
+          "skill_id": "as4.u2.l3",
+          "action": "On tap to-infinitive",
+          "priority": "low"
+        },
+        {
+          "skill_id": "as4.u3.l3",
+          "action": "Phan biet must vs mustn't",
+          "priority": "low"
+        }
+      ],
+      "test_date": "2026-07-15T09:00:00",
+      "created_at": "2026-07-17T12:54:06.078609",
+      "training_plan": null,
+      "roadmap_completed": false,
+      "quick_check_passed": false
+    },
+    {
+      "id": 2,
+      "student_id": 2,
+      "test_id": 1,
+      "answers": [
+        {
+          "question_id": "q_001",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u1.l3",
+          "time_spent_sec": 10
+        },
+        {
+          "question_id": "q_002",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u2.l3",
+          "time_spent_sec": 7
+        },
+        {
+          "question_id": "q_003",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as3.u3.l3",
+          "time_spent_sec": 15,
+          "error_tag": "wrong_singular_plural"
+        },
+        {
+          "question_id": "q_004",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u1.l1",
+          "time_spent_sec": 6
+        },
+        {
+          "question_id": "q_005",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u3.l1",
+          "time_spent_sec": 8
+        },
+        {
+          "question_id": "q_006",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l3",
+          "time_spent_sec": 12
+        },
+        {
+          "question_id": "q_007",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u5.l3",
+          "time_spent_sec": 18,
+          "error_tag": "uses_present_for_past"
+        },
+        {
+          "question_id": "q_008",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as3.u6.l3",
+          "time_spent_sec": 20,
+          "error_tag": "uses_superlative"
+        },
+        {
+          "question_id": "q_009",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u8.l3",
+          "time_spent_sec": 10
+        },
+        {
+          "question_id": "q_010",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l1",
+          "time_spent_sec": 7
+        },
+        {
+          "question_id": "q_011",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as3.u7.l3",
+          "time_spent_sec": 22,
+          "error_tag": "uses_present_for_past"
+        },
+        {
+          "question_id": "q_012",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as4.u1.l3",
+          "time_spent_sec": 25,
+          "error_tag": "uses_present_for_past"
+        },
+        {
+          "question_id": "q_013",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as4.u2.l3",
+          "time_spent_sec": 19,
+          "error_tag": "uses_gerund_after_need"
+        },
+        {
+          "question_id": "q_014",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as4.u3.l3",
+          "time_spent_sec": 20,
+          "error_tag": "swaps_prohibition_and_obligation"
+        }
+      ],
+      "score": 7,
+      "max_score": 14,
+      "percentage": 50,
+      "result_level": "beginner",
+      "cefr": "A1",
+      "time_total_sec": 219,
+      "mastery": {
+        "as3.u1.l3": {
+          "probability": 0.85,
+          "skill_name": "Present Simple vs Present Continuous",
+          "status": "mastered"
+        },
+        "as3.u2.l3": {
+          "probability": 0.8,
+          "skill_name": "Adverbs of Frequency",
+          "status": "developing"
+        },
+        "as3.u3.l3": {
+          "probability": 0.45,
+          "skill_name": "To Be (Present and Past)",
+          "status": "weak"
+        },
+        "as3.u4.l3": {
+          "probability": 0.78,
+          "skill_name": "Some/Any with Countable/Uncountable Nouns",
+          "status": "developing"
+        },
+        "as3.u5.l3": {
+          "probability": 0.35,
+          "skill_name": "Past Simple Regular Verbs",
+          "status": "weak"
+        },
+        "as3.u6.l3": {
+          "probability": 0.3,
+          "skill_name": "Comparatives",
+          "status": "weak"
+        },
+        "as3.u7.l3": {
+          "probability": 0.25,
+          "skill_name": "Past Simple Irregular Verbs",
+          "status": "weak"
+        },
+        "as3.u8.l3": {
+          "probability": 0.75,
+          "skill_name": "There Was / There Were",
+          "status": "developing"
+        },
+        "as4.u1.l3": {
+          "probability": 0.2,
+          "skill_name": "Past Simple Question Forms",
+          "status": "weak"
+        },
+        "as4.u2.l3": {
+          "probability": 0.15,
+          "skill_name": "Verbs with To + Infinitive",
+          "status": "weak"
+        },
+        "as4.u3.l3": {
+          "probability": 0.15,
+          "skill_name": "Must / Mustn't",
+          "status": "weak"
+        }
+      },
+      "gaps": [
+        {
+          "skill_id": "as3.u7.l3",
+          "severity": "high",
+          "reason": "Sai cau hoi irregular verb co ban (go->went)"
+        },
+        {
+          "skill_id": "as3.u5.l3",
+          "severity": "high",
+          "reason": "Khong nhan dien duoc qua khu don vien"
+        },
+        {
+          "skill_id": "as3.u6.l3",
+          "severity": "high",
+          "reason": "Nham lan superlative voi comparative"
+        },
+        {
+          "skill_id": "as4.u1.l3",
+          "severity": "high",
+          "reason": "Chua lam duoc cau hoi qua khu voi 'did'"
+        },
+        {
+          "skill_id": "as3.u3.l3",
+          "severity": "medium",
+          "reason": "Sai so it/so nhieu voi was/were"
+        },
+        {
+          "skill_id": "as4.u2.l3",
+          "severity": "medium",
+          "reason": "Dung gerund thay vi to-infinitive"
+        },
+        {
+          "skill_id": "as4.u3.l3",
+          "severity": "medium",
+          "reason": "Nham lan must/mustn't"
+        }
+      ],
+      "recommendations": [
+        {
+          "skill_id": "as3.u7.l3",
+          "action": "Hoc bang dong tu bat quy tac (go-went, eat-ate, see-saw)",
+          "priority": "high"
+        },
+        {
+          "skill_id": "as3.u5.l3",
+          "action": "Luyen them -ed cho dong tu quy tac",
+          "priority": "high"
+        },
+        {
+          "skill_id": "as3.u6.l3",
+          "action": "On lai comparative (more + adj, adj-er)",
+          "priority": "high"
+        },
+        {
+          "skill_id": "as4.u1.l3",
+          "action": "Luyen cau hoi voi 'Did + S + V?'",
+          "priority": "high"
+        },
+        {
+          "skill_id": "as3.u3.l3",
+          "action": "Phan biet was/were theo so luong",
+          "priority": "medium"
+        },
+        {
+          "skill_id": "as4.u2.l3",
+          "action": "Ghi nho want/need + to + V",
+          "priority": "medium"
+        },
+        {
+          "skill_id": "as4.u3.l3",
+          "action": "Phan biet must (bat buoc) vs mustn't (cam)",
+          "priority": "medium"
+        }
+      ],
+      "test_date": "2026-07-15T09:15:00",
+      "created_at": "2026-07-17T12:54:06.078609",
+      "training_plan": null,
+      "roadmap_completed": false,
+      "quick_check_passed": false
+    },
+    {
+      "id": 3,
+      "student_id": 3,
+      "test_id": 1,
+      "answers": [
+        {
+          "question_id": "q_001",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u1.l3",
+          "time_spent_sec": 6
+        },
+        {
+          "question_id": "q_002",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u2.l3",
+          "time_spent_sec": 4
+        },
+        {
+          "question_id": "q_003",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u3.l3",
+          "time_spent_sec": 5
+        },
+        {
+          "question_id": "q_004",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u1.l1",
+          "time_spent_sec": 3
+        },
+        {
+          "question_id": "q_005",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u3.l1",
+          "time_spent_sec": 4
+        },
+        {
+          "question_id": "q_006",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l3",
+          "time_spent_sec": 7
+        },
+        {
+          "question_id": "q_007",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u5.l3",
+          "time_spent_sec": 6
+        },
+        {
+          "question_id": "q_008",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u6.l3",
+          "time_spent_sec": 8
+        },
+        {
+          "question_id": "q_009",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u8.l3",
+          "time_spent_sec": 5
+        },
+        {
+          "question_id": "q_010",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l1",
+          "time_spent_sec": 4
+        },
+        {
+          "question_id": "q_011",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u7.l3",
+          "time_spent_sec": 7
+        },
+        {
+          "question_id": "q_012",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u1.l3",
+          "time_spent_sec": 9
+        },
+        {
+          "question_id": "q_013",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u2.l3",
+          "time_spent_sec": 8
+        },
+        {
+          "question_id": "q_014",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as4.u3.l3",
+          "time_spent_sec": 18,
+          "error_tag": "swaps_prohibition_and_obligation"
+        }
+      ],
+      "score": 13,
+      "max_score": 14,
+      "percentage": 93,
+      "result_level": "elementary",
+      "cefr": "A2",
+      "time_total_sec": 94,
+      "mastery": {
+        "as3.u1.l3": {
+          "probability": 0.93,
+          "skill_name": "Present Simple vs Present Continuous",
+          "status": "mastered"
+        },
+        "as3.u2.l3": {
+          "probability": 0.95,
+          "skill_name": "Adverbs of Frequency",
+          "status": "mastered"
+        },
+        "as3.u3.l3": {
+          "probability": 0.94,
+          "skill_name": "To Be (Present and Past)",
+          "status": "mastered"
+        },
+        "as3.u4.l3": {
+          "probability": 0.91,
+          "skill_name": "Some/Any with Countable/Uncountable Nouns",
+          "status": "mastered"
+        },
+        "as3.u5.l3": {
+          "probability": 0.9,
+          "skill_name": "Past Simple Regular Verbs",
+          "status": "mastered"
+        },
+        "as3.u6.l3": {
+          "probability": 0.88,
+          "skill_name": "Comparatives",
+          "status": "mastered"
+        },
+        "as3.u7.l3": {
+          "probability": 0.92,
+          "skill_name": "Past Simple Irregular Verbs",
+          "status": "mastered"
+        },
+        "as3.u8.l3": {
+          "probability": 0.93,
+          "skill_name": "There Was / There Were",
+          "status": "mastered"
+        },
+        "as4.u1.l3": {
+          "probability": 0.85,
+          "skill_name": "Past Simple Question Forms",
+          "status": "developing"
+        },
+        "as4.u2.l3": {
+          "probability": 0.82,
+          "skill_name": "Verbs with To + Infinitive",
+          "status": "developing"
+        },
+        "as4.u3.l3": {
+          "probability": 0.4,
+          "skill_name": "Must / Mustn't",
+          "status": "weak"
+        }
+      },
+      "gaps": [
+        {
+          "skill_id": "as4.u3.l3",
+          "severity": "medium",
+          "reason": "Nham lan must/mustn't trong cau ket hop"
+        }
+      ],
+      "recommendations": [
+        {
+          "skill_id": "as4.u3.l3",
+          "action": "Luyen phan biet must vs mustn't voi vi du thuc te",
+          "priority": "medium"
+        }
+      ],
+      "test_date": "2026-07-15T09:30:00",
+      "created_at": "2026-07-17T12:54:06.078609",
+      "training_plan": null,
+      "roadmap_completed": false,
+      "quick_check_passed": false
+    },
+    {
+      "id": 4,
+      "student_id": 4,
+      "test_id": 1,
+      "answers": [
+        {
+          "question_id": "q_001",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u1.l3",
+          "time_spent_sec": 5
+        },
+        {
+          "question_id": "q_002",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as3.u2.l3",
+          "time_spent_sec": 12,
+          "error_tag": "opposite_meaning"
+        },
+        {
+          "question_id": "q_003",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u3.l3",
+          "time_spent_sec": 6
+        },
+        {
+          "question_id": "q_004",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u1.l1",
+          "time_spent_sec": 4
+        },
+        {
+          "question_id": "q_005",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u3.l1",
+          "time_spent_sec": 14,
+          "error_tag": "wrong_place"
+        },
+        {
+          "question_id": "q_006",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l3",
+          "time_spent_sec": 8
+        },
+        {
+          "question_id": "q_007",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u5.l3",
+          "time_spent_sec": 7
+        },
+        {
+          "question_id": "q_008",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as3.u6.l3",
+          "time_spent_sec": 16,
+          "error_tag": "uses_superlative"
+        },
+        {
+          "question_id": "q_009",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u8.l3",
+          "time_spent_sec": 13,
+          "error_tag": "wrong_singular_plural"
+        },
+        {
+          "question_id": "q_010",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as3.u4.l1",
+          "time_spent_sec": 15,
+          "error_tag": "not_vegetable"
+        },
+        {
+          "question_id": "q_011",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u7.l3",
+          "time_spent_sec": 9
+        },
+        {
+          "question_id": "q_012",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u1.l3",
+          "time_spent_sec": 10
+        },
+        {
+          "question_id": "q_013",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u2.l3",
+          "time_spent_sec": 8
+        },
+        {
+          "question_id": "q_014",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u3.l3",
+          "time_spent_sec": 11
+        }
+      ],
+      "score": 9,
+      "max_score": 14,
+      "percentage": 64,
+      "result_level": "beginner",
+      "cefr": "A1",
+      "time_total_sec": 148,
+      "mastery": {
+        "as3.u1.l3": {
+          "probability": 0.88,
+          "skill_name": "Present Simple vs Present Continuous",
+          "status": "mastered"
+        },
+        "as3.u2.l3": {
+          "probability": 0.4,
+          "skill_name": "Adverbs of Frequency",
+          "status": "weak"
+        },
+        "as3.u3.l3": {
+          "probability": 0.82,
+          "skill_name": "To Be (Present and Past)",
+          "status": "developing"
+        },
+        "as3.u4.l3": {
+          "probability": 0.78,
+          "skill_name": "Some/Any with Countable/Uncountable Nouns",
+          "status": "developing"
+        },
+        "as3.u5.l3": {
+          "probability": 0.85,
+          "skill_name": "Past Simple Regular Verbs",
+          "status": "developing"
+        },
+        "as3.u6.l3": {
+          "probability": 0.32,
+          "skill_name": "Comparatives",
+          "status": "weak"
+        },
+        "as3.u7.l3": {
+          "probability": 0.8,
+          "skill_name": "Past Simple Irregular Verbs",
+          "status": "developing"
+        },
+        "as3.u8.l3": {
+          "probability": 0.38,
+          "skill_name": "There Was / There Were",
+          "status": "weak"
+        },
+        "as4.u1.l3": {
+          "probability": 0.75,
+          "skill_name": "Past Simple Question Forms",
+          "status": "developing"
+        },
+        "as4.u2.l3": {
+          "probability": 0.72,
+          "skill_name": "Verbs with To + Infinitive",
+          "status": "developing"
+        },
+        "as4.u3.l3": {
+          "probability": 0.7,
+          "skill_name": "Must / Mustn't",
+          "status": "developing"
+        }
+      },
+      "gaps": [
+        {
+          "skill_id": "as3.u2.l3",
+          "severity": "high",
+          "reason": "Hieu sai ngu nghia adverbs of frequency"
+        },
+        {
+          "skill_id": "as3.u6.l3",
+          "severity": "high",
+          "reason": "Nham superlative voi comparative"
+        },
+        {
+          "skill_id": "as3.u8.l3",
+          "severity": "high",
+          "reason": "Sai was/were theo so luong"
+        },
+        {
+          "skill_id": "as3.u4.l1",
+          "severity": "medium",
+          "reason": "Nham loai thuc pham"
+        }
+      ],
+      "recommendations": [
+        {
+          "skill_id": "as3.u2.l3",
+          "action": "On lai bang tan suat: always-usually-sometimes-hardly ever-never",
+          "priority": "high"
+        },
+        {
+          "skill_id": "as3.u6.l3",
+          "action": "Luyen comparative vs superlative voi bang so sanh",
+          "priority": "high"
+        },
+        {
+          "skill_id": "as3.u8.l3",
+          "action": "Luyen there was/were voi cac vi du so it/so nhieu",
+          "priority": "high"
+        },
+        {
+          "skill_id": "as3.u4.l1",
+          "action": "On lai tu vung thuc pham va loai",
+          "priority": "medium"
+        }
+      ],
+      "test_date": "2026-07-15T09:45:00",
+      "created_at": "2026-07-17T12:54:06.078609",
+      "training_plan": null,
+      "roadmap_completed": false,
+      "quick_check_passed": false
+    },
+    {
+      "id": 5,
+      "student_id": 5,
+      "test_id": 1,
+      "answers": [
+        {
+          "question_id": "q_001",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as3.u1.l3",
+          "time_spent_sec": 20,
+          "error_tag": "wrong_subject_verb_agreement"
+        },
+        {
+          "question_id": "q_002",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as3.u2.l3",
+          "time_spent_sec": 22,
+          "error_tag": "opposite_meaning"
+        },
+        {
+          "question_id": "q_003",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u3.l3",
+          "time_spent_sec": 25,
+          "error_tag": "uses_present_instead_of_past"
+        },
+        {
+          "question_id": "q_004",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u1.l1",
+          "time_spent_sec": 8
+        },
+        {
+          "question_id": "q_005",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u3.l1",
+          "time_spent_sec": 18,
+          "error_tag": "wrong_place"
+        },
+        {
+          "question_id": "q_006",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as3.u4.l3",
+          "time_spent_sec": 20,
+          "error_tag": "uses_any_in_offer"
+        },
+        {
+          "question_id": "q_007",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u5.l3",
+          "time_spent_sec": 22,
+          "error_tag": "uses_present_for_past"
+        },
+        {
+          "question_id": "q_008",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as3.u6.l3",
+          "time_spent_sec": 25,
+          "error_tag": "wrong_comparative_form"
+        },
+        {
+          "question_id": "q_009",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u8.l3",
+          "time_spent_sec": 19,
+          "error_tag": "wrong_singular_plural"
+        },
+        {
+          "question_id": "q_010",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as3.u4.l1",
+          "time_spent_sec": 16,
+          "error_tag": "not_vegetable"
+        },
+        {
+          "question_id": "q_011",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u7.l3",
+          "time_spent_sec": 28,
+          "error_tag": "confuses_gerund_with_past"
+        },
+        {
+          "question_id": "q_012",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as4.u1.l3",
+          "time_spent_sec": 30,
+          "error_tag": "double_past_tense"
+        },
+        {
+          "question_id": "q_013",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as4.u2.l3",
+          "time_spent_sec": 24,
+          "error_tag": "missing_to_infinitive"
+        },
+        {
+          "question_id": "q_014",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as4.u3.l3",
+          "time_spent_sec": 20,
+          "error_tag": "double_prohibition"
+        }
+      ],
+      "score": 1,
+      "max_score": 14,
+      "percentage": 7,
+      "result_level": "starter",
+      "cefr": "Pre-A1",
+      "time_total_sec": 297,
+      "mastery": {
+        "as3.u1.l3": {
+          "probability": 0.1,
+          "skill_name": "Present Simple vs Present Continuous",
+          "status": "weak"
+        },
+        "as3.u2.l3": {
+          "probability": 0.08,
+          "skill_name": "Adverbs of Frequency",
+          "status": "weak"
+        },
+        "as3.u3.l3": {
+          "probability": 0.08,
+          "skill_name": "To Be (Present and Past)",
+          "status": "weak"
+        },
+        "as3.u4.l3": {
+          "probability": 0.1,
+          "skill_name": "Some/Any with Countable/Uncountable Nouns",
+          "status": "weak"
+        },
+        "as3.u5.l3": {
+          "probability": 0.05,
+          "skill_name": "Past Simple Regular Verbs",
+          "status": "weak"
+        },
+        "as3.u6.l3": {
+          "probability": 0.05,
+          "skill_name": "Comparatives",
+          "status": "weak"
+        },
+        "as3.u7.l3": {
+          "probability": 0.05,
+          "skill_name": "Past Simple Irregular Verbs",
+          "status": "weak"
+        },
+        "as3.u8.l3": {
+          "probability": 0.08,
+          "skill_name": "There Was / There Were",
+          "status": "weak"
+        },
+        "as4.u1.l3": {
+          "probability": 0.03,
+          "skill_name": "Past Simple Question Forms",
+          "status": "weak"
+        },
+        "as4.u2.l3": {
+          "probability": 0.03,
+          "skill_name": "Verbs with To + Infinitive",
+          "status": "weak"
+        },
+        "as4.u3.l3": {
+          "probability": 0.03,
+          "skill_name": "Must / Mustn't",
+          "status": "weak"
+        }
+      },
+      "gaps": [
+        {
+          "skill_id": "as3.u1.l3",
+          "severity": "high",
+          "reason": "Chua hieu cach su dung Present Simple vs Continuous"
+        },
+        {
+          "skill_id": "as3.u2.l3",
+          "severity": "high",
+          "reason": "Khong phan biet duoc tan suat"
+        },
+        {
+          "skill_id": "as3.u3.l3",
+          "severity": "high",
+          "reason": "Chua nam vung to be hien tai va qua khu"
+        },
+        {
+          "skill_id": "as3.u4.l3",
+          "severity": "high",
+          "reason": "Nham lan some/any"
+        },
+        {
+          "skill_id": "as3.u5.l3",
+          "severity": "high",
+          "reason": "Chua hieu qua khu don vien"
+        },
+        {
+          "skill_id": "as3.u6.l3",
+          "severity": "high",
+          "reason": "Chua lam duoc comparative"
+        },
+        {
+          "skill_id": "as3.u7.l3",
+          "severity": "high",
+          "reason": "Chua biet dong tu bat quy tac"
+        },
+        {
+          "skill_id": "as3.u8.l3",
+          "severity": "high",
+          "reason": "Chua hieu there was/were"
+        },
+        {
+          "skill_id": "as4.u1.l3",
+          "severity": "high",
+          "reason": "Chua lam duoc cau hoi qua khu"
+        },
+        {
+          "skill_id": "as4.u2.l3",
+          "severity": "high",
+          "reason": "Chua hieu to-infinitive"
+        },
+        {
+          "skill_id": "as4.u3.l3",
+          "severity": "high",
+          "reason": "Chua phan biet must/mustn't"
+        }
+      ],
+      "recommendations": [
+        {
+          "skill_id": "as3.u1.l3",
+          "action": "Bat dau tu Present Simple: I am / You are / He is",
+          "priority": "high"
+        },
+        {
+          "skill_id": "as3.u3.l3",
+          "action": "Hoc to be truoc: I am, you are, he/she is; I was, you were",
+          "priority": "high"
+        },
+        {
+          "skill_id": "as3.u2.l3",
+          "action": "Hoc 5 tan suat co ban voi vi du minh hoa",
+          "priority": "high"
+        },
+        {
+          "skill_id": "as3.u5.l3",
+          "action": "Bat dau tu dong tu quy tac don gian: play->played, watch->watched",
+          "priority": "high"
+        },
+        {
+          "skill_id": "as3.u7.l3",
+          "action": "Hoc bang dong tu bat quy tac co ban: go->went, eat->ate",
+          "priority": "high"
+        }
+      ],
+      "test_date": "2026-07-15T10:00:00",
+      "created_at": "2026-07-17T12:54:06.078609",
+      "training_plan": null,
+      "roadmap_completed": false,
+      "quick_check_passed": false
+    },
+    {
+      "id": 6,
+      "student_id": 1,
+      "test_id": 1,
+      "answers": [
+        {
+          "question_id": "qb_004",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u2.l3",
+          "time_spent_sec": 15,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_007",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u3.l3",
+          "time_spent_sec": 9,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_010",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as3.u4.l3",
+          "time_spent_sec": 9,
+          "error_tag": "uses_any_in_affirmative"
+        },
+        {
+          "question_id": "qb_014",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u5.l3",
+          "time_spent_sec": 9,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_016",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as3.u6.l3",
+          "time_spent_sec": 12,
+          "error_tag": "wrong_comparative_form"
+        },
+        {
+          "question_id": "qb_019",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u7.l3",
+          "time_spent_sec": 14,
+          "error_tag": "confuses_gerund_with_past"
+        },
+        {
+          "question_id": "qb_023",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as3.u8.l3",
+          "time_spent_sec": 7,
+          "error_tag": "uses_present_for_past"
+        },
+        {
+          "question_id": "qb_032",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as4.u1.l3",
+          "time_spent_sec": 5,
+          "error_tag": "uses_present_for_past"
+        },
+        {
+          "question_id": "qb_034",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u2.l3",
+          "time_spent_sec": 19,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_038",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as4.u3.l3",
+          "time_spent_sec": 15,
+          "error_tag": "opposite_obligation"
+        },
+        {
+          "question_id": "qb_040",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u1.l1",
+          "time_spent_sec": 14,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_041",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u3.l1",
+          "time_spent_sec": 10,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_042",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l1",
+          "time_spent_sec": 17,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_001",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u1.l3",
+          "time_spent_sec": 16,
+          "error_tag": null
+        }
+      ],
+      "score": 8,
+      "max_score": 14,
+      "percentage": 57,
+      "result_level": "beginner",
+      "cefr": "A1",
+      "time_total_sec": 171,
+      "mastery": {
+        "as3.u2.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Adverbs of Frequency",
+          "status": "mastered"
+        },
+        "as3.u3.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "To Be (Present and Past)",
+          "status": "mastered"
+        },
+        "as3.u4.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Some/Any with Countable/Uncountable Nouns",
+          "status": "mastered"
+        },
+        "as3.u5.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Regular Verbs",
+          "status": "mastered"
+        },
+        "as3.u6.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Comparatives",
+          "status": "mastered"
+        },
+        "as3.u7.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Irregular Verbs",
+          "status": "mastered"
+        },
+        "as3.u8.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "There Was / There Were",
+          "status": "mastered"
+        },
+        "as4.u1.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Question Forms",
+          "status": "mastered"
+        },
+        "as4.u2.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Verbs with To + Infinitive",
+          "status": "mastered"
+        },
+        "as4.u3.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Must / Mustn't",
+          "status": "mastered"
+        },
+        "as3.u1.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "School Vocabulary",
+          "status": "mastered"
+        },
+        "as3.u3.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Places Around Town",
+          "status": "mastered"
+        },
+        "as3.u4.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Food and Tableware",
+          "status": "mastered"
+        },
+        "as3.u1.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Present Simple vs Present Continuous",
+          "status": "mastered"
+        }
+      },
+      "gaps": [
+        {
+          "skill_id": "as4.u1.l3",
+          "skill_name": "Past Simple Question Forms",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u7.l3"
+          ],
+          "reason": "Chưa nắm vững Past Simple Question Forms. Gốc rễ: Past Simple Irregular Verbs."
+        },
+        {
+          "skill_id": "as3.u8.l3",
+          "skill_name": "There Was / There Were",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [],
+          "reason": "Chưa nắm vững There Was / There Were"
+        },
+        {
+          "skill_id": "as4.u3.l3",
+          "skill_name": "Must / Mustn't",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [],
+          "reason": "Chưa nắm vững Must / Mustn't"
+        },
+        {
+          "skill_id": "as3.u6.l3",
+          "skill_name": "Comparatives",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [],
+          "reason": "Chưa nắm vững Comparatives"
+        },
+        {
+          "skill_id": "as3.u7.l3",
+          "skill_name": "Past Simple Irregular Verbs",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [],
+          "reason": "Chưa nắm vững Past Simple Irregular Verbs"
+        },
+        {
+          "skill_id": "as3.u4.l3",
+          "skill_name": "Some/Any with Countable/Uncountable Nouns",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [],
+          "reason": "Chưa nắm vững Some/Any with Countable/Uncountable Nouns"
+        }
+      ],
+      "recommendations": [],
+      "test_date": "2026-07-18T00:03:12.805",
+      "created_at": "2026-07-18T00:03:12.823303",
+      "training_plan": "[Kế hoạch tạm thời - LLM chưa khả dụng: Missing credentials. Please pass an `api_key`, `workload_identity`, `admin_api_key`, or set the `OPENAI_API_KEY` or `OPENAI_ADMIN_KEY` environment variable.]\nDựa trên chẩn đoán BKT, em nên ưu tiên ôn lại các kỹ năng sau:\n- Past Simple Question Forms (medium)\n- There Was / There Were (medium)\n- Must / Mustn't (medium)\n- Comparatives (medium)\n- Past Simple Irregular Verbs (medium)\n- Some/Any with Countable/Uncountable Nouns (medium)",
+      "roadmap_completed": false,
+      "quick_check_passed": false
+    },
+    {
+      "id": 7,
+      "student_id": 1,
+      "test_id": 1,
+      "answers": [
+        {
+          "question_id": "qb_004",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u2.l3",
+          "time_spent_sec": 14,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_007",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u3.l3",
+          "time_spent_sec": 12,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_010",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l3",
+          "time_spent_sec": 11,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_014",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as3.u5.l3",
+          "time_spent_sec": 18,
+          "error_tag": "no_tense_marker"
+        },
+        {
+          "question_id": "qb_016",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as3.u6.l3",
+          "time_spent_sec": 7,
+          "error_tag": "wrong_comparative_form"
+        },
+        {
+          "question_id": "qb_019",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u7.l3",
+          "time_spent_sec": 8,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_023",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as3.u8.l3",
+          "time_spent_sec": 10,
+          "error_tag": "uses_present_for_past"
+        },
+        {
+          "question_id": "qb_032",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as4.u1.l3",
+          "time_spent_sec": 14,
+          "error_tag": "double_past_tense"
+        },
+        {
+          "question_id": "qb_034",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as4.u2.l3",
+          "time_spent_sec": 9,
+          "error_tag": "missing_to_infinitive"
+        },
+        {
+          "question_id": "qb_038",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u3.l3",
+          "time_spent_sec": 11,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_040",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u1.l1",
+          "time_spent_sec": 15,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_041",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u3.l1",
+          "time_spent_sec": 8,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_042",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l1",
+          "time_spent_sec": 13,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_001",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u1.l3",
+          "time_spent_sec": 8,
+          "error_tag": null
+        }
+      ],
+      "score": 9,
+      "max_score": 14,
+      "percentage": 64,
+      "result_level": "elementary",
+      "cefr": "A2",
+      "time_total_sec": 158,
+      "mastery": {
+        "as3.u2.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Adverbs of Frequency",
+          "status": "mastered"
+        },
+        "as3.u3.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "To Be (Present and Past)",
+          "status": "mastered"
+        },
+        "as3.u4.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Some/Any with Countable/Uncountable Nouns",
+          "status": "mastered"
+        },
+        "as3.u5.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Regular Verbs",
+          "status": "mastered"
+        },
+        "as3.u6.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Comparatives",
+          "status": "mastered"
+        },
+        "as3.u7.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Irregular Verbs",
+          "status": "mastered"
+        },
+        "as3.u8.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "There Was / There Were",
+          "status": "mastered"
+        },
+        "as4.u1.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Question Forms",
+          "status": "mastered"
+        },
+        "as4.u2.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Verbs with To + Infinitive",
+          "status": "mastered"
+        },
+        "as4.u3.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Must / Mustn't",
+          "status": "mastered"
+        },
+        "as3.u1.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "School Vocabulary",
+          "status": "mastered"
+        },
+        "as3.u3.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Places Around Town",
+          "status": "mastered"
+        },
+        "as3.u4.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Food and Tableware",
+          "status": "mastered"
+        },
+        "as3.u1.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Present Simple vs Present Continuous",
+          "status": "mastered"
+        }
+      },
+      "gaps": [
+        {
+          "skill_id": "as4.u2.l3",
+          "skill_name": "Verbs with To + Infinitive",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [],
+          "reason": "Chưa nắm vững Verbs with To + Infinitive"
+        },
+        {
+          "skill_id": "as4.u1.l3",
+          "skill_name": "Past Simple Question Forms",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u5.l3"
+          ],
+          "reason": "Chưa nắm vững Past Simple Question Forms. Gốc rễ: Past Simple Regular Verbs."
+        },
+        {
+          "skill_id": "as3.u8.l3",
+          "skill_name": "There Was / There Were",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u5.l3"
+          ],
+          "reason": "Chưa nắm vững There Was / There Were. Gốc rễ: Past Simple Regular Verbs."
+        },
+        {
+          "skill_id": "as3.u6.l3",
+          "skill_name": "Comparatives",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [],
+          "reason": "Chưa nắm vững Comparatives"
+        },
+        {
+          "skill_id": "as3.u5.l3",
+          "skill_name": "Past Simple Regular Verbs",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [],
+          "reason": "Chưa nắm vững Past Simple Regular Verbs"
+        }
+      ],
+      "recommendations": [],
+      "test_date": "2026-07-18T00:15:55.55",
+      "created_at": "2026-07-18T00:15:55.567338",
+      "training_plan": "[Kế hoạch tạm thời - LLM chưa khả dụng: Missing credentials. Please pass an `api_key`, `workload_identity`, `admin_api_key`, or set the `OPENAI_API_KEY` or `OPENAI_ADMIN_KEY` environment variable.]\nDựa trên chẩn đoán BKT, em nên ưu tiên ôn lại các kỹ năng sau:\n- Verbs with To + Infinitive (medium)\n- Past Simple Question Forms (medium)\n- There Was / There Were (medium)\n- Comparatives (medium)\n- Past Simple Regular Verbs (medium)",
+      "roadmap_completed": false,
+      "quick_check_passed": false
+    },
+    {
+      "id": 8,
+      "student_id": 1,
+      "test_id": 1,
+      "answers": [
+        {
+          "question_id": "qb_004",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u2.l3",
+          "time_spent_sec": 9,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_007",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u3.l3",
+          "time_spent_sec": 7,
+          "error_tag": "uses_present_instead_of_past"
+        },
+        {
+          "question_id": "qb_010",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l3",
+          "time_spent_sec": 5,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_014",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u5.l3",
+          "time_spent_sec": 12,
+          "error_tag": "uses_present_for_past"
+        },
+        {
+          "question_id": "qb_016",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u6.l3",
+          "time_spent_sec": 8,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_019",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u7.l3",
+          "time_spent_sec": 12,
+          "error_tag": "confuses_gerund_with_past"
+        },
+        {
+          "question_id": "qb_023",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u8.l3",
+          "time_spent_sec": 8,
+          "error_tag": "wrong_singular_plural"
+        },
+        {
+          "question_id": "qb_032",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u1.l3",
+          "time_spent_sec": 8,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_034",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u2.l3",
+          "time_spent_sec": 16,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_038",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u3.l3",
+          "time_spent_sec": 5,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_040",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u1.l1",
+          "time_spent_sec": 9,
+          "error_tag": "wrong_school_subject"
+        },
+        {
+          "question_id": "qb_041",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u3.l1",
+          "time_spent_sec": 12,
+          "error_tag": "wrong_place"
+        },
+        {
+          "question_id": "qb_042",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l1",
+          "time_spent_sec": 8,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_001",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u1.l3",
+          "time_spent_sec": 18,
+          "error_tag": null
+        }
+      ],
+      "score": 8,
+      "max_score": 14,
+      "percentage": 57,
+      "result_level": "beginner",
+      "cefr": "A1",
+      "time_total_sec": 137,
+      "mastery": {
+        "as3.u2.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Adverbs of Frequency",
+          "status": "mastered"
+        },
+        "as3.u3.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "To Be (Present and Past)",
+          "status": "mastered"
+        },
+        "as3.u4.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Some/Any with Countable/Uncountable Nouns",
+          "status": "mastered"
+        },
+        "as3.u5.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Regular Verbs",
+          "status": "mastered"
+        },
+        "as3.u6.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Comparatives",
+          "status": "mastered"
+        },
+        "as3.u7.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Irregular Verbs",
+          "status": "mastered"
+        },
+        "as3.u8.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "There Was / There Were",
+          "status": "mastered"
+        },
+        "as4.u1.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Question Forms",
+          "status": "mastered"
+        },
+        "as4.u2.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Verbs with To + Infinitive",
+          "status": "mastered"
+        },
+        "as4.u3.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Must / Mustn't",
+          "status": "mastered"
+        },
+        "as3.u1.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "School Vocabulary",
+          "status": "mastered"
+        },
+        "as3.u3.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Places Around Town",
+          "status": "mastered"
+        },
+        "as3.u4.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Food and Tableware",
+          "status": "mastered"
+        },
+        "as3.u1.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Present Simple vs Present Continuous",
+          "status": "mastered"
+        }
+      },
+      "gaps": [
+        {
+          "skill_id": "as3.u3.l1",
+          "skill_name": "Places Around Town",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u3.l1"
+          ],
+          "reason": "Chưa nắm vững Places Around Town. Gốc rễ: Places Around Town."
+        },
+        {
+          "skill_id": "as3.u3.l3",
+          "skill_name": "To Be (Present and Past)",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u1.l1"
+          ],
+          "reason": "Chưa nắm vững To Be (Present and Past). Gốc rễ: School Vocabulary."
+        },
+        {
+          "skill_id": "as3.u8.l3",
+          "skill_name": "There Was / There Were",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u1.l1"
+          ],
+          "reason": "Chưa nắm vững There Was / There Were. Gốc rễ: School Vocabulary."
+        },
+        {
+          "skill_id": "as3.u7.l3",
+          "skill_name": "Past Simple Irregular Verbs",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u1.l1"
+          ],
+          "reason": "Chưa nắm vững Past Simple Irregular Verbs. Gốc rễ: School Vocabulary."
+        },
+        {
+          "skill_id": "as3.u5.l3",
+          "skill_name": "Past Simple Regular Verbs",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u1.l1"
+          ],
+          "reason": "Chưa nắm vững Past Simple Regular Verbs. Gốc rễ: School Vocabulary."
+        },
+        {
+          "skill_id": "as3.u1.l1",
+          "skill_name": "School Vocabulary",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u1.l1"
+          ],
+          "reason": "Chưa nắm vững School Vocabulary. Gốc rễ: School Vocabulary."
+        }
+      ],
+      "recommendations": [],
+      "test_date": "2026-07-18T00:19:52.662",
+      "created_at": "2026-07-18T00:19:52.683695",
+      "training_plan": "[Kế hoạch tạm thời - LLM chưa khả dụng: Missing credentials. Please pass an `api_key`, `workload_identity`, `admin_api_key`, or set the `OPENAI_API_KEY` or `OPENAI_ADMIN_KEY` environment variable.]\nDựa trên chẩn đoán BKT, em nên ưu tiên ôn lại các kỹ năng sau:\n- Places Around Town (medium)\n- To Be (Present and Past) (medium)\n- There Was / There Were (medium)\n- Past Simple Irregular Verbs (medium)\n- Past Simple Regular Verbs (medium)\n- School Vocabulary (medium)",
+      "roadmap_completed": false,
+      "quick_check_passed": false
+    },
+    {
+      "id": 9,
+      "student_id": 1,
+      "test_id": 1,
+      "answers": [
+        {
+          "question_id": "qb_004",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as3.u2.l3",
+          "time_spent_sec": 6,
+          "error_tag": "opposite_meaning"
+        },
+        {
+          "question_id": "qb_007",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u3.l3",
+          "time_spent_sec": 16,
+          "error_tag": "uses_present_instead_of_past"
+        },
+        {
+          "question_id": "qb_010",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as3.u4.l3",
+          "time_spent_sec": 10,
+          "error_tag": "uses_any_in_affirmative"
+        },
+        {
+          "question_id": "qb_014",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as3.u5.l3",
+          "time_spent_sec": 10,
+          "error_tag": "no_tense_marker"
+        },
+        {
+          "question_id": "qb_016",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u6.l3",
+          "time_spent_sec": 14,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_019",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u7.l3",
+          "time_spent_sec": 9,
+          "error_tag": "confuses_gerund_with_past"
+        },
+        {
+          "question_id": "qb_023",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u8.l3",
+          "time_spent_sec": 12,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_032",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u1.l3",
+          "time_spent_sec": 15,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_034",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as4.u2.l3",
+          "time_spent_sec": 10,
+          "error_tag": "uses_gerund_after_want"
+        },
+        {
+          "question_id": "qb_038",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as4.u3.l3",
+          "time_spent_sec": 10,
+          "error_tag": "confuses_obligation_with_no_obligation"
+        },
+        {
+          "question_id": "qb_040",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u1.l1",
+          "time_spent_sec": 15,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_041",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u3.l1",
+          "time_spent_sec": 5,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_042",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l1",
+          "time_spent_sec": 17,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_001",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as3.u1.l3",
+          "time_spent_sec": 15,
+          "error_tag": "uses_gerund_instead_of_base_form"
+        }
+      ],
+      "score": 6,
+      "max_score": 14,
+      "percentage": 43,
+      "result_level": "beginner",
+      "cefr": "A1",
+      "time_total_sec": 164,
+      "mastery": {
+        "as3.u2.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Adverbs of Frequency",
+          "status": "mastered"
+        },
+        "as3.u3.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "To Be (Present and Past)",
+          "status": "mastered"
+        },
+        "as3.u4.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Some/Any with Countable/Uncountable Nouns",
+          "status": "mastered"
+        },
+        "as3.u5.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Regular Verbs",
+          "status": "mastered"
+        },
+        "as3.u6.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Comparatives",
+          "status": "mastered"
+        },
+        "as3.u7.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Irregular Verbs",
+          "status": "mastered"
+        },
+        "as3.u8.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "There Was / There Were",
+          "status": "mastered"
+        },
+        "as4.u1.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Question Forms",
+          "status": "mastered"
+        },
+        "as4.u2.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Verbs with To + Infinitive",
+          "status": "mastered"
+        },
+        "as4.u3.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Must / Mustn't",
+          "status": "mastered"
+        },
+        "as3.u1.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "School Vocabulary",
+          "status": "mastered"
+        },
+        "as3.u3.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Places Around Town",
+          "status": "mastered"
+        },
+        "as3.u4.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Food and Tableware",
+          "status": "mastered"
+        },
+        "as3.u1.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Present Simple vs Present Continuous",
+          "status": "mastered"
+        }
+      },
+      "gaps": [
+        {
+          "skill_id": "as4.u2.l3",
+          "skill_name": "Verbs with To + Infinitive",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u3.l3"
+          ],
+          "reason": "Chưa nắm vững Verbs with To + Infinitive. Gốc rễ: To Be (Present and Past)."
+        },
+        {
+          "skill_id": "as3.u3.l3",
+          "skill_name": "To Be (Present and Past)",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [],
+          "reason": "Chưa nắm vững To Be (Present and Past)"
+        },
+        {
+          "skill_id": "as3.u2.l3",
+          "skill_name": "Adverbs of Frequency",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u3.l3"
+          ],
+          "reason": "Chưa nắm vững Adverbs of Frequency. Gốc rễ: To Be (Present and Past)."
+        },
+        {
+          "skill_id": "as4.u3.l3",
+          "skill_name": "Must / Mustn't",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u3.l3"
+          ],
+          "reason": "Chưa nắm vững Must / Mustn't. Gốc rễ: To Be (Present and Past)."
+        },
+        {
+          "skill_id": "as3.u1.l3",
+          "skill_name": "Present Simple vs Present Continuous",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u3.l3"
+          ],
+          "reason": "Chưa nắm vững Present Simple vs Present Continuous. Gốc rễ: To Be (Present and Past)."
+        },
+        {
+          "skill_id": "as3.u7.l3",
+          "skill_name": "Past Simple Irregular Verbs",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u3.l3"
+          ],
+          "reason": "Chưa nắm vững Past Simple Irregular Verbs. Gốc rễ: To Be (Present and Past)."
+        },
+        {
+          "skill_id": "as3.u5.l3",
+          "skill_name": "Past Simple Regular Verbs",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u3.l3"
+          ],
+          "reason": "Chưa nắm vững Past Simple Regular Verbs. Gốc rễ: To Be (Present and Past)."
+        },
+        {
+          "skill_id": "as3.u4.l3",
+          "skill_name": "Some/Any with Countable/Uncountable Nouns",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u3.l3"
+          ],
+          "reason": "Chưa nắm vững Some/Any with Countable/Uncountable Nouns. Gốc rễ: To Be (Present and Past)."
+        }
+      ],
+      "recommendations": [],
+      "test_date": "2026-07-18T00:27:53.111",
+      "created_at": "2026-07-18T00:27:53.127421",
+      "training_plan": "[Kế hoạch tạm thời - LLM chưa khả dụng: Missing credentials. Please pass an `api_key`, `workload_identity`, `admin_api_key`, or set the `OPENAI_API_KEY` or `OPENAI_ADMIN_KEY` environment variable.]\nDựa trên chẩn đoán BKT, em nên ưu tiên ôn lại các kỹ năng sau:\n- Verbs with To + Infinitive (medium)\n- To Be (Present and Past) (medium)\n- Adverbs of Frequency (medium)\n- Must / Mustn't (medium)\n- Present Simple vs Present Continuous (medium)\n- Past Simple Irregular Verbs (medium)\n- Past Simple Regular Verbs (medium)\n- Some/Any with Countable/Uncountable Nouns (medium)",
+      "roadmap_completed": false,
+      "quick_check_passed": false
+    },
+    {
+      "id": 10,
+      "student_id": 1,
+      "test_id": 1,
+      "answers": [
+        {
+          "question_id": "qb_004",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as3.u2.l3",
+          "time_spent_sec": 14,
+          "error_tag": "opposite_meaning"
+        },
+        {
+          "question_id": "qb_007",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as3.u3.l3",
+          "time_spent_sec": 12,
+          "error_tag": "wrong_singular_plural"
+        },
+        {
+          "question_id": "qb_010",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l3",
+          "time_spent_sec": 17,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_014",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u5.l3",
+          "time_spent_sec": 17,
+          "error_tag": "uses_present_for_past"
+        },
+        {
+          "question_id": "qb_016",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as3.u6.l3",
+          "time_spent_sec": 6,
+          "error_tag": "uses_superlative_not_comparative"
+        },
+        {
+          "question_id": "qb_019",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u7.l3",
+          "time_spent_sec": 9,
+          "error_tag": "confuses_gerund_with_past"
+        },
+        {
+          "question_id": "qb_023",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as3.u8.l3",
+          "time_spent_sec": 18,
+          "error_tag": "uses_present_for_past"
+        },
+        {
+          "question_id": "qb_032",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as4.u1.l3",
+          "time_spent_sec": 16,
+          "error_tag": "uses_present_for_past"
+        },
+        {
+          "question_id": "qb_034",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as4.u2.l3",
+          "time_spent_sec": 12,
+          "error_tag": "missing_to_infinitive"
+        },
+        {
+          "question_id": "qb_038",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u3.l3",
+          "time_spent_sec": 18,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_040",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u1.l1",
+          "time_spent_sec": 10,
+          "error_tag": "wrong_school_subject"
+        },
+        {
+          "question_id": "qb_041",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u3.l1",
+          "time_spent_sec": 14,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_042",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l1",
+          "time_spent_sec": 10,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_001",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as3.u1.l3",
+          "time_spent_sec": 17,
+          "error_tag": "uses_gerund_instead_of_base_form"
+        }
+      ],
+      "score": 4,
+      "max_score": 14,
+      "percentage": 29,
+      "result_level": "starter",
+      "cefr": "Pre-A1",
+      "time_total_sec": 190,
+      "mastery": {
+        "as3.u2.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Adverbs of Frequency",
+          "status": "mastered"
+        },
+        "as3.u3.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "To Be (Present and Past)",
+          "status": "mastered"
+        },
+        "as3.u4.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Some/Any with Countable/Uncountable Nouns",
+          "status": "mastered"
+        },
+        "as3.u5.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Regular Verbs",
+          "status": "mastered"
+        },
+        "as3.u6.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Comparatives",
+          "status": "mastered"
+        },
+        "as3.u7.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Irregular Verbs",
+          "status": "mastered"
+        },
+        "as3.u8.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "There Was / There Were",
+          "status": "mastered"
+        },
+        "as4.u1.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Question Forms",
+          "status": "mastered"
+        },
+        "as4.u2.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Verbs with To + Infinitive",
+          "status": "mastered"
+        },
+        "as4.u3.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Must / Mustn't",
+          "status": "mastered"
+        },
+        "as3.u1.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "School Vocabulary",
+          "status": "mastered"
+        },
+        "as3.u3.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Places Around Town",
+          "status": "mastered"
+        },
+        "as3.u4.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Food and Tableware",
+          "status": "mastered"
+        },
+        "as3.u1.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Present Simple vs Present Continuous",
+          "status": "mastered"
+        }
+      },
+      "gaps": [
+        {
+          "skill_id": "as4.u2.l3",
+          "skill_name": "Verbs with To + Infinitive",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u1.l1"
+          ],
+          "reason": "Chưa nắm vững Verbs with To + Infinitive. Gốc rễ: School Vocabulary."
+        },
+        {
+          "skill_id": "as3.u3.l3",
+          "skill_name": "To Be (Present and Past)",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u1.l1"
+          ],
+          "reason": "Chưa nắm vững To Be (Present and Past). Gốc rễ: School Vocabulary."
+        },
+        {
+          "skill_id": "as4.u1.l3",
+          "skill_name": "Past Simple Question Forms",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u1.l1"
+          ],
+          "reason": "Chưa nắm vững Past Simple Question Forms. Gốc rễ: School Vocabulary."
+        },
+        {
+          "skill_id": "as3.u2.l3",
+          "skill_name": "Adverbs of Frequency",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u1.l1"
+          ],
+          "reason": "Chưa nắm vững Adverbs of Frequency. Gốc rễ: School Vocabulary."
+        },
+        {
+          "skill_id": "as3.u8.l3",
+          "skill_name": "There Was / There Were",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u1.l1"
+          ],
+          "reason": "Chưa nắm vững There Was / There Were. Gốc rễ: School Vocabulary."
+        },
+        {
+          "skill_id": "as3.u6.l3",
+          "skill_name": "Comparatives",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u1.l1"
+          ],
+          "reason": "Chưa nắm vững Comparatives. Gốc rễ: School Vocabulary."
+        },
+        {
+          "skill_id": "as3.u1.l3",
+          "skill_name": "Present Simple vs Present Continuous",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u1.l1"
+          ],
+          "reason": "Chưa nắm vững Present Simple vs Present Continuous. Gốc rễ: School Vocabulary."
+        },
+        {
+          "skill_id": "as3.u7.l3",
+          "skill_name": "Past Simple Irregular Verbs",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u1.l1"
+          ],
+          "reason": "Chưa nắm vững Past Simple Irregular Verbs. Gốc rễ: School Vocabulary."
+        },
+        {
+          "skill_id": "as3.u5.l3",
+          "skill_name": "Past Simple Regular Verbs",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u1.l1"
+          ],
+          "reason": "Chưa nắm vững Past Simple Regular Verbs. Gốc rễ: School Vocabulary."
+        },
+        {
+          "skill_id": "as3.u1.l1",
+          "skill_name": "School Vocabulary",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u1.l1"
+          ],
+          "reason": "Chưa nắm vững School Vocabulary. Gốc rễ: School Vocabulary."
+        }
+      ],
+      "recommendations": [],
+      "test_date": "2026-07-18T00:34:41.134",
+      "created_at": "2026-07-18T00:34:41.151287",
+      "training_plan": "[Kế hoạch tạm thời - LLM chưa khả dụng: Missing credentials. Please pass an `api_key`, `workload_identity`, `admin_api_key`, or set the `OPENAI_API_KEY` or `OPENAI_ADMIN_KEY` environment variable.]\nDựa trên chẩn đoán BKT, em nên ưu tiên ôn lại các kỹ năng sau:\n- Verbs with To + Infinitive (medium)\n- To Be (Present and Past) (medium)\n- Past Simple Question Forms (medium)\n- Adverbs of Frequency (medium)\n- There Was / There Were (medium)\n- Comparatives (medium)\n- Present Simple vs Present Continuous (medium)\n- Past Simple Irregular Verbs (medium)\n- Past Simple Regular Verbs (medium)\n- School Vocabulary (medium)",
+      "roadmap_completed": false,
+      "quick_check_passed": false
+    },
+    {
+      "id": 11,
+      "student_id": 6,
+      "test_id": 1,
+      "answers": [
+        {
+          "question_id": "qb_004",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u2.l3",
+          "time_spent_sec": 7,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_007",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u3.l3",
+          "time_spent_sec": 9,
+          "error_tag": "uses_present_instead_of_past"
+        },
+        {
+          "question_id": "qb_010",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as3.u4.l3",
+          "time_spent_sec": 11,
+          "error_tag": "uses_any_in_affirmative"
+        },
+        {
+          "question_id": "qb_014",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u5.l3",
+          "time_spent_sec": 18,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_016",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u6.l3",
+          "time_spent_sec": 15,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_019",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u7.l3",
+          "time_spent_sec": 11,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_023",
+          "selected": "c",
+          "correct": false,
+          "skill_id": "as3.u8.l3",
+          "time_spent_sec": 12,
+          "error_tag": "uses_present_for_past"
+        },
+        {
+          "question_id": "qb_032",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u1.l3",
+          "time_spent_sec": 8,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_034",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u2.l3",
+          "time_spent_sec": 13,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_038",
+          "selected": "b",
+          "correct": false,
+          "skill_id": "as4.u3.l3",
+          "time_spent_sec": 19,
+          "error_tag": "opposite_obligation"
+        },
+        {
+          "question_id": "qb_040",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u1.l1",
+          "time_spent_sec": 7,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_041",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u3.l1",
+          "time_spent_sec": 12,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_042",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l1",
+          "time_spent_sec": 7,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_001",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u1.l3",
+          "time_spent_sec": 18,
+          "error_tag": null
+        }
+      ],
+      "score": 10,
+      "max_score": 14,
+      "percentage": 71,
+      "result_level": "elementary",
+      "cefr": "A2",
+      "time_total_sec": 167,
+      "mastery": {
+        "as3.u2.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Adverbs of Frequency",
+          "status": "mastered"
+        },
+        "as3.u3.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "To Be (Present and Past)",
+          "status": "mastered"
+        },
+        "as3.u4.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Some/Any with Countable/Uncountable Nouns",
+          "status": "mastered"
+        },
+        "as3.u5.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Regular Verbs",
+          "status": "mastered"
+        },
+        "as3.u6.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Comparatives",
+          "status": "mastered"
+        },
+        "as3.u7.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Irregular Verbs",
+          "status": "mastered"
+        },
+        "as3.u8.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "There Was / There Were",
+          "status": "mastered"
+        },
+        "as4.u1.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Question Forms",
+          "status": "mastered"
+        },
+        "as4.u2.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Verbs with To + Infinitive",
+          "status": "mastered"
+        },
+        "as4.u3.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Must / Mustn't",
+          "status": "mastered"
+        },
+        "as3.u1.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "School Vocabulary",
+          "status": "mastered"
+        },
+        "as3.u3.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Places Around Town",
+          "status": "mastered"
+        },
+        "as3.u4.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Food and Tableware",
+          "status": "mastered"
+        },
+        "as3.u1.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Present Simple vs Present Continuous",
+          "status": "mastered"
+        }
+      },
+      "gaps": [
+        {
+          "skill_id": "as3.u3.l3",
+          "skill_name": "To Be (Present and Past)",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [],
+          "reason": "Chưa nắm vững To Be (Present and Past)"
+        },
+        {
+          "skill_id": "as3.u8.l3",
+          "skill_name": "There Was / There Were",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u3.l3"
+          ],
+          "reason": "Chưa nắm vững There Was / There Were. Gốc rễ: To Be (Present and Past)."
+        },
+        {
+          "skill_id": "as4.u3.l3",
+          "skill_name": "Must / Mustn't",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u3.l3"
+          ],
+          "reason": "Chưa nắm vững Must / Mustn't. Gốc rễ: To Be (Present and Past)."
+        },
+        {
+          "skill_id": "as3.u4.l3",
+          "skill_name": "Some/Any with Countable/Uncountable Nouns",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [
+            "as3.u3.l3"
+          ],
+          "reason": "Chưa nắm vững Some/Any with Countable/Uncountable Nouns. Gốc rễ: To Be (Present and Past)."
+        }
+      ],
+      "recommendations": [],
+      "test_date": "2026-07-18T00:37:17.47",
+      "created_at": "2026-07-18T00:37:17.480194",
+      "training_plan": "[Kế hoạch tạm thời - LLM chưa khả dụng: Missing credentials. Please pass an `api_key`, `workload_identity`, `admin_api_key`, or set the `OPENAI_API_KEY` or `OPENAI_ADMIN_KEY` environment variable.]\nDựa trên chẩn đoán BKT, em nên ưu tiên ôn lại các kỹ năng sau:\n- To Be (Present and Past) (medium)\n- There Was / There Were (medium)\n- Must / Mustn't (medium)\n- Some/Any with Countable/Uncountable Nouns (medium)",
+      "roadmap_completed": false,
+      "quick_check_passed": false
+    },
+    {
+      "id": 13,
+      "student_id": 6,
+      "test_id": 1,
+      "answers": [
+        {
+          "question_id": "qb_004",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u2.l3",
+          "time_spent_sec": 9,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_007",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u3.l3",
+          "time_spent_sec": 14,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_010",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l3",
+          "time_spent_sec": 5,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_014",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u5.l3",
+          "time_spent_sec": 13,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_016",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u6.l3",
+          "time_spent_sec": 7,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_019",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u7.l3",
+          "time_spent_sec": 9,
+          "error_tag": "confuses_gerund_with_past"
+        },
+        {
+          "question_id": "qb_023",
+          "selected": "a",
+          "correct": false,
+          "skill_id": "as3.u8.l3",
+          "time_spent_sec": 7,
+          "error_tag": "wrong_singular_plural"
+        },
+        {
+          "question_id": "qb_032",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u1.l3",
+          "time_spent_sec": 14,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_034",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u2.l3",
+          "time_spent_sec": 12,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_038",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as4.u3.l3",
+          "time_spent_sec": 19,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_040",
+          "selected": "b",
+          "correct": true,
+          "skill_id": "as3.u1.l1",
+          "time_spent_sec": 10,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_041",
+          "selected": "c",
+          "correct": true,
+          "skill_id": "as3.u3.l1",
+          "time_spent_sec": 9,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_042",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u4.l1",
+          "time_spent_sec": 8,
+          "error_tag": null
+        },
+        {
+          "question_id": "qb_001",
+          "selected": "a",
+          "correct": true,
+          "skill_id": "as3.u1.l3",
+          "time_spent_sec": 16,
+          "error_tag": null
+        }
+      ],
+      "score": 12,
+      "max_score": 14,
+      "percentage": 86,
+      "result_level": "elementary",
+      "cefr": "A2",
+      "time_total_sec": 152,
+      "mastery": {
+        "as3.u2.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Adverbs of Frequency",
+          "status": "mastered"
+        },
+        "as3.u3.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "To Be (Present and Past)",
+          "status": "mastered"
+        },
+        "as3.u4.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Some/Any with Countable/Uncountable Nouns",
+          "status": "mastered"
+        },
+        "as3.u5.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Regular Verbs",
+          "status": "mastered"
+        },
+        "as3.u6.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Comparatives",
+          "status": "mastered"
+        },
+        "as3.u7.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Irregular Verbs",
+          "status": "mastered"
+        },
+        "as3.u8.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "There Was / There Were",
+          "status": "mastered"
+        },
+        "as4.u1.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Past Simple Question Forms",
+          "status": "mastered"
+        },
+        "as4.u2.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Verbs with To + Infinitive",
+          "status": "mastered"
+        },
+        "as4.u3.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Must / Mustn't",
+          "status": "mastered"
+        },
+        "as3.u1.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "School Vocabulary",
+          "status": "mastered"
+        },
+        "as3.u3.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Places Around Town",
+          "status": "mastered"
+        },
+        "as3.u4.l1": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Food and Tableware",
+          "status": "mastered"
+        },
+        "as3.u1.l3": {
+          "probability": 1,
+          "correct": 1,
+          "total": 1,
+          "skill_name": "Present Simple vs Present Continuous",
+          "status": "mastered"
+        }
+      },
+      "gaps": [
+        {
+          "skill_id": "as3.u8.l3",
+          "skill_name": "There Was / There Were",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [],
+          "reason": "Chưa nắm vững There Was / There Were"
+        },
+        {
+          "skill_id": "as3.u7.l3",
+          "skill_name": "Past Simple Irregular Verbs",
+          "probability": 0.336,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [],
+          "reason": "Chưa nắm vững Past Simple Irregular Verbs"
+        }
+      ],
+      "recommendations": [],
+      "test_date": "2026-07-18T00:43:22.727",
+      "created_at": "2026-07-18T00:43:22.747242",
+      "training_plan": "Chào em Đàm Công Hiến,\n\nCô rất vui khi thấy em đã đạt trình độ A2 và nắm vững rất nhiều kiến thức nền tảng như thì hiện tại, quá khứ, so sánh, từ vựng chủ đề trường học, đồ ăn,... Điều đó cho thấy em có một nền tảng vững chắc! Tuy nhiên, qua bài chẩn đoán, cô nhận thấy em còn hai điểm nhỏ cần ôn luyện thêm để tự tin hơn. Cô sẽ giúp em lên kế hoạch học tập nhé.\n\n### (a) Nhận xét trình độ\n\nEm đã thành thạo hầu hết các chủ điểm ngữ pháp và từ vựng quan trọng ở trình độ A2. Hai lỗ hổng nhỏ còn lại là **cấu trúc \"There Was / There Were\"** (dùng để nói về sự tồn tại của vật/người trong quá khứ) và **động từ bất quy tắc ở thì quá khứ đơn** (Past Simple Irregular Verbs). Cả hai đều ở mức trung bình, nghĩa là em đã có hiểu biết nhưng chưa thật chắc. Cô tin chỉ cần luyện tập thêm một chút là em sẽ \"thuộc lòng\" ngay!\n\n### (b) Danh sách bài tập (theo thứ tự từ dễ đến khó)\n\n**Phần 1: There Was / There Were**\n\n1. **Bài tập nhận biết:** Khoanh tròn đáp án đúng (was/were) trong các câu đơn giản.  \n   *Ví dụ: There (was/were) a cat on the sofa yesterday.*\n\n2. **Bài tập điền từ:** Hoàn thành câu với \"There was\" hoặc \"There were\" dựa vào danh từ số ít/số nhiều.  \n   *Ví dụ: ___________ many students in the classroom.*\n\n3. **Bài tập viết câu hỏi và câu phủ định:** Chuyển các câu khẳng định sang dạng câu hỏi (Was there...? / Were there...?) và phủ định (There wasn't / There weren't).  \n   *Ví dụ: There was a park near my house. → Was there a park near your house? / There wasn't a park near my house.*\n\n4. **Bài tập kết hợp:** Viết 3-4 câu kể về một bức tranh hoặc một kỷ niệm ngắn, sử dụng \"There was/were\" và \"There wasn't/weren't\".  \n   *Ví dụ: Last weekend, there was a birthday party. There were many balloons, but there wasn't any cake.*\n\n**Phần 2: Past Simple Irregular Verbs**\n\n1. **Bài tập ghi nhớ:** Học thuộc bảng động từ bất quy tắc phổ biến (VD: go-went, eat-ate, see-saw, buy-bought, take-took, have-had, do-did, make-made, ...). Cô gợi ý em viết ra giấy và dán ở góc học tập.\n\n2. **Bài tập nối:** Nối động từ nguyên mẫu với dạng quá khứ tương ứng.  \n   *Ví dụ: go – went, see – saw, drink – drank.*\n\n3. **Bài tập điền từ:** Hoàn thành câu với dạng quá khứ đúng của động từ trong ngoặc.  \n   *Ví dụ: Yesterday, I (go) _______ to the zoo. I (see) _______ a lion.*\n\n4. **Bài tập viết đoạn văn ngắn:** Viết 4-5 câu kể về một ngày cuối tuần của em, sử dụng ít nhất 5 động từ bất quy tắc khác nhau.  \n   *Ví dụ: Last Saturday, I woke up late. I ate breakfast and then went to the park. I met my friend there. We played football and had a lot of fun.*\n\n**Bài tập tổng hợp (kết hợp cả hai phần):**  \nViết một đoạn hội thoại ngắn (khoảng 6-8 câu) giữa em và bạn, hỏi về một bữa tiệc hoặc chuyến đi trong quá khứ. Sử dụng cả \"There was/were\" và động từ bất quy tắc.  \n*Ví dụ:*  \nA: *Was there a party at your house last night?*  \nB: *Yes, there was. There were many friends. I bought some snacks and we ate pizza.*  \nA: *Did you see any movie?*  \nB:",
+      "roadmap_completed": false,
+      "quick_check_passed": false
+    },
+    {
+      "id": 12,
+      "student_id": 6,
+      "test_id": 1,
+      "answers": [
+        {
+          "question_id": "q1",
+          "selected": "o1",
+          "correct": true,
+          "time_spent_sec": 5
+        },
+        {
+          "question_id": "q2",
+          "selected": "o2",
+          "correct": false,
+          "time_spent_sec": 5
+        }
+      ],
+      "score": 1,
+      "max_score": 2,
+      "percentage": 50,
+      "result_level": "beginner",
+      "cefr": "A1",
+      "time_total_sec": 10,
+      "mastery": {},
+      "gaps": [],
+      "recommendations": [],
+      "test_date": "2026-07-18T10:00:00",
+      "created_at": "2026-07-18T00:42:00.039369",
+      "training_plan": "Chào em Đàm Công Hiến,\n\nCô rất vui khi thấy kết quả chẩn đoán của em không có lỗ hổng đáng kể nào – điều đó cho thấy em đã có một nền tảng ban đầu ổn định! Ở trình độ A1, nhiệm vụ quan trọng nhất là xây dựng vốn từ vựng và làm quen với các cấu trúc câu đơn giản. Dưới đây là kế hoạch cá nhân hóa dành riêng cho em.\n\n---\n\n### a) Nhận xét trình độ\nEm đang ở giai đoạn bắt đầu học tiếng Anh (A1). Kết quả BKT cho thấy em chưa có điểm yếu cụ thể, nhưng để tiến xa hơn, em cần củng cố các kỹ năng nền tảng như: nhận biết từ vựng cơ bản, nghe hiểu câu ngắn và nói những câu đơn giản. Hãy tự tin lên nhé, vì em đã có một khởi đầu tốt!\n\n### b) Danh sách bài tập (theo thứ tự từ dễ đến khó)\n1. **Bài tập từ vựng theo chủ đề**  \n   - Học 5-7 từ mỗi ngày thuộc các chủ đề: gia đình, trường học, màu sắc, số đếm, đồ vật trong lớp.  \n   - Gợi ý: dùng flashcard (tự vẽ hoặc in hình) để ghi nhớ.\n\n2. **Bài tập nghe – nói câu đơn**  \n   - Nghe các đoạn hội thoại ngắn (ví dụ: “Hello, my name is…”, “What is this?”) và nhắc lại theo.  \n   - Tập trả lời các câu hỏi đơn giản như “How are you?”, “What color is it?”\n\n3. **Bài tập ghép câu**  \n   - Sắp xếp từ thành câu hoàn chỉnh: “I / a / have / book” → “I have a book.”  \n   - Bắt đầu với câu 3-4 từ, sau đó nâng lên 5-6 từ.\n\n4. **Bài tập đọc hiểu cơ bản**  \n   - Đọc các đoạn văn ngắn (3-4 câu) về một bạn nhỏ, sau đó trả lời câu hỏi đúng/sai.  \n   - Ví dụ: “Tom is a boy. He has a red ball.” → Câu hỏi: “Tom has a blue ball.” (Sai)\n\n5. **Bài tập viết nhật ký ngắn**  \n   - Mỗi ngày viết 2-3 câu về hoạt động của em: “Today I go to school. I see a dog.”\n\n### c) Lời khuyên ôn tập tại nhà\n- **Mỗi ngày dành 15-20 phút** để ôn lại từ vựng cũ và học từ mới. Em có thể dán giấy ghi chú lên tường hoặc đồ vật trong nhà.\n- **Nghe nhạc tiếng Anh thiếu nhi** (như Super Simple Songs) vừa vui vừa giúp em quen âm điệu.\n- **Nói chuyện với bản thân** trước gương: tự giới thiệu, miêu tả đồ vật xung quanh bằng tiếng Anh.\n- **Nhờ bố mẹ hoặc anh chị** kiểm tra từ vựng mỗi tối 5 phút.\n\nCô tin rằng với sự chăm chỉ, em sẽ nhanh chóng tiến bộ và sẵn sàng cho các cấp độ cao hơn. Chúc em học vui vẻ!",
+      "roadmap_completed": false,
+      "quick_check_passed": false
+    },
+    {
+      "id": 14,
+      "student_id": 6,
+      "test_id": 1,
+      "answers": [
+        {
+          "question_id": "qb_001",
+          "selected": "b",
+          "correct": false
+        },
+        {
+          "question_id": "qb_004",
+          "selected": "b",
+          "correct": false
+        },
+        {
+          "question_id": "qb_007",
+          "selected": "a",
+          "correct": false
+        },
+        {
+          "question_id": "qb_040",
+          "selected": "a",
+          "correct": false
+        },
+        {
+          "question_id": "qb_041",
+          "selected": "a",
+          "correct": false
+        }
+      ],
+      "score": 0,
+      "max_score": 14,
+      "percentage": 0,
+      "result_level": "starter",
+      "cefr": "Pre-A1",
+      "time_total_sec": 10,
+      "mastery": {},
+      "gaps": [],
+      "recommendations": [],
+      "test_date": "2026-07-18T11:30:00",
+      "created_at": "2026-07-18T01:08:38.329972",
+      "training_plan": "(Hệ thống chưa sinh được kế hoạch. Vui lòng thử lại.)",
+      "roadmap_completed": false,
+      "quick_check_passed": false
+    },
+    {
+      "id": 15,
+      "student_id": 6,
+      "test_id": 1,
+      "answers": [
+        {
+          "question_id": "q0",
+          "skill_id": "as3.u3.l3",
+          "correct": false,
+          "selected": "x",
+          "time_spent_sec": 5
+        },
+        {
+          "question_id": "q1",
+          "skill_id": "as3.u3.l3",
+          "correct": false,
+          "selected": "x",
+          "time_spent_sec": 5
+        },
+        {
+          "question_id": "q2",
+          "skill_id": "as3.u3.l3",
+          "correct": false,
+          "selected": "x",
+          "time_spent_sec": 5
+        },
+        {
+          "question_id": "q3",
+          "skill_id": "as3.u3.l3",
+          "correct": false,
+          "selected": "x",
+          "time_spent_sec": 5
+        }
+      ],
+      "score": 0,
+      "max_score": 14,
+      "percentage": 0,
+      "result_level": "starter",
+      "cefr": "Pre-A1",
+      "time_total_sec": 20,
+      "mastery": {
+        "as3.u3.l3": {
+          "probability": 0.342816229991836,
+          "correct": 0,
+          "total": 4,
+          "skill_name": "To Be (Present and Past)",
+          "status": "weak",
+          "is_default": false
+        }
+      },
+      "gaps": [
+        {
+          "skill_id": "as3.u1.l1",
+          "skill_name": "School Vocabulary",
+          "probability": 0.3,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [],
+          "reason": "Chưa nắm vững School Vocabulary"
+        },
+        {
+          "skill_id": "as3.u3.l3",
+          "skill_name": "To Be (Present and Past)",
+          "probability": 0.343,
+          "status": "weak",
+          "severity": "medium",
+          "root_causes": [],
+          "reason": "Chưa nắm vững To Be (Present and Past)"
+        }
+      ],
+      "recommendations": [],
+      "test_date": "2026-07-18T12:00:00",
+      "created_at": "2026-07-18T01:09:44.996219",
+      "training_plan": "Chào em Đàm Công Hiến! Cô rất vui khi thấy em đã bắt đầu hành trình học tiếng Anh. Dựa trên kết quả chẩn đoán, cô thấy em đang ở trình độ Pre-A1 – giai đoạn đầu tiên và rất quan trọng. Em đã có một số nền tảng về động từ **to be** (am/is/are) nhưng cần ôn lại thêm, và em cũng cần làm quen với **từ vựng về trường học**. Cả hai kỹ năng này đều ở mức trung bình, vì vậy chúng ta sẽ cùng nhau luyện tập từng bước một nhé!\n\n### 📚 Kế hoạch bài tập (từ dễ đến khó)\n\n1. **Ôn từ vựng trường học qua hình ảnh**  \n   - Em hãy xem các thẻ flashcard (hoặc tranh vẽ) về đồ dùng học tập: *book, pen, pencil, ruler, desk, chair, bag, teacher, student, board*.  \n   - Nói to tên từng đồ vật và cố gắng nhớ mặt chữ.\n\n2. **Ghép từ với hình ảnh**  \n   - Cô có một bài tập nhỏ: em hãy nối từ tiếng Anh với bức tranh tương ứng. Ví dụ: nối từ “book” với hình quyển sách.  \n   - Làm 2-3 lần để ghi nhớ lâu hơn.\n\n3. **Luyện động từ “to be” (hiện tại) với chủ ngữ đơn giản**  \n   - Em hãy điền **am / is / are** vào chỗ trống:  \n     - I ___ a student.  \n     - He ___ a boy.  \n     - She ___ a girl.  \n     - It ___ a book.  \n     - We ___ friends.  \n     - They ___ teachers.  \n   - Nếu em chưa chắc, hãy nhớ: *I đi với am, he/she/it đi với is, we/you/they đi với are*.\n\n4. **Kết hợp từ vựng trường học và động từ “to be”**  \n   - Em hãy hoàn thành câu dùng từ gợi ý:  \n     - The pen ___ on the desk. (is)  \n     - The books ___ in the bag. (are)  \n     - I ___ a student. (am)  \n     - The teacher ___ in the classroom. (is)  \n   - Đọc to cả câu sau khi điền xong.\n\n5. **Bài tập chọn đúng dạng “to be”**  \n   - Khoanh tròn đáp án đúng:  \n     - She (am / is / are) my friend.  \n     - We (am / is / are) in the school.  \n     - The ruler (am / is / are) long.  \n     - I (am / is / are) happy.  \n\n### 💡 Lời khuyên ôn tập tại nhà\n\n- **Mỗi ngày học 5 từ vựng trường học mới**: viết ra giấy, vẽ hình minh họa, và đặt câu đơn giản với “to be”. Ví dụ: *This is a pencil.*  \n- **Luyện nói trước gương**: Em hãy tự giới thiệu: *I am Hiến. I am a student. My bag is blue.*  \n- **Xem video ngắn về trường học**: Có nhiều kênh YouTube cho trẻ em như “English Singsing” – em vừa xem vừa nhắc lại từ vựng.  \n- **Chơi trò “I spy”**: Cùng bố mẹ hoặc anh chị tìm đồ vật trong nhà và nói: *I see a book. The book is on the table.*  \n\nCô tin rằng nếu em chăm chỉ luyện tập mỗi ngày 10-15 phút, em sẽ nhanh chóng nắm vững từ vựng trường học và động từ “to be”. Cố lên nhé, Hiến! 🌟",
+      "roadmap_completed": false,
+      "quick_check_passed": true
+    }
+  ],
+  "_meta": {
+    "note": "Backup toan bo DB truoc khi xoa data cu (Academy Stars) va reseed sang Global Success",
+    "db_container": "5ce9d72cb391_v-nexus-db-1",
+    "backed_up_at_context": "truoc khi TRUNCATE ngay 2026-07-18 (trong luc dev/test hackathon), 10/15 dong student_test_results la ket qua lam bai that cua team trong ngay 2026-07-18, khong phai seed data"
+  }
+}

@@ -1,0 +1,359 @@
+{
+  "description": "6 bo de khao sat (chan doan) theo khoi lop x do kho, sinh tu question-bank.json (chi lay cau purpose=diagnostic).",
+  "source": "docs/data/question-bank.json (bank_id en-global-success-3-4-qb)",
+  "test_sets": [
+    {
+      "test_id": "gs-g3-easy",
+      "title": "Khảo sát Tiếng Anh Global Success — Lớp 3 (Dễ)",
+      "grade": 3,
+      "difficulty": "easy",
+      "mascot": {
+        "name": "Medi Bee",
+        "icon": "bee"
+      },
+      "steps": [
+        {
+          "order": 1,
+          "key": "choose_level",
+          "label": "Chọn cấp độ"
+        },
+        {
+          "order": 2,
+          "key": "take_test",
+          "label": "Làm bài"
+        },
+        {
+          "order": 3,
+          "key": "get_result",
+          "label": "Nhận kết quả"
+        }
+      ],
+      "skills_covered": [
+        "G3U04-PAT",
+        "G3U04-VOC",
+        "G3U09-PAT",
+        "G3U09-VOC",
+        "G3U11-PAT",
+        "G3U11-VOC",
+        "G3U14-PAT",
+        "G3U14-VOC"
+      ],
+      "question_ids": [
+        "gsq_001",
+        "gsq_002",
+        "gsq_003",
+        "gsq_004",
+        "gsq_014",
+        "gsq_015",
+        "gsq_016",
+        "gsq_026",
+        "gsq_027",
+        "gsq_028",
+        "gsq_038",
+        "gsq_039",
+        "gsq_040",
+        "gsq_098",
+        "gsq_099",
+        "gsq_110",
+        "gsq_111",
+        "gsq_122",
+        "gsq_123",
+        "gsq_134",
+        "gsq_135"
+      ],
+      "scoring": {
+        "total_questions": 21,
+        "points_per_correct": 1,
+        "max_score": 21
+      }
+    },
+    {
+      "test_id": "gs-g3-medium",
+      "title": "Khảo sát Tiếng Anh Global Success — Lớp 3 (Trung bình)",
+      "grade": 3,
+      "difficulty": "medium",
+      "mascot": {
+        "name": "Medi Bee",
+        "icon": "bee"
+      },
+      "steps": [
+        {
+          "order": 1,
+          "key": "choose_level",
+          "label": "Chọn cấp độ"
+        },
+        {
+          "order": 2,
+          "key": "take_test",
+          "label": "Làm bài"
+        },
+        {
+          "order": 3,
+          "key": "get_result",
+          "label": "Nhận kết quả"
+        }
+      ],
+      "skills_covered": [
+        "G3U04-PAT",
+        "G3U04-VOC",
+        "G3U09-PAT",
+        "G3U09-VOC",
+        "G3U11-PAT",
+        "G3U11-VOC",
+        "G3U14-PAT",
+        "G3U14-VOC"
+      ],
+      "question_ids": [
+        "gsq_005",
+        "gsq_006",
+        "gsq_007",
+        "gsq_017",
+        "gsq_018",
+        "gsq_019",
+        "gsq_029",
+        "gsq_030",
+        "gsq_031",
+        "gsq_041",
+        "gsq_042",
+        "gsq_043",
+        "gsq_100",
+        "gsq_101",
+        "gsq_102",
+        "gsq_112",
+        "gsq_113",
+        "gsq_114",
+        "gsq_124",
+        "gsq_125",
+        "gsq_126",
+        "gsq_136",
+        "gsq_137",
+        "gsq_138"
+      ],
+      "scoring": {
+        "total_questions": 24,
+        "points_per_correct": 1,
+        "max_score": 24
+      }
+    },
+    {
+      "test_id": "gs-g3-hard",
+      "title": "Khảo sát Tiếng Anh Global Success — Lớp 3 (Khó)",
+      "grade": 3,
+      "difficulty": "hard",
+      "mascot": {
+        "name": "Medi Bee",
+        "icon": "bee"
+      },
+      "steps": [
+        {
+          "order": 1,
+          "key": "choose_level",
+          "label": "Chọn cấp độ"
+        },
+        {
+          "order": 2,
+          "key": "take_test",
+          "label": "Làm bài"
+        },
+        {
+          "order": 3,
+          "key": "get_result",
+          "label": "Nhận kết quả"
+        }
+      ],
+      "skills_covered": [
+        "G3U04-PAT",
+        "G3U09-PAT",
+        "G3U11-PAT",
+        "G3U14-PAT"
+      ],
+      "question_ids": [
+        "gsq_103",
+        "gsq_115",
+        "gsq_127",
+        "gsq_139"
+      ],
+      "scoring": {
+        "total_questions": 4,
+        "points_per_correct": 1,
+        "max_score": 4
+      }
+    },
+    {
+      "test_id": "gs-g4-easy",
+      "title": "Khảo sát Tiếng Anh Global Success — Lớp 4 (Dễ)",
+      "grade": 4,
+      "difficulty": "easy",
+      "mascot": {
+        "name": "Medi Bee",
+        "icon": "bee"
+      },
+      "steps": [
+        {
+          "order": 1,
+          "key": "choose_level",
+          "label": "Chọn cấp độ"
+        },
+        {
+          "order": 2,
+          "key": "take_test",
+          "label": "Làm bài"
+        },
+        {
+          "order": 3,
+          "key": "get_result",
+          "label": "Nhận kết quả"
+        }
+      ],
+      "skills_covered": [
+        "G4U01-PAT",
+        "G4U01-VOC",
+        "G4U02-PAT",
+        "G4U02-VOC",
+        "G4U03-PAT",
+        "G4U03-VOC",
+        "G4U05-PAT",
+        "G4U05-VOC"
+      ],
+      "question_ids": [
+        "gsq_050",
+        "gsq_051",
+        "gsq_052",
+        "gsq_062",
+        "gsq_063",
+        "gsq_064",
+        "gsq_074",
+        "gsq_075",
+        "gsq_076",
+        "gsq_086",
+        "gsq_087",
+        "gsq_088",
+        "gsq_146",
+        "gsq_147",
+        "gsq_158",
+        "gsq_159",
+        "gsq_170",
+        "gsq_171",
+        "gsq_182",
+        "gsq_183"
+      ],
+      "scoring": {
+        "total_questions": 20,
+        "points_per_correct": 1,
+        "max_score": 20
+      }
+    },
+    {
+      "test_id": "gs-g4-medium",
+      "title": "Khảo sát Tiếng Anh Global Success — Lớp 4 (Trung bình)",
+      "grade": 4,
+      "difficulty": "medium",
+      "mascot": {
+        "name": "Medi Bee",
+        "icon": "bee"
+      },
+      "steps": [
+        {
+          "order": 1,
+          "key": "choose_level",
+          "label": "Chọn cấp độ"
+        },
+        {
+          "order": 2,
+          "key": "take_test",
+          "label": "Làm bài"
+        },
+        {
+          "order": 3,
+          "key": "get_result",
+          "label": "Nhận kết quả"
+        }
+      ],
+      "skills_covered": [
+        "G4U01-PAT",
+        "G4U01-VOC",
+        "G4U02-PAT",
+        "G4U02-VOC",
+        "G4U03-PAT",
+        "G4U03-VOC",
+        "G4U05-PAT",
+        "G4U05-VOC"
+      ],
+      "question_ids": [
+        "gsq_053",
+        "gsq_054",
+        "gsq_055",
+        "gsq_065",
+        "gsq_066",
+        "gsq_067",
+        "gsq_077",
+        "gsq_078",
+        "gsq_079",
+        "gsq_089",
+        "gsq_090",
+        "gsq_091",
+        "gsq_148",
+        "gsq_149",
+        "gsq_150",
+        "gsq_160",
+        "gsq_161",
+        "gsq_162",
+        "gsq_172",
+        "gsq_173",
+        "gsq_174",
+        "gsq_184",
+        "gsq_185",
+        "gsq_186"
+      ],
+      "scoring": {
+        "total_questions": 24,
+        "points_per_correct": 1,
+        "max_score": 24
+      }
+    },
+    {
+      "test_id": "gs-g4-hard",
+      "title": "Khảo sát Tiếng Anh Global Success — Lớp 4 (Khó)",
+      "grade": 4,
+      "difficulty": "hard",
+      "mascot": {
+        "name": "Medi Bee",
+        "icon": "bee"
+      },
+      "steps": [
+        {
+          "order": 1,
+          "key": "choose_level",
+          "label": "Chọn cấp độ"
+        },
+        {
+          "order": 2,
+          "key": "take_test",
+          "label": "Làm bài"
+        },
+        {
+          "order": 3,
+          "key": "get_result",
+          "label": "Nhận kết quả"
+        }
+      ],
+      "skills_covered": [
+        "G4U01-PAT",
+        "G4U02-PAT",
+        "G4U03-PAT",
+        "G4U05-PAT"
+      ],
+      "question_ids": [
+        "gsq_151",
+        "gsq_163",
+        "gsq_175",
+        "gsq_187"
+      ],
+      "scoring": {
+        "total_questions": 4,
+        "points_per_correct": 1,
+        "max_score": 4
+      }
+    }
+  ]
+}

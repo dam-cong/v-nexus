@@ -9,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.connector import get_session
-from db.models import Student, Teacher
+from db.models import User
 from db.password import hash_password, verify_password  # noqa: F401
 from .config import settings
 
@@ -57,32 +57,17 @@ async def get_current_user(
     role = payload.get("role", "")
     entity_type = payload.get("type", "")
 
-    if entity_type == "student":
-        result = await db.execute(select(Student).where(Student.id == entity_id))
-        student = result.scalar_one_or_none()
-        if not student:
-            raise HTTPException(status_code=401, detail="Người dùng không tồn tại")
-        return {
-            "id": student.id,
-            "name": student.name,
-            "email": student.email,
-            "role": role,
-            "entity_type": "student",
-        }
-    elif entity_type == "teacher":
-        result = await db.execute(select(Teacher).where(Teacher.id == entity_id))
-        teacher = result.scalar_one_or_none()
-        if not teacher:
-            raise HTTPException(status_code=401, detail="Người dùng không tồn tại")
-        return {
-            "id": teacher.id,
-            "name": teacher.name,
-            "email": teacher.email,
-            "role": role,
-            "entity_type": "teacher",
-        }
-    else:
-        raise HTTPException(status_code=401, detail="Loại tài khoản không hợp lệ")
+    result = await db.execute(select(User).where(User.id == entity_id))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=401, detail="Người dùng không tồn tại")
+    return {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "role": role,
+        "entity_type": entity_type or "student",
+    }
 
 
 def require_role(*allowed_roles: str):

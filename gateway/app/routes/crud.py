@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.connector import get_session
 from db.models import (
-    Role, Student, Teacher, Ranking,
+    Role, User, Student, Teacher, Ranking,
     Question, PlacementTest, PlacementTestQuestion, StudentTestResult,
 )
 from domain.bkt import run_assessment
@@ -41,7 +41,7 @@ class RankingBase(BaseModel):
     level: str
 
 class RankingCreate(RankingBase):
-    student_id: int
+    user_id: int
 
 class RankingUpdate(BaseModel):
     score: Optional[int] = None
@@ -49,7 +49,7 @@ class RankingUpdate(BaseModel):
 
 class RankingResponse(RankingBase):
     id: int
-    student_id: int
+    user_id: int
     updated_at: datetime
     class Config:
         from_attributes = True
@@ -150,7 +150,7 @@ class PlacementTestResponse(BaseModel):
 # Test Result Schemas
 class TestResultResponse(BaseModel):
     id: int
-    student_id: int
+    user_id: int
     test_id: int
     answers: Optional[list] = None
     score: int
@@ -249,31 +249,31 @@ async def get_students(
 ):
     # Students can only see themselves
     if user["role"] == "hoc_sinh":
-        result = await db.execute(select(Student).where(Student.id == user["id"]))
-        students = list(result.scalars().all())
+        result = await db.execute(select(User).where(User.id == user["id"]))
+        users = list(result.scalars().all())
     else:
-        result = await db.execute(select(Student))
-        students = list(result.scalars().all())
-    
+        result = await db.execute(select(User).where(User.role_id == 1))
+        users = list(result.scalars().all())
+
     student_list = []
-    for s in students:
-        rank_res = await db.execute(select(Ranking).where(Ranking.student_id == s.id))
+    for u in users:
+        rank_res = await db.execute(select(Ranking).where(Ranking.user_id == u.id))
         ranking_obj = rank_res.scalar_one_or_none()
-        tr_res = await db.execute(select(StudentTestResult).where(StudentTestResult.student_id == s.id))
+        tr_res = await db.execute(select(StudentTestResult).where(StudentTestResult.user_id == u.id))
         test_results_obj = list(tr_res.scalars().all())
-        
+        grade = None
+        p_res = await db.execute(select(Student).where(Student.user_id == u.id))
+        profile = p_res.scalar_one_or_none()
+        if profile:
+            grade = profile.grade
+
         student_list.append({
-            "id": s.id,
-            "name": s.name,
-            "email": s.email,
-            "grade": s.grade,
-            "role_id": s.role_id,
-            "years_studying_english": s.years_studying_english,
-            "learning_environment": s.learning_environment,
-            "self_assessment_level": s.self_assessment_level,
-            "learning_goal": s.learning_goal,
-            "training_plan": s.training_plan,
-            "created_at": s.created_at,
+            "id": u.id,
+            "name": u.name,
+            "email": u.email,
+            "grade": grade,
+            "role_id": u.role_id,
+            "created_at": u.created_at,
             "ranking": ranking_obj,
             "test_results": test_results_obj,
         })
@@ -289,22 +289,25 @@ async def get_student(
     if user["role"] == "hoc_sinh" and user["id"] != student_id:
         raise HTTPException(status_code=403, detail="Ban chi co the xem du lieu cua chinh minh")
 
-    result = await db.execute(select(Student).where(Student.id == student_id))
+    result = await db.execute(select(User).where(User.id == student_id, User.role_id == 1))
     student = result.scalar_one_or_none()
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
-        
-    rank_res = await db.execute(select(Ranking).where(Ranking.student_id == student.id))
+
+    rank_res = await db.execute(select(Ranking).where(Ranking.user_id == student.id))
     ranking_obj = rank_res.scalar_one_or_none()
-    
-    tr_res = await db.execute(select(StudentTestResult).where(StudentTestResult.student_id == student.id))
+
+    tr_res = await db.execute(select(StudentTestResult).where(StudentTestResult.user_id == student.id))
     test_results_obj = list(tr_res.scalars().all())
-    
+
+    p_res = await db.execute(select(Student).where(Student.user_id == student.id))
+    profile = p_res.scalar_one_or_none()
+
     return {
         "id": student.id,
         "name": student.name,
         "email": student.email,
-        "grade": student.grade,
+        "grade": profile.grade if profile else None,
         "role_id": student.role_id,
         "years_studying_english": student.years_studying_english,
         "learning_environment": student.learning_environment,
@@ -323,59 +326,34 @@ async def create_student(
     _user: dict = Depends(require_role("admin", "giao_vien")),
 ):
     from db.password import hash_password
-    
-    # Generate training plan from survey if provided
-    training_plan = None
-    if student.years_studying_english is not None or student.learning_goal:
-        try:
-            from tools.plan_tool import generate_training_plan_from_survey
-            training_plan = generate_training_plan_from_survey(
-                student_name=student.name,
-                grade=student.grade or "Lớp 6",
-                years_studying_english=student.years_studying_english or 0,
-                learning_environment=student.learning_environment or "school",
-                self_assessment_level=student.self_assessment_level or "A1",
-                learning_goal=student.learning_goal or ""
-            )
-        except Exception as e:
-            print(f"[LLM] Failed to generate training plan from survey: {e}")
-
-    db_student = Student(
+    db_user = User(
         name=student.name,
         email=student.email,
-        grade=student.grade,
-        role_id=student.role_id,
-        years_studying_english=student.years_studying_english,
-        learning_environment=student.learning_environment,
-        self_assessment_level=student.self_assessment_level,
-        learning_goal=student.learning_goal,
-        training_plan=training_plan,
+        role_id=student.role_id or 1,
         hashed_password=hash_password(student.password or "88888888"),
     )
-    db.add(db_student)
+    db.add(db_user)
     await db.commit()
-    await db.refresh(db_student)
-    
-    db_ranking = Ranking(student_id=db_student.id, score=0, level="Beginner")
+    await db.refresh(db_user)
+
+    db_profile = Student(user_id=db_user.id, grade=student.grade)
+    db.add(db_profile)
+
+    db_ranking = Ranking(user_id=db_user.id, score=0, level="Beginner")
     db.add(db_ranking)
     await db.commit()
-    await db.refresh(db_student)
-    
-    rank_res = await db.execute(select(Ranking).where(Ranking.student_id == db_student.id))
+    await db.refresh(db_user)
+
+    rank_res = await db.execute(select(Ranking).where(Ranking.user_id == db_user.id))
     ranking_obj = rank_res.scalar_one_or_none()
-    
+
     return {
-        "id": db_student.id,
-        "name": db_student.name,
-        "email": db_student.email,
-        "grade": db_student.grade,
-        "role_id": db_student.role_id,
-        "years_studying_english": db_student.years_studying_english,
-        "learning_environment": db_student.learning_environment,
-        "self_assessment_level": db_student.self_assessment_level,
-        "learning_goal": db_student.learning_goal,
-        "training_plan": db_student.training_plan,
-        "created_at": db_student.created_at,
+        "id": db_user.id,
+        "name": db_user.name,
+        "email": db_user.email,
+        "grade": db_profile.grade,
+        "role_id": db_user.role_id,
+        "created_at": db_user.created_at,
         "ranking": ranking_obj,
         "test_results": [],
     }
@@ -387,40 +365,48 @@ async def update_student(
     db: AsyncSession = Depends(get_session),
     _user: dict = Depends(require_role("admin", "giao_vien")),
 ):
-    result = await db.execute(select(Student).where(Student.id == student_id))
-    student = result.scalar_one_or_none()
-    if not student:
+    result = await db.execute(select(User).where(User.id == student_id, User.role_id == 1))
+    user = result.scalar_one_or_none()
+    if not user:
         raise HTTPException(status_code=404, detail="Student not found")
-    
+
     from db.password import hash_password
     update_data = student_data.model_dump(exclude_unset=True)
     new_password = update_data.pop("password", None)
-    for key, value in update_data.items():
-        setattr(student, key, value)
+    if "name" in update_data:
+        user.name = update_data["name"]
+    if "email" in update_data:
+        user.email = update_data["email"]
+    if "role_id" in update_data:
+        user.role_id = update_data["role_id"]
     if new_password:
-        student.hashed_password = hash_password(new_password)
-        
+        user.hashed_password = hash_password(new_password)
+
+    # grade -> profile
+    p_res = await db.execute(select(Student).where(Student.user_id == user.id))
+    profile = p_res.scalar_one_or_none()
+    if "grade" in update_data:
+        if profile:
+            profile.grade = update_data["grade"]
+        else:
+            profile = Student(user_id=user.id, grade=update_data["grade"])
+            db.add(profile)
+
     await db.commit()
-    await db.refresh(student)
-    
-    # Reload relationships
-    rank_res = await db.execute(select(Ranking).where(Ranking.student_id == student.id))
+    await db.refresh(user)
+
+    rank_res = await db.execute(select(Ranking).where(Ranking.user_id == user.id))
     ranking_obj = rank_res.scalar_one_or_none()
-    tr_res = await db.execute(select(StudentTestResult).where(StudentTestResult.student_id == student.id))
+    tr_res = await db.execute(select(StudentTestResult).where(StudentTestResult.user_id == user.id))
     test_results_obj = list(tr_res.scalars().all())
-    
+
     return {
-        "id": student.id,
-        "name": student.name,
-        "email": student.email,
-        "grade": student.grade,
-        "role_id": student.role_id,
-        "years_studying_english": student.years_studying_english,
-        "learning_environment": student.learning_environment,
-        "self_assessment_level": student.self_assessment_level,
-        "learning_goal": student.learning_goal,
-        "training_plan": student.training_plan,
-        "created_at": student.created_at,
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "grade": profile.grade if profile else None,
+        "role_id": user.role_id,
+        "created_at": user.created_at,
         "ranking": ranking_obj,
         "test_results": test_results_obj,
     }
@@ -431,11 +417,12 @@ async def delete_student(
     db: AsyncSession = Depends(get_session),
     _user: dict = Depends(require_role("admin", "giao_vien")),
 ):
-    result = await db.execute(select(Student).where(Student.id == student_id))
-    student = result.scalar_one_or_none()
-    if not student:
+    result = await db.execute(select(User).where(User.id == student_id, User.role_id == 1))
+    user = result.scalar_one_or_none()
+    if not user:
         raise HTTPException(status_code=404, detail="Student not found")
-    await db.delete(student)
+    # cascade deletes profile/ranking/test_results
+    await db.delete(user)
     await db.commit()
     return None
 
@@ -446,13 +433,13 @@ async def reset_student_password(
     db: AsyncSession = Depends(get_session),
     _user: dict = Depends(require_role("admin", "giao_vien")),
 ):
-    result = await db.execute(select(Student).where(Student.id == student_id))
-    student = result.scalar_one_or_none()
-    if not student:
+    result = await db.execute(select(User).where(User.id == student_id, User.role_id == 1))
+    user = result.scalar_one_or_none()
+    if not user:
         raise HTTPException(status_code=404, detail="Student not found")
     from db.password import hash_password
     default_pw = "88888888"
-    student.hashed_password = hash_password(default_pw)
+    user.hashed_password = hash_password(default_pw)
     await db.commit()
     return {"message": "Đã reset mật khẩu thành công", "new_password": default_pw}
 
@@ -466,8 +453,22 @@ async def get_teachers(
     db: AsyncSession = Depends(get_session),
     _user: dict = Depends(get_current_user),
 ):
-    result = await db.execute(select(Teacher))
-    return result.scalars().all()
+    result = await db.execute(select(User).where(User.role_id.in_([2, 3])))
+    users = result.scalars().all()
+
+    teacher_list = []
+    for u in users:
+        p_res = await db.execute(select(Teacher).where(Teacher.user_id == u.id))
+        profile = p_res.scalar_one_or_none()
+        teacher_list.append({
+            "id": u.id,
+            "name": u.name,
+            "email": u.email,
+            "subject": profile.subject if profile else None,
+            "role_id": u.role_id,
+            "created_at": u.created_at,
+        })
+    return teacher_list
 
 @router.get("/teachers/{teacher_id}", response_model=TeacherResponse)
 async def get_teacher(
@@ -475,11 +476,20 @@ async def get_teacher(
     db: AsyncSession = Depends(get_session),
     _user: dict = Depends(get_current_user),
 ):
-    result = await db.execute(select(Teacher).where(Teacher.id == teacher_id))
+    result = await db.execute(select(User).where(User.id == teacher_id, User.role_id.in_([2, 3])))
     teacher = result.scalar_one_or_none()
     if not teacher:
         raise HTTPException(status_code=404, detail="Teacher not found")
-    return teacher
+    p_res = await db.execute(select(Teacher).where(Teacher.user_id == teacher.id))
+    profile = p_res.scalar_one_or_none()
+    return {
+        "id": teacher.id,
+        "name": teacher.name,
+        "email": teacher.email,
+        "subject": profile.subject if profile else None,
+        "role_id": teacher.role_id,
+        "created_at": teacher.created_at,
+    }
 
 @router.post("/teachers", response_model=TeacherResponse, status_code=status.HTTP_201_CREATED)
 async def create_teacher(
@@ -488,17 +498,29 @@ async def create_teacher(
     _admin: dict = Depends(require_role("admin")),
 ):
     from db.password import hash_password
-    db_teacher = Teacher(
+    db_user = User(
         name=teacher.name,
         email=teacher.email,
-        subject=teacher.subject,
-        role_id=teacher.role_id,
+        role_id=teacher.role_id or 2,
         hashed_password=hash_password(teacher.password or "88888888"),
     )
-    db.add(db_teacher)
+    db.add(db_user)
     await db.commit()
-    await db.refresh(db_teacher)
-    return db_teacher
+    await db.refresh(db_user)
+
+    db_profile = Teacher(user_id=db_user.id, subject=teacher.subject)
+    db.add(db_profile)
+    await db.commit()
+    await db.refresh(db_user)
+
+    return {
+        "id": db_user.id,
+        "name": db_user.name,
+        "email": db_user.email,
+        "subject": db_profile.subject,
+        "role_id": db_user.role_id,
+        "created_at": db_user.created_at,
+    }
 
 @router.put("/teachers/{teacher_id}", response_model=TeacherResponse)
 async def update_teacher(
@@ -507,22 +529,43 @@ async def update_teacher(
     db: AsyncSession = Depends(get_session),
     _admin: dict = Depends(require_role("admin")),
 ):
-    result = await db.execute(select(Teacher).where(Teacher.id == teacher_id))
-    teacher = result.scalar_one_or_none()
-    if not teacher:
+    result = await db.execute(select(User).where(User.id == teacher_id, User.role_id.in_([2, 3])))
+    user = result.scalar_one_or_none()
+    if not user:
         raise HTTPException(status_code=404, detail="Teacher not found")
-    
+
     from db.password import hash_password
     update_data = teacher_data.model_dump(exclude_unset=True)
     new_password = update_data.pop("password", None)
-    for key, value in update_data.items():
-        setattr(teacher, key, value)
+    if "name" in update_data:
+        user.name = update_data["name"]
+    if "email" in update_data:
+        user.email = update_data["email"]
+    if "role_id" in update_data:
+        user.role_id = update_data["role_id"]
     if new_password:
-        teacher.hashed_password = hash_password(new_password)
-        
+        user.hashed_password = hash_password(new_password)
+
+    p_res = await db.execute(select(Teacher).where(Teacher.user_id == user.id))
+    profile = p_res.scalar_one_or_none()
+    if "subject" in update_data:
+        if profile:
+            profile.subject = update_data["subject"]
+        else:
+            profile = Teacher(user_id=user.id, subject=update_data["subject"])
+            db.add(profile)
+
     await db.commit()
-    await db.refresh(teacher)
-    return teacher
+    await db.refresh(user)
+
+    return {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "subject": profile.subject if profile else None,
+        "role_id": user.role_id,
+        "created_at": user.created_at,
+    }
 
 @router.delete("/teachers/{teacher_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_teacher(
@@ -530,11 +573,11 @@ async def delete_teacher(
     db: AsyncSession = Depends(get_session),
     _admin: dict = Depends(require_role("admin")),
 ):
-    result = await db.execute(select(Teacher).where(Teacher.id == teacher_id))
-    teacher = result.scalar_one_or_none()
-    if not teacher:
+    result = await db.execute(select(User).where(User.id == teacher_id, User.role_id.in_([2, 3])))
+    user = result.scalar_one_or_none()
+    if not user:
         raise HTTPException(status_code=404, detail="Teacher not found")
-    await db.delete(teacher)
+    await db.delete(user)
     await db.commit()
     return None
 
@@ -545,13 +588,13 @@ async def reset_teacher_password(
     db: AsyncSession = Depends(get_session),
     _admin: dict = Depends(require_role("admin")),
 ):
-    result = await db.execute(select(Teacher).where(Teacher.id == teacher_id))
-    teacher = result.scalar_one_or_none()
-    if not teacher:
+    result = await db.execute(select(User).where(User.id == teacher_id, User.role_id.in_([2, 3])))
+    user = result.scalar_one_or_none()
+    if not user:
         raise HTTPException(status_code=404, detail="Teacher not found")
     from db.password import hash_password
     default_pw = "88888888"
-    teacher.hashed_password = hash_password(default_pw)
+    user.hashed_password = hash_password(default_pw)
     await db.commit()
     return {"message": "Đã reset mật khẩu thành công", "new_password": default_pw}
 
@@ -586,26 +629,26 @@ async def create_or_update_ranking(
     db: AsyncSession = Depends(get_session),
     _admin: dict = Depends(require_role("admin")),
 ):
-    # Check if student exists
-    std_res = await db.execute(select(Student).where(Student.id == ranking.student_id))
-    if not std_res.scalar_one_or_none():
-        raise HTTPException(status_code=404, detail="Student not found")
-        
-    # Check if ranking already exists for this student
-    exist_res = await db.execute(select(Ranking).where(Ranking.student_id == ranking.student_id))
+    # Check if user exists
+    usr_res = await db.execute(select(User).where(User.id == ranking.user_id))
+    if not usr_res.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Check if ranking already exists for this user
+    exist_res = await db.execute(select(Ranking).where(Ranking.user_id == ranking.user_id))
     db_ranking = exist_res.scalar_one_or_none()
-    
+
     if db_ranking:
         db_ranking.score = ranking.score
         db_ranking.level = ranking.level
     else:
         db_ranking = Ranking(
-            student_id=ranking.student_id,
+            user_id=ranking.user_id,
             score=ranking.score,
             level=ranking.level
         )
         db.add(db_ranking)
-        
+
     await db.commit()
     await db.refresh(db_ranking)
     return db_ranking
@@ -880,7 +923,7 @@ async def get_test_results(
 ):
     query = select(StudentTestResult)
     if student_id:
-        query = query.where(StudentTestResult.student_id == student_id)
+        query = query.where(StudentTestResult.user_id == student_id)
     result = await db.execute(query.order_by(StudentTestResult.test_date.desc()))
     return result.scalars().all()
 
@@ -908,7 +951,7 @@ async def get_student_test_results(
 
     result = await db.execute(
         select(StudentTestResult)
-        .where(StudentTestResult.student_id == student_id)
+        .where(StudentTestResult.user_id == student_id)
         .order_by(StudentTestResult.test_date.desc())
     )
     return list(result.scalars().all())
@@ -927,7 +970,7 @@ async def mark_test_result_complete(
         raise HTTPException(status_code=404, detail="Test result not found")
 
     # Students can only update their own results.
-    if user.get("role") == "hoc_sinh" and test_result.student_id != user["id"]:
+    if user.get("role") == "hoc_sinh" and test_result.user_id != user["id"]:
         raise HTTPException(status_code=403, detail="Không có quyền")
 
     test_result.roadmap_completed = body.completed
@@ -948,7 +991,7 @@ async def get_quick_check_questions(
     if not test_result:
         raise HTTPException(status_code=404, detail="Test result not found")
 
-    if user.get("role") == "hoc_sinh" and test_result.student_id != user["id"]:
+    if user.get("role") == "hoc_sinh" and test_result.user_id != user["id"]:
         raise HTTPException(status_code=403, detail="Không có quyền")
 
     gaps = test_result.gaps or []
@@ -993,7 +1036,7 @@ async def run_quick_check(
     if not test_result:
         raise HTTPException(status_code=404, detail="Test result not found")
 
-    if user.get("role") == "hoc_sinh" and test_result.student_id != user["id"]:
+    if user.get("role") == "hoc_sinh" and test_result.user_id != user["id"]:
         raise HTTPException(status_code=403, detail="Không có quyền")
 
     orig_gaps = test_result.gaps or []
@@ -1080,7 +1123,7 @@ async def submit_placement_test(
         training_plan = None
 
     test_result = StudentTestResult(
-        student_id=student_id,
+        user_id=student_id,
         test_id=test_id,
         answers=body.answers,
         score=body.score,
@@ -1105,13 +1148,13 @@ async def submit_placement_test(
     ranking_level = level_map.get(body.result_level, body.result_level)
     ranking_score = body.score
 
-    ranking_result = await db.execute(select(Ranking).where(Ranking.student_id == student_id))
+    ranking_result = await db.execute(select(Ranking).where(Ranking.user_id == student_id))
     ranking = ranking_result.scalar_one_or_none()
     if ranking:
         ranking.score = ranking_score
         ranking.level = ranking_level
     else:
-        ranking = Ranking(student_id=student_id, score=ranking_score, level=ranking_level)
+        ranking = Ranking(user_id=student_id, score=ranking_score, level=ranking_level)
         db.add(ranking)
 
     await db.commit()

@@ -30,7 +30,7 @@ def create_message_fpt(*, system: str, messages: list[dict], tools: list[dict] =
     """
     from openai import OpenAI
 
-    client = OpenAI(base_url=settings.fpt_api_base, api_key=settings.fpt_api_key)
+    client = OpenAI(base_url=settings.fpt_api_base, api_key=settings.fpt_api_key, timeout=30.0)
     req_model = model or settings.fpt_model
 
     openai_tools = None
