@@ -2,7 +2,7 @@
 import json
 import os
 from datetime import datetime
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import (
@@ -92,36 +92,46 @@ async def seed_data(session: AsyncSession) -> None:
 
 async def seed_questions(session: AsyncSession) -> None:
     """Seed question bank from question-bank.json."""
-    result = await session.execute(select(Question).limit(1))
-    if result.scalars().first():
-        return
-
     data = _load_json("question-bank.json")
-    for q in data["questions"]:
-        question = Question(
-            question_id=q["question_id"],
-            type=q["type"],
-            instruction_label=q["instruction_label"],
-            skill_id=q["skill_id"],
-            skill_name=q["skill_name"],
-            difficulty=q["difficulty"],
-            purpose=q["purpose"],
-            prompt=q["prompt"],
-            options=q["options"],
-            correct_option_id=q["correct_option_id"],
-            explanation=q.get("explanation"),
-        )
-        session.add(question)
+    existing_result = await session.execute(select(Question))
+    existing = {q.question_id: q for q in existing_result.scalars().all()}
+
+    for q in data.get("questions", []):
+        question_id = q["question_id"]
+        row = existing.get(question_id)
+        if row:
+            row.type = q["type"]
+            row.instruction_label = q["instruction_label"]
+            row.skill_id = q["skill_id"]
+            row.skill_name = q["skill_name"]
+            row.difficulty = q["difficulty"]
+            row.purpose = q["purpose"]
+            row.prompt = q.get("prompt")
+            row.options = q.get("options")
+            row.correct_option_id = q["correct_option_id"]
+            row.explanation = q.get("explanation")
+        else:
+            session.add(
+                Question(
+                    question_id=question_id,
+                    type=q["type"],
+                    instruction_label=q["instruction_label"],
+                    skill_id=q["skill_id"],
+                    skill_name=q["skill_name"],
+                    difficulty=q["difficulty"],
+                    purpose=q["purpose"],
+                    prompt=q.get("prompt"),
+                    options=q.get("options"),
+                    correct_option_id=q["correct_option_id"],
+                    explanation=q.get("explanation"),
+                )
+            )
 
     await session.commit()
 
 
 async def seed_placement_tests(session: AsyncSession) -> None:
     """Seed 6 bộ đề khảo sát (theo khối lớp x độ khó) từ test-sets.json."""
-    result = await session.execute(select(PlacementTest).limit(1))
-    if result.scalars().first():
-        return
-
     data = _load_json("test-sets.json")
 
     # Map question_id (VD "gsq_001") -> Question.id trong DB
@@ -130,32 +140,64 @@ async def seed_placement_tests(session: AsyncSession) -> None:
     for q in q_result.scalars().all():
         q_map[q.question_id] = q.id
 
-    for test_set in data["test_sets"]:
-        test = PlacementTest(
-            test_id=test_set["test_id"],
-            title=test_set["title"],
-            mascot=test_set.get("mascot"),
-            steps=test_set.get("steps"),
-            levels=[{
-                "level_id": test_set["difficulty"],
-                "label": test_set["title"],
-                "grade": test_set["grade"],
-            }],
-            adaptive_config={"strategy": "level_sequential", "grade": test_set["grade"], "difficulty": test_set["difficulty"]},
-        )
-        session.add(test)
-        await session.flush()
+    existing_result = await session.execute(select(PlacementTest))
+    existing = {t.test_id: t for t in existing_result.scalars().all()}
 
-        for order_num, question_id in enumerate(test_set["question_ids"], start=1):
+    for test_set in data.get("test_sets", []):
+        test_id = test_set["test_id"]
+        test = existing.get(test_id)
+        if test:
+            test.title = test_set["title"]
+            test.mascot = test_set.get("mascot")
+            test.steps = test_set.get("steps")
+            test.levels = [
+                {
+                    "level_id": test_set["difficulty"],
+                    "label": test_set["title"],
+                    "grade": test_set["grade"],
+                }
+            ]
+            test.adaptive_config = {
+                "strategy": "level_sequential",
+                "grade": test_set["grade"],
+                "difficulty": test_set["difficulty"],
+            }
+            await session.flush()
+        else:
+            test = PlacementTest(
+                test_id=test_id,
+                title=test_set["title"],
+                mascot=test_set.get("mascot"),
+                steps=test_set.get("steps"),
+                levels=[
+                    {
+                        "level_id": test_set["difficulty"],
+                        "label": test_set["title"],
+                        "grade": test_set["grade"],
+                    }
+                ],
+                adaptive_config={
+                    "strategy": "level_sequential",
+                    "grade": test_set["grade"],
+                    "difficulty": test_set["difficulty"],
+                },
+            )
+            session.add(test)
+            await session.flush()
+
+        await session.execute(delete(PlacementTestQuestion).where(PlacementTestQuestion.test_id == test.id))
+
+        for order_num, question_id in enumerate(test_set.get("question_ids", []), start=1):
             q_db_id = q_map.get(question_id)
             if not q_db_id:
                 continue
-            link = PlacementTestQuestion(
-                test_id=test.id,
-                question_id=q_db_id,
-                order_num=order_num,
+            session.add(
+                PlacementTestQuestion(
+                    test_id=test.id,
+                    question_id=q_db_id,
+                    order_num=order_num,
+                )
             )
-            session.add(link)
 
     await session.commit()
 
