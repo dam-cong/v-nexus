@@ -78,14 +78,6 @@ function computeResult(answers, questions) {
     const correct = selected === q.correct_option_id;
     if (correct) score += 1;
 
-    const skillId = q.skill_id;
-    if (mastery[skillId]) {
-      if (correct) {
-        mastery[skillId].correct += 1;
-      }
-      mastery[skillId].probability = mastery[skillId].correct / mastery[skillId].total;
-    }
-
     const opt = q.options?.find(o => o.option_id === selected);
     answersArr.push({
       question_id: q.question_id,
@@ -862,10 +854,17 @@ export default function StudentSurvey({ user, onTabChange }) {
   const handleReviewBack = () => setScreen('testing');
 
   const handleSubmit = useCallback(async () => {
-    if (!selectedTest?.id) return;
+    if (!selectedTest?.id || !questions.length) return;
 
     const elapsedSec = Math.floor((Date.now() - startTime) / 1000);
-    const res = computeResult(answers, questions);
+
+    let res;
+    try {
+      res = computeResult(answers, questions);
+    } catch (e) {
+      console.error('computeResult failed:', e);
+      return;
+    }
     res.time_total_sec = elapsedSec; // Override with real time
 
     setResult(res);
@@ -873,10 +872,10 @@ export default function StudentSurvey({ user, onTabChange }) {
 
     // If offline: save to IndexedDB + generate offline plan
     if (!navigator.onLine) {
-      const offlinePlan = generate_offline_plan(res.mastery, res.gaps, '');
-      const enriched = { ...res, training_plan: JSON.stringify(offlinePlan) };
-      setResult(enriched);
       try {
+        const offlinePlan = generate_offline_plan(res.mastery, res.gaps, '');
+        const enriched = { ...res, training_plan: JSON.stringify(offlinePlan) };
+        setResult(enriched);
         await savePendingResult({
           kind: 'survey-submit',
           endpoint: `/api/placement-tests/${selectedTest.id}/submit`,
@@ -900,6 +899,7 @@ export default function StudentSurvey({ user, onTabChange }) {
       return;
     }
 
+    setIsGeneratingPlan(true);
     try {
       const submitRes = await apiFetch(`/api/placement-tests/${selectedTest.id}/submit`, {
         method: 'POST',
@@ -920,8 +920,11 @@ export default function StudentSurvey({ user, onTabChange }) {
       });
       if (submitRes.ok) {
         const saved = await submitRes.json();
-        if (saved) {
+        if (saved && saved.training_plan) {
           setResult(saved);
+        } else if (saved) {
+          const offlinePlan = generate_offline_plan(res.mastery, res.gaps, '');
+          setResult({ ...saved, training_plan: JSON.stringify(offlinePlan) });
         }
       }
     } catch (e) {

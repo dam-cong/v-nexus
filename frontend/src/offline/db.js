@@ -185,6 +185,28 @@ export async function clearOfflineData() {
 
 // ── Seed from static /data/ (for offline zip first-run) ─────────────────────
 
+// Trình duyệt/nginx có thể trả về index.html (200 OK) thay vì 404 thật cho
+// đường dẫn tĩnh không tồn tại (SPA fallback catch-all). Không được tin
+// `res.ok` một mình — phải xác nhận content-type là JSON thật trước khi parse,
+// nếu không `.json()` sẽ throw SyntaxError khó hiểu (đã gặp trong production).
+async function safeJsonOrNull(res, label) {
+  if (!res.ok) {
+    console.warn(`[offline] ${label}: HTTP ${res.status}`);
+    return null;
+  }
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    console.warn(`[offline] ${label}: không phải JSON (content-type: ${contentType || 'unknown'}) — có thể do server trả về index.html thay vì file tĩnh chưa được sinh ra.`);
+    return null;
+  }
+  try {
+    return await res.json();
+  } catch (e) {
+    console.warn(`[offline] ${label}: JSON parse lỗi`, e);
+    return null;
+  }
+}
+
 export async function seedFromStaticData() {
   const db = await getDb();
   // Check if any data exists to prevent re-seeding
@@ -201,17 +223,19 @@ export async function seedFromStaticData() {
       fetch('/data/test-results.json'),
     ]);
 
-    if (!qRes.ok || !ptRes.ok || !sRes.ok || !tRes.ok || !rRes.ok || !trRes.ok) {
-      console.error('Failed to fetch one or more static data files.');
+    const [questions, tests, students, teachers, rankings, testResults] = await Promise.all([
+      safeJsonOrNull(qRes, 'questions.json'),
+      safeJsonOrNull(ptRes, 'placement-tests.json'),
+      safeJsonOrNull(sRes, 'students.json'),
+      safeJsonOrNull(tRes, 'teachers.json'),
+      safeJsonOrNull(rRes, 'rankings.json'),
+      safeJsonOrNull(trRes, 'test-results.json'),
+    ]);
+
+    if (!questions || !tests || !students || !teachers || !rankings || !testResults) {
+      console.error('[offline] Thiếu dữ liệu tĩnh để seed offline — bỏ qua, app vẫn chạy được nhưng chưa có dữ liệu offline sẵn.');
       return false;
     }
-
-    const questions = await qRes.json();
-    const tests = await ptRes.json();
-    const students = await sRes.json();
-    const teachers = await tRes.json();
-    const rankings = await rRes.json();
-    const testResults = await trRes.json();
 
     // Seed Questions
     const txQ = db.transaction(STORES.QUESTIONS, 'readwrite');
