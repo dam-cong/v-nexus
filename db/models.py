@@ -54,6 +54,11 @@ class Student(Base):
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
     role_id: Mapped[int] = mapped_column(Integer, ForeignKey("roles.id"), default=1)
     grade: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    years_studying_english: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    learning_environment: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    self_assessment_level: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    learning_goal: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    training_plan: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     # Relationships

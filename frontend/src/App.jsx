@@ -35,6 +35,7 @@ import Login from './pages/Login';
 import StudentSurvey from './StudentSurvey';
 import StudentHistory from './StudentHistory';
 import StudentRoadmap from './StudentRoadmap';
+import BeautifulRoadmap from './BeautifulRoadmap';
 import './App.css';
 
 // Base API URL
@@ -93,6 +94,22 @@ function DashboardApp({ user, logout }) {
   // Modals state
   const [studentModal, setStudentModal] = useState({ open: false, mode: 'create', data: null });
   const [teacherModal, setTeacherModal] = useState({ open: false, mode: 'create', data: null });
+  const [studentRoadmapModal, setStudentRoadmapModal] = useState({ open: false, data: null });
+  const [selectedRoadmapTab, setSelectedRoadmapTab] = useState(null);
+
+  const openStudentRoadmap = (student) => {
+    setStudentRoadmapModal({ open: true, data: student });
+    if (student.training_plan) {
+      setSelectedRoadmapTab('survey');
+    } else {
+      const testPlans = (student.test_results || []).filter(r => r.training_plan);
+      if (testPlans.length > 0) {
+        setSelectedRoadmapTab(`result_${testPlans[0].id}`);
+      } else {
+        setSelectedRoadmapTab(null);
+      }
+    }
+  };
 
   // Form states
   const [surveyForm, setSurveyForm] = useState({
@@ -178,6 +195,21 @@ function DashboardApp({ user, logout }) {
       }
     } catch (err) {
       console.error("Error fetching student test results:", err);
+    }
+  };
+
+  const [studentProfile, setStudentProfile] = useState(null);
+
+  const fetchStudentProfile = async () => {
+    if (!user || !user.id || user.role !== 'hoc_sinh') return;
+    try {
+      const res = await apiFetch(`/api/students/${user.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setStudentProfile(data);
+      }
+    } catch (err) {
+      console.error("Error fetching student profile:", err);
     }
   };
 
@@ -322,8 +354,15 @@ function DashboardApp({ user, logout }) {
   };
 
   useEffect(() => {
-    loadAllData();
-  }, []);
+    if (user) {
+      if (user.role === 'hoc_sinh') {
+        fetchStudentTestResults();
+        fetchStudentProfile();
+      } else {
+        loadAllData();
+      }
+    }
+  }, [user]);
 
   // Refresh roadmap badges after completing a quick-check
   useEffect(() => {
@@ -352,6 +391,10 @@ function DashboardApp({ user, logout }) {
           name: surveyForm.name,
           email: surveyForm.email,
           grade: surveyForm.grade,
+          years_studying_english: parseInt(surveyForm.years_studying_english, 10),
+          learning_environment: surveyForm.learning_environment,
+          self_assessment_level: surveyForm.self_assessment_level,
+          learning_goal: surveyForm.learning_goal,
           role_id: 1
         })
       });
@@ -629,7 +672,7 @@ function DashboardApp({ user, logout }) {
               </button>
               <button
                 className={`menu-item ${studentActiveTab === 'roadmap' ? 'active' : ''}`}
-                onClick={() => { setStudentActiveTab('roadmap'); fetchStudentTestResults(); if (!questions.length) fetchQuestions(); setSidebarOpen(false); }}
+                onClick={() => { setStudentActiveTab('roadmap'); fetchStudentTestResults(); fetchStudentProfile(); if (!questions.length) fetchQuestions(); setSidebarOpen(false); }}
               >
                 <Sparkles size={20} />
                 <span>Lộ trình của em</span>
@@ -679,8 +722,8 @@ function DashboardApp({ user, logout }) {
             <span>Bảng xếp hạng</span>
           </button>
 
-          {/* Assessment tab: visible to admin and teacher */}
-          {(user?.role === 'admin' || user?.role === 'giao_vien') && (
+          {/* Assessment tab: visible to admin */}
+          {user?.role === 'admin' && (
             <button
               className={`menu-item ${activeTab === 'assessment' ? 'active' : ''}`}
               onClick={() => { setActiveTab('assessment'); setAssessmentSubTab('test-results'); fetchTestResults(); fetchStudents(); setSidebarOpen(false); }}
@@ -878,6 +921,7 @@ function DashboardApp({ user, logout }) {
                 <StudentRoadmap
                   results={studentTestResults}
                   questions={questions}
+                  studentProfile={studentProfile}
                   onStartSurvey={() => setStudentActiveTab('survey')}
                 />
               )}
@@ -1224,6 +1268,16 @@ function DashboardApp({ user, logout }) {
                               >
                                 <Key size={14} />
                               </button>
+                              {(student.training_plan || (student.test_results && student.test_results.some(r => r.training_plan))) && (
+                                <button
+                                  className="action-btn"
+                                  style={{ color: '#8b5cf6', borderColor: '#c084fc', background: '#faf5ff' }}
+                                  title="Xem Lộ trình AI"
+                                  onClick={() => openStudentRoadmap(student)}
+                                >
+                                  <Sparkles size={14} />
+                                </button>
+                              )}
                               <button 
                                 className="action-btn action-btn-delete" 
                                 title="Xóa"
@@ -1912,7 +1966,7 @@ function DashboardApp({ user, logout }) {
                         <Lightbulb size={18} style={{ color: '#a43c20' }} />
                         Kế hoạch đào tạo cá nhân hóa (AI)
                       </h4>
-                      <div className="history-training-plan">{selectedResult.training_plan}</div>
+                      <BeautifulRoadmap planText={selectedResult.training_plan} studentKey={`result_${selectedResult.id}`} readOnly={true} />
                     </div>
                   )}
 
@@ -2451,6 +2505,125 @@ function DashboardApp({ user, logout }) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================================
+          MODALS: STUDENT ROADMAP (VIEW)
+          ========================================================== */}
+      {studentRoadmapModal.open && studentRoadmapModal.data && (
+        <div className="modal-overlay">
+          <div className="modal-card animate-fade-in" style={{ maxWidth: '750px', width: '90%' }}>
+            <button 
+              className="modal-close-btn" 
+              onClick={() => setStudentRoadmapModal({ open: false, data: null })}
+            >
+              <X size={24} />
+            </button>
+            <h3 style={{ fontSize: '22px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Sparkles size={24} color="#8b5cf6" />
+              <span>Lộ trình học tập của {studentRoadmapModal.data.name}</span>
+            </h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '70vh', overflowY: 'auto', paddingRight: '8px' }}>
+              
+              {/* Tab Selector if there are multiple roadmaps */}
+              {(() => {
+                const student = studentRoadmapModal.data;
+                const hasSurvey = !!student.training_plan;
+                const testPlans = (student.test_results || []).filter(r => r.training_plan);
+                
+                if ((hasSurvey ? 1 : 0) + testPlans.length <= 1) return null;
+                
+                return (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', borderBottom: '1px solid #e5e7eb', paddingBottom: '12px', marginBottom: '8px' }}>
+                    {hasSurvey && (
+                      <button
+                        className={`chip ${selectedRoadmapTab === 'survey' ? 'active' : ''}`}
+                        onClick={() => setSelectedRoadmapTab('survey')}
+                        style={{ border: selectedRoadmapTab === 'survey' ? '2px solid #8b5cf6' : '1px solid #e5e7eb' }}
+                      >
+                        Khảo sát đầu vào
+                      </button>
+                    )}
+                    {testPlans.map((r, idx) => (
+                      <button
+                        key={r.id}
+                        className={`chip ${selectedRoadmapTab === `result_${r.id}` ? 'active' : ''}`}
+                        onClick={() => setSelectedRoadmapTab(`result_${r.id}`)}
+                        style={{ border: selectedRoadmapTab === `result_${r.id}` ? '2px solid #8b5cf6' : '1px solid #e5e7eb' }}
+                      >
+                        Bài test {new Date(r.test_date).toLocaleDateString('vi-VN')} {idx === 0 && '(Mới nhất)'}
+                      </button>
+                    ))}
+                  </div>
+                );
+              })()}
+
+              {/* Survey details */}
+              <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '16px', border: '1px solid #e5e7eb' }}>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: '15px', color: '#4b5563', fontWeight: '700' }}>Thông tin khảo sát đầu vào:</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', fontSize: '14px' }}>
+                  <div>
+                    <span style={{ color: '#6b7280' }}>Khối lớp: </span>
+                    <strong style={{ color: '#111827' }}>{studentRoadmapModal.data.grade || 'Lớp 6'}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: '#6b7280' }}>Số năm học Tiếng Anh: </span>
+                    <strong style={{ color: '#111827' }}>{studentRoadmapModal.data.years_studying_english || 0} năm</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: '#6b7280' }}>Môi trường học tập: </span>
+                    <strong style={{ color: '#111827' }}>
+                      {studentRoadmapModal.data.learning_environment === 'school' ? 'Chỉ học ở trường' :
+                       studentRoadmapModal.data.learning_environment === 'center' ? 'Học ở trung tâm' :
+                       studentRoadmapModal.data.learning_environment === 'self_study' ? 'Tự học qua mạng' :
+                       studentRoadmapModal.data.learning_environment || 'Chưa rõ'}
+                    </strong>
+                  </div>
+                  <div>
+                    <span style={{ color: '#6b7280' }}>Tự đánh giá trình độ: </span>
+                    <strong style={{ color: '#111827' }}>{studentRoadmapModal.data.self_assessment_level || 'A1'}</strong>
+                  </div>
+                </div>
+                {studentRoadmapModal.data.learning_goal && (
+                  <div style={{ marginTop: '12px', fontSize: '14px', borderTop: '1px solid #f3f4f6', paddingTop: '8px' }}>
+                    <span style={{ color: '#6b7280' }}>Mục tiêu học tập: </span>
+                    <p style={{ margin: '4px 0 0 0', color: '#111827', fontStyle: 'italic' }}>{studentRoadmapModal.data.learning_goal}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Training Plan */}
+              <div>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '16px', color: '#374151', fontWeight: '800' }}>Kế hoạch & Lộ trình đào tạo đề xuất (AI):</h4>
+                {(() => {
+                  const student = studentRoadmapModal.data;
+                  if (selectedRoadmapTab === 'survey' && student.training_plan) {
+                    return <BeautifulRoadmap planText={student.training_plan} studentKey={`survey_${student.id}`} readOnly={true} />;
+                  } else if (selectedRoadmapTab && selectedRoadmapTab.startsWith('result_')) {
+                    const resultId = parseInt(selectedRoadmapTab.replace('result_', ''));
+                    const resultObj = (student.test_results || []).find(r => r.id === resultId);
+                    if (resultObj) {
+                      return <BeautifulRoadmap planText={resultObj.training_plan} studentKey={`result_${resultObj.id}`} readOnly={true} />;
+                    }
+                  }
+                  return <p style={{ color: 'var(--text-muted)' }}>Không có lộ trình nào được chọn.</p>;
+                })()}
+              </div>
+
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
+              <button 
+                type="button" 
+                className="btn btn-primary"
+                onClick={() => setStudentRoadmapModal({ open: false, data: null })}
+              >
+                Đóng lại
+              </button>
+            </div>
           </div>
         </div>
       )}

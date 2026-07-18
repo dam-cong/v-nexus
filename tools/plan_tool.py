@@ -389,3 +389,57 @@ plan_tool = Tool(
     },
     func=generate_training_plan,
 )
+
+
+SURVEY_SYSTEM_PROMPT = (
+    "Bạn là trợ lý giáo viên AI của V-Nexus Tutor, chuyên môn Tiếng Anh tiểu học và trung học "
+    "(CT GDPT 2018). Nhiệm vụ: từ thông tin khảo sát đầu vào của MỘT học sinh, "
+    "hãy lập kế hoạch học tập và lộ trình cá nhân hóa bằng tiếng Việt.\n"
+    "Kế hoạch gồm:\n"
+    "1. Nhận xét chung về thông tin của học sinh (khối lớp, số năm học, môi trường và mức tự đánh giá).\n"
+    "2. Lộ trình học tập chi tiết (giai đoạn ôn tập kiến thức cũ, giai đoạn học mới, các nhóm kỹ năng trọng tâm).\n"
+    "3. Phương pháp học tập và lời khuyên dành cho giáo viên và học sinh để đạt được mục tiêu học tập đề ra.\n"
+    "Viết thân thiện, khích lệ học sinh, ngôn ngữ rõ ràng, phân chia các phần mạch lạc."
+)
+
+
+def generate_training_plan_from_survey(
+    student_name: str,
+    grade: str,
+    years_studying_english: int,
+    learning_environment: str,
+    self_assessment_level: str,
+    learning_goal: str
+) -> str:
+    """Gọi FPT LLM để sinh kế hoạch đào tạo dựa trên khảo sát đầu vào."""
+    env_map = {
+        "school": "Chỉ học ở trường",
+        "center": "Học ở trung tâm",
+        "self_study": "Tự học qua mạng"
+    }
+    env_text = env_map.get(learning_environment, learning_environment)
+    
+    user_msg = (
+        f"Học sinh: {student_name}\n"
+        f"Khối lớp: {grade}\n"
+        f"Số năm học Tiếng Anh: {years_studying_english} năm\n"
+        f"Môi trường học tập: {env_text}\n"
+        f"Tự đánh giá trình độ hiện tại: {self_assessment_level}\n"
+        f"Mục tiêu học tập: {learning_goal}\n\n"
+        "Hãy lập lộ trình học tập và kế hoạch đào tạo cá nhân hóa cho học sinh này."
+    )
+    
+    try:
+        resp = create_message_fpt(
+            system=SURVEY_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": user_msg}],
+            tools=None,
+        )
+        return resp.get("text") or "(Hệ thống chưa sinh được lộ trình. Vui lòng thử lại.)"
+    except Exception as e:
+        return (
+            f"[Lộ trình tạm thời - LLM chưa khả dụng: {e}]\n"
+            f"Dựa trên khảo sát của em {student_name} ({grade}), với mục tiêu '{learning_goal}', "
+            "hệ thống khuyến nghị tập trung ôn tập ngữ pháp và từ vựng theo chương trình học trên lớp."
+        )
+

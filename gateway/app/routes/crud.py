@@ -61,6 +61,10 @@ class StudentBase(BaseModel):
     email: EmailStr
     grade: Optional[str] = None
     role_id: Optional[int] = 1
+    years_studying_english: Optional[int] = None
+    learning_environment: Optional[str] = None
+    self_assessment_level: Optional[str] = None
+    learning_goal: Optional[str] = None
 
 class StudentCreate(StudentBase):
     password: Optional[str] = None
@@ -71,10 +75,16 @@ class StudentUpdate(BaseModel):
     grade: Optional[str] = None
     role_id: Optional[int] = None
     password: Optional[str] = None
+    years_studying_english: Optional[int] = None
+    learning_environment: Optional[str] = None
+    self_assessment_level: Optional[str] = None
+    learning_goal: Optional[str] = None
+    training_plan: Optional[str] = None
 
 class StudentResponse(StudentBase):
     id: int
     created_at: datetime
+    training_plan: Optional[str] = None
     ranking: Optional[RankingResponse] = None
     test_results: List["TestResultResponse"] = []
     class Config:
@@ -258,6 +268,11 @@ async def get_students(
             "email": s.email,
             "grade": s.grade,
             "role_id": s.role_id,
+            "years_studying_english": s.years_studying_english,
+            "learning_environment": s.learning_environment,
+            "self_assessment_level": s.self_assessment_level,
+            "learning_goal": s.learning_goal,
+            "training_plan": s.training_plan,
             "created_at": s.created_at,
             "ranking": ranking_obj,
             "test_results": test_results_obj,
@@ -291,6 +306,11 @@ async def get_student(
         "email": student.email,
         "grade": student.grade,
         "role_id": student.role_id,
+        "years_studying_english": student.years_studying_english,
+        "learning_environment": student.learning_environment,
+        "self_assessment_level": student.self_assessment_level,
+        "learning_goal": student.learning_goal,
+        "training_plan": student.training_plan,
         "created_at": student.created_at,
         "ranking": ranking_obj,
         "test_results": test_results_obj,
@@ -300,14 +320,36 @@ async def get_student(
 async def create_student(
     student: StudentCreate,
     db: AsyncSession = Depends(get_session),
-    _admin: dict = Depends(require_role("admin")),
+    _user: dict = Depends(require_role("admin", "giao_vien")),
 ):
     from db.password import hash_password
+    
+    # Generate training plan from survey if provided
+    training_plan = None
+    if student.years_studying_english is not None or student.learning_goal:
+        try:
+            from tools.plan_tool import generate_training_plan_from_survey
+            training_plan = generate_training_plan_from_survey(
+                student_name=student.name,
+                grade=student.grade or "Lớp 6",
+                years_studying_english=student.years_studying_english or 0,
+                learning_environment=student.learning_environment or "school",
+                self_assessment_level=student.self_assessment_level or "A1",
+                learning_goal=student.learning_goal or ""
+            )
+        except Exception as e:
+            print(f"[LLM] Failed to generate training plan from survey: {e}")
+
     db_student = Student(
         name=student.name,
         email=student.email,
         grade=student.grade,
         role_id=student.role_id,
+        years_studying_english=student.years_studying_english,
+        learning_environment=student.learning_environment,
+        self_assessment_level=student.self_assessment_level,
+        learning_goal=student.learning_goal,
+        training_plan=training_plan,
         hashed_password=hash_password(student.password or "88888888"),
     )
     db.add(db_student)
@@ -328,6 +370,11 @@ async def create_student(
         "email": db_student.email,
         "grade": db_student.grade,
         "role_id": db_student.role_id,
+        "years_studying_english": db_student.years_studying_english,
+        "learning_environment": db_student.learning_environment,
+        "self_assessment_level": db_student.self_assessment_level,
+        "learning_goal": db_student.learning_goal,
+        "training_plan": db_student.training_plan,
         "created_at": db_student.created_at,
         "ranking": ranking_obj,
         "test_results": [],
@@ -338,7 +385,7 @@ async def update_student(
     student_id: int,
     student_data: StudentUpdate,
     db: AsyncSession = Depends(get_session),
-    _admin: dict = Depends(require_role("admin")),
+    _user: dict = Depends(require_role("admin", "giao_vien")),
 ):
     result = await db.execute(select(Student).where(Student.id == student_id))
     student = result.scalar_one_or_none()
@@ -368,6 +415,11 @@ async def update_student(
         "email": student.email,
         "grade": student.grade,
         "role_id": student.role_id,
+        "years_studying_english": student.years_studying_english,
+        "learning_environment": student.learning_environment,
+        "self_assessment_level": student.self_assessment_level,
+        "learning_goal": student.learning_goal,
+        "training_plan": student.training_plan,
         "created_at": student.created_at,
         "ranking": ranking_obj,
         "test_results": test_results_obj,
@@ -377,7 +429,7 @@ async def update_student(
 async def delete_student(
     student_id: int,
     db: AsyncSession = Depends(get_session),
-    _admin: dict = Depends(require_role("admin")),
+    _user: dict = Depends(require_role("admin", "giao_vien")),
 ):
     result = await db.execute(select(Student).where(Student.id == student_id))
     student = result.scalar_one_or_none()
@@ -392,7 +444,7 @@ async def delete_student(
 async def reset_student_password(
     student_id: int,
     db: AsyncSession = Depends(get_session),
-    _admin: dict = Depends(require_role("admin")),
+    _user: dict = Depends(require_role("admin", "giao_vien")),
 ):
     result = await db.execute(select(Student).where(Student.id == student_id))
     student = result.scalar_one_or_none()
