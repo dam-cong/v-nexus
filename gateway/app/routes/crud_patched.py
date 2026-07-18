@@ -49,7 +49,7 @@ class RankingUpdate(BaseModel):
 
 class RankingResponse(RankingBase):
     id: int
-    user_id: Optional[int] = None
+    user_id: int
     updated_at: datetime
     class Config:
         from_attributes = True
@@ -195,10 +195,10 @@ class TestResultResponse(BaseModel):
     gaps: Optional[list] = None
     recommendations: Optional[list] = None
     training_plan: Optional[str] = None
-    is_roadmap_approved: Optional[bool] = False
-    roadmap_completed: Optional[bool] = False
-    quick_check_passed: Optional[bool] = False
-    test_date: Optional[datetime] = None
+    is_roadmap_approved: bool = False
+    roadmap_completed: bool = False
+    quick_check_passed: bool = False
+    test_date: datetime
     created_at: datetime
     class Config:
         from_attributes = True
@@ -350,27 +350,13 @@ async def get_student(
     p_res = await db.execute(select(Student).where(Student.user_id == student.id))
     profile = p_res.scalar_one_or_none()
 
-    primary_teacher_id = None
-    parent_id = None
-    if profile:
-        if profile.primary_teacher_id:
-            t_res = await db.execute(select(Teacher).where(Teacher.id == profile.primary_teacher_id))
-            t_obj = t_res.scalar_one_or_none()
-            if t_obj:
-                primary_teacher_id = t_obj.user_id
-        if profile.parent_id:
-            p_res_obj = await db.execute(select(Parent).where(Parent.id == profile.parent_id))
-            p_obj = p_res_obj.scalar_one_or_none()
-            if p_obj:
-                parent_id = p_obj.user_id
-
     return {
         "id": student.id,
         "name": student.name,
         "email": student.email,
         "grade": profile.grade if profile else None,
-        "primary_teacher_id": primary_teacher_id,
-        "parent_id": parent_id,
+        "primary_teacher_id": profile.primary_teacher_id if profile else None,
+        "parent_id": profile.parent_id if profile else None,
         "role_id": student.role_id,
         "years_studying_english": profile.years_studying_english if profile else None,
         "learning_environment": profile.learning_environment if profile else None,
@@ -399,25 +385,11 @@ async def create_student(
     await db.commit()
     await db.refresh(db_user)
 
-    t_id = None
-    if student.primary_teacher_id:
-        t_res = await db.execute(select(Teacher).where(Teacher.user_id == student.primary_teacher_id))
-        t_obj = t_res.scalar_one_or_none()
-        if t_obj:
-            t_id = t_obj.id
-
-    p_id = None
-    if student.parent_id:
-        p_res_obj = await db.execute(select(Parent).where(Parent.user_id == student.parent_id))
-        p_obj = p_res_obj.scalar_one_or_none()
-        if p_obj:
-            p_id = p_obj.id
-
     db_profile = Student(
         user_id=db_user.id,
         grade=student.grade,
-        primary_teacher_id=t_id,
-        parent_id=p_id
+        primary_teacher_id=student.primary_teacher_id,
+        parent_id=student.parent_id
     )
     db.add(db_profile)
 
@@ -434,8 +406,8 @@ async def create_student(
         "name": db_user.name,
         "email": db_user.email,
         "grade": db_profile.grade,
-        "primary_teacher_id": student.primary_teacher_id,
-        "parent_id": student.parent_id,
+        "primary_teacher_id": db_profile.primary_teacher_id,
+        "parent_id": db_profile.parent_id,
         "role_id": db_user.role_id,
         "created_at": db_user.created_at,
         "ranking": ranking_obj,
@@ -487,23 +459,11 @@ async def update_student(
             else:
                 profile.parent_id = None
     else:
-        t_id = None
-        if update_data.get("primary_teacher_id"):
-            t_res = await db.execute(select(Teacher).where(Teacher.user_id == update_data["primary_teacher_id"]))
-            t_obj = t_res.scalar_one_or_none()
-            if t_obj: t_id = t_obj.id
-            
-        p_id = None
-        if update_data.get("parent_id"):
-            p_res_obj = await db.execute(select(Parent).where(Parent.user_id == update_data["parent_id"]))
-            p_obj = p_res_obj.scalar_one_or_none()
-            if p_obj: p_id = p_obj.id
-
         profile = Student(
             user_id=user.id, 
             grade=update_data.get("grade"),
-            primary_teacher_id=t_id,
-            parent_id=p_id
+            primary_teacher_id=update_data.get("primary_teacher_id"),
+            parent_id=update_data.get("parent_id")
         )
         db.add(profile)
 
@@ -520,8 +480,8 @@ async def update_student(
         "name": user.name,
         "email": user.email,
         "grade": profile.grade if profile else None,
-        "primary_teacher_id": update_data.get("primary_teacher_id") if "primary_teacher_id" in update_data else (student_data.primary_teacher_id if hasattr(student_data, 'primary_teacher_id') else None),
-        "parent_id": update_data.get("parent_id") if "parent_id" in update_data else (student_data.parent_id if hasattr(student_data, 'parent_id') else None),
+        "primary_teacher_id": profile.primary_teacher_id if profile else None,
+        "parent_id": profile.parent_id if profile else None,
         "role_id": user.role_id,
         "created_at": user.created_at,
         "ranking": ranking_obj,
