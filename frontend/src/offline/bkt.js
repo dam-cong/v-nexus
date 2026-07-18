@@ -67,7 +67,7 @@ function trace_root_causes(skill_id, mastery_map, threshold = 0.5) {
     const sub = trace_root_causes(p, mastery_map, threshold)
     if (sub.length) {
       roots.push(...sub)
-    } else if ((mastery_map[p] || {}).probability ?? 1.0 < threshold) {
+    } else if (((mastery_map[p] || {}).probability ?? 1.0) < threshold) {
       roots.push(p)
     }
   }
