@@ -1,4 +1,4 @@
-# V-Nexus Tutor — VAIC 2026
+# V-NEXUS SCHOOL: AI-powered Adaptive Learning Platform — VAIC 2026
 
 *"Mỗi học sinh một lộ trình, mỗi giáo viên một trợ lý" / "Close every learning gap, one
 root cause at a time"* _(tagline đề xuất, có thể đổi)_

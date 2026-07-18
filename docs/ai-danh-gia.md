@@ -1,4 +1,4 @@
-# Phân tích chi tiết: Cách triển khai phần AI — V-Nexus Adaptive Tutoring
+# Phân tích chi tiết: Cách triển khai phần AI — V-NEXUS SCHOOL Adaptive Learning Platform
 
 > Tài liệu dành cho nhóm trưởng — mô tả kiến trúc AI, thuật toán cốt lõi, cách nối vào codebase hiện có, model/thư viện sử dụng, nguồn dữ liệu, và cách xử lý rủi ro. (Bản không chứa code — phần triển khai kỹ thuật sẽ do Dev AI viết trực tiếp trong repo.)
 

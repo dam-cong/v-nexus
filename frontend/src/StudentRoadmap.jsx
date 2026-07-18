@@ -252,13 +252,13 @@ export default function StudentRoadmap({ results, questions, onStartSurvey, onQu
       </div>
 
       <div className="roadmap-list">
-        {hasSurveyPlan && filter !== 'completed' && filter !== 'todo' && (
+        {hasSurveyPlan && filter !== 'completed' && filter !== 'todo' && studentProfile && (
           <div className="roadmap-card latest" style={{ borderLeft: '4px solid #8b5cf6' }}>
             <div className="roadmap-card-head">
               <div>
                 <span className="roadmap-card-level" style={{ background: '#f5f3ff', color: '#7c3aed', fontWeight: 'bold' }}>Lộ trình khảo sát đầu vào</span>
                 <span className="roadmap-card-cefr" style={{ background: '#f3f4f6', color: '#374151' }}>
-                  {studentProfile.self_assessment_level || 'A1'}
+                  {studentProfile?.self_assessment_level || 'A1'}
                 </span>
               </div>
               <div className="roadmap-card-badge">
@@ -270,21 +270,21 @@ export default function StudentRoadmap({ results, questions, onStartSurvey, onQu
             <p className="roadmap-card-date">
               <BookOpen size={14} style={{ verticalAlign: 'middle', marginRight: 4 }} /> 
               <span>Môi trường: {
-                studentProfile.learning_environment === 'school' ? 'Chỉ học ở trường' :
-                studentProfile.learning_environment === 'center' ? 'Học ở trung tâm' :
-                studentProfile.learning_environment === 'self_study' ? 'Tự học qua mạng' :
-                studentProfile.learning_environment || 'Chưa rõ'
+                studentProfile?.learning_environment === 'school' ? 'Chỉ học ở trường' :
+                studentProfile?.learning_environment === 'center' ? 'Học ở trung tâm' :
+                studentProfile?.learning_environment === 'self_study' ? 'Tự học qua mạng' :
+                studentProfile?.learning_environment || 'Chưa rõ'
               }</span>
-              {studentProfile.years_studying_english !== null && (
+              {studentProfile?.years_studying_english != null && (
                 <span style={{ marginLeft: 12 }}>| Kinh nghiệm: {studentProfile.years_studying_english} năm</span>
               )}
             </p>
-            {studentProfile.learning_goal && (
+            {studentProfile?.learning_goal && (
               <p style={{ fontSize: '13px', margin: '4px 0 12px 0', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                 Mục tiêu: {studentProfile.learning_goal}
               </p>
             )}
-            <BeautifulRoadmap planText={studentProfile.training_plan} studentKey={`survey_${studentProfile.id}`} />
+            <BeautifulRoadmap planText={studentProfile?.training_plan} studentKey={`survey_${studentProfile?.id ?? ''}`} />
           </div>
         )}
 

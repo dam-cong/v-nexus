@@ -8,25 +8,42 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icons.svg', 'fonts/*.woff2'],
+      includeAssets: ['favicon.png', 'icons.svg', 'logo-mark.png', 'logo-full.png', 'fonts/*.woff2'],
       manifest: {
-        name: 'V-Nexus Tutor',
-        short_name: 'V-Nexus',
-        description: 'Gia sư thích ứng — học Tiếng Anh cá nhân hóa',
+        name: 'V-NEXUS SCHOOL: AI-powered Adaptive Learning Platform',
+        short_name: 'V-NEXUS SCHOOL',
+        description: 'AI-powered Adaptive Learning Platform — học Tiếng Anh cá nhân hóa',
         theme_color: '#6C63FF',
         background_color: '#ffffff',
         display: 'standalone',
         icons: [
-          { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }
+          { src: '/favicon.png', sizes: '64x64', type: 'image/png' },
+          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' }
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        cleanupOutdatedCaches: true,
+        navigateFallback: 'index.html',
+        navigateFallbackDenylist: [/^\/api\//, /\.[a-z]{2,}$/i],
+        navigateFallbackAllowlist: [/^\//],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',
             options: { cacheName: 'google-fonts-cache', expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 } }
+          },
+          {
+            urlPattern: ({ url, request }) => url.pathname.startsWith('/api/')
+              && request.method === 'GET'
+              && !url.pathname.includes('/questions'),
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'api-cache',
+              expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 },
+              cacheableResponse: { statuses: [0, 200] }
+            }
           }
         ]
       }
@@ -36,6 +53,16 @@ export default defineConfig({
     port: 8501,
     host: '0.0.0.0',
     allowedHosts: ['v-nexus.editech.vn'],
+    proxy: {
+      '/api': {
+        target: process.env.GATEWAY_URL || 'http://localhost:8000',
+        changeOrigin: true,
+      }
+    }
+  },
+  preview: {
+    port: 8501,
+    host: '0.0.0.0',
     proxy: {
       '/api': {
         target: process.env.GATEWAY_URL || 'http://localhost:8000',

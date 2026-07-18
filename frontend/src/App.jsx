@@ -38,6 +38,10 @@ import StudentHistory from './StudentHistory';
 import StudentRoadmap from './StudentRoadmap';
 import StudentDashboard from './StudentDashboard';
 import BeautifulRoadmap from './BeautifulRoadmap';
+import useOnlineStatus from './offline/useOnlineStatus';
+import { saveQuestions, savePlacementTests, saveTestQuestions, clearOfflineData, getQuestions as getOfflineQuestions, getPlacementTests as getOfflineTests, seedFromStaticData } from './offline/db.js';
+import { OfflineError } from './api';
+import { WifiOff, Wifi } from 'lucide-react';
 import './App.css';
 
 // Base API URL
@@ -90,6 +94,9 @@ function DashboardApp({ user, logout }) {
   const [studentActiveTab, setStudentActiveTab] = useState('survey');
   const [studentTestResults, setStudentTestResults] = useState([]);
 
+  // Offline state
+  const isOnline = useOnlineStatus();
+
   // Search queries
   const [studentSearch, setStudentSearch] = useState('');
   const [studentLevelFilter, setStudentLevelFilter] = useState('');
@@ -139,6 +146,9 @@ function DashboardApp({ user, logout }) {
     subject: '',
     password: ''
   });
+
+  // ── Offline download handler ──────────────────────────────────────────────
+  // (removed — offline mode uses live-site SW cache, not zip download)
 
   // Fetch all data
   const fetchStudents = async () => {
@@ -383,6 +393,18 @@ function DashboardApp({ user, logout }) {
     await Promise.all([fetchStudents(), fetchTeachers(), fetchRankings(), fetchTestResults()]);
     setLoading(false);
   };
+
+  // ── Seed IndexedDB from /data on mount (for offline use) ──────────────
+  useEffect(() => {
+    (async () => {
+      const seeded = await seedFromStaticData();
+      if (seeded) {
+        console.log('[offline] IndexedDB seeded from /data');
+        fetchQuestions();
+        fetchPlacementTests();
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -688,8 +710,8 @@ function DashboardApp({ user, logout }) {
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-logo">
-          <div className="sidebar-logo-icon">V</div>
-          <span>V-Nexus Tutor</span>
+          <div className="sidebar-logo-icon"><img src="/logo-mark.png" alt="V-NEXUS SCHOOL" /></div>
+          <span>V-NEXUS SCHOOL</span>
         </div>
         
         <div className="sidebar-menu">
@@ -796,8 +818,8 @@ function DashboardApp({ user, logout }) {
         </div>
 
         <div className="sidebar-footer">
-          <p>V-Nexus Tutor</p>
-          <p>Adaptive Platform v1.0</p>
+          <p>V-NEXUS SCHOOL</p>
+          <p>AI-powered Adaptive Learning Platform</p>
         </div>
       </aside>
 
@@ -880,6 +902,15 @@ function DashboardApp({ user, logout }) {
             )}
             
             <div className="icon-buttons">
+              {isOnline ? (
+                <span className="online-badge" title="Đang kết nối mạng">
+                  <Wifi size={14} /> Online
+                </span>
+              ) : (
+                <span className="offline-badge" title="Đang offline — dữ liệu vẫn sử dụng được">
+                  <WifiOff size={14} /> Offline
+                </span>
+              )}
               <button className="icon-btn"><Bell size={18} /></button>
               <button className="icon-btn"><Settings size={18} /></button>
             </div>

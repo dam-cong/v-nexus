@@ -1,5 +1,5 @@
 ---
-name: V-Nexus Tutor Design System
+name: V-NEXUS SCHOOL Design System
 colors:
   surface: '#fbf8ff'
   surface-dim: '#d4d7ff'
