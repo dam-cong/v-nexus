@@ -43,11 +43,12 @@ function Icon({ name, size = 24, className = '', style = {} }) {
   return <Comp size={size} className={className} style={style} />;
 }
 
-const LEVELS = [
-  { id: 'starter', label: 'Mới bắt đầu', cefr: 'Pre-A1', icon: 'sentiment_satisfied', desc: 'Em mới làm quen với Tiếng Anh. Bắt đầu từ những từ vựng cơ bản nhất.' },
-  { id: 'beginner', label: 'Cơ bản', cefr: 'A1', icon: 'school', desc: 'Em đã biết một số từ vựng và câu đơn giản quen thuộc.' },
-  { id: 'elementary', label: 'Sơ cấp', cefr: 'A2', icon: 'import_contacts', desc: 'Em sử dụng được ngữ pháp cơ bản và giao tiếp trong các tình huống quen thuộc.' },
-];
+function getTestMeta(test) {
+  const cfg = test?.adaptive_config || {};
+  const difficulty = cfg.difficulty || test?.levels?.[0]?.level_id || '';
+  const grade = cfg.grade || test?.levels?.[0]?.grade || '';
+  return { difficulty, grade };
+}
 
 const SKILL_LABELS = {
   'as3.u1.l3': 'Present Simple vs Present Continuous',
@@ -120,6 +121,7 @@ function computeResult(answers, questions) {
     .filter(([, m]) => m.probability < 0.3)
     .map(([skillId, m]) => ({
       skill_id: skillId,
+      skill_name: m.skill_name,
       severity: m.probability < 0.15 ? 'high' : 'medium',
       reason: `Chưa nắm vững ${m.skill_name}`,
     }));
@@ -128,6 +130,7 @@ function computeResult(answers, questions) {
     .filter(([, m]) => m.probability < 0.7)
     .map(([skillId, m]) => ({
       skill_id: skillId,
+      skill_name: m.skill_name,
       action: `Luyện tập ${m.skill_name}`,
       priority: m.probability < 0.3 ? 'high' : 'low',
     }));
@@ -140,48 +143,66 @@ function computeResult(answers, questions) {
   };
 }
 
-function useQuestions() {
-  const [questions, setQuestions] = useState([]);
+function usePlacementTests() {
+  const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await apiFetch('/api/questions');
+        const res = await apiFetch('/api/placement-tests');
         if (res.ok) {
-          const all = await res.json();
-          const testQRes = await apiFetch('/api/placement-tests');
-          let testQuestionIds = [];
-          if (testQRes.ok) {
-            const tests = await testQRes.json();
-        const test = tests[0];
-            if (test) {
-              const tqRes = await apiFetch(`/api/placement-tests/${test.id}/questions`);
-              if (tqRes.ok) {
-                const tqData = await tqRes.json();
-                testQuestionIds = tqData.map(q => q.question_id);
-              }
-            }
-          }
-          const filtered = testQuestionIds.length > 0
-            ? all.filter(q => testQuestionIds.includes(q.question_id))
-            : all.slice(0, 14);
-          const normalized = filtered.map(q => ({
-            ...q,
-            prompt: typeof q.prompt === 'string'
-              ? q.prompt
-              : (q.prompt?.text || q.prompt?.audio_transcript || ''),
-          }));
-          setQuestions(normalized);
+          const data = await res.json();
+          const sorted = [...data].sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+          setTests(sorted);
         }
       } catch (e) {
-        console.error('Error loading questions:', e);
+        console.error('Error loading placement tests:', e);
       } finally {
         setLoading(false);
       }
     };
     load();
   }, []);
+
+  return { tests, loading };
+}
+
+function useTestQuestions(testId) {
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      if (!testId) {
+        setQuestions([]);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      try {
+        const res = await apiFetch(`/api/placement-tests/${testId}/questions`);
+        if (res.ok) {
+          const data = await res.json();
+          const normalized = data.map(q => ({
+            ...q,
+            prompt: typeof q.prompt === 'string'
+              ? q.prompt
+              : (q.prompt?.text || q.prompt?.audio_transcript || ''),
+          }));
+          setQuestions(normalized);
+        } else {
+          setQuestions([]);
+        }
+      } catch (e) {
+        console.error('Error loading test questions:', e);
+        setQuestions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [testId]);
 
   return { questions, loading };
 }
@@ -321,40 +342,45 @@ function ScreenLanding({ onStart }) {
   );
 }
 
-function ScreenLevelSelect({ selected, onSelect, onNext, onBack }) {
+function ScreenLevelSelect({ tests, selectedTestId, onSelectTest, onNext, onBack }) {
   return (
     <div className="survey-level-select">
       <StepIndicator currentStep={0} />
       <div className="survey-level-content">
-        <h2 className="survey-level-title">Chọn cấp độ phù hợp với em</h2>
-        <p className="survey-level-subtitle">Không sao nếu em chưa chắc chắn. Kết quả cuối cùng sẽ được điều chỉnh dựa trên bài làm.</p>
+        <h2 className="survey-level-title">Chọn bài khảo sát</h2>
+        <p className="survey-level-subtitle">Chọn đúng khối lớp và độ khó để hệ thống chẩn đoán sát hơn.</p>
 
         <div className="survey-level-grid">
-          {LEVELS.map(level => (
-            <div
-              key={level.id}
-              className={`survey-level-card ${selected === level.id ? 'selected' : ''}`}
-              onClick={() => onSelect(level.id)}
-            >
-              {selected === level.id && (
-                <div className="survey-level-check">
-                  <Icon name="check_circle" size={18} />
+          {tests.map(test => {
+            const { grade, difficulty } = getTestMeta(test);
+            const selected = selectedTestId === test.id;
+            const badge = [grade ? `Lớp ${grade}` : null, difficulty ? `${difficulty}` : null].filter(Boolean).join(' • ');
+            return (
+              <div
+                key={test.id}
+                className={`survey-level-card ${selected ? 'selected' : ''}`}
+                onClick={() => onSelectTest(test)}
+              >
+                {selected && (
+                  <div className="survey-level-check">
+                    <Icon name="check_circle" size={18} />
+                  </div>
+                )}
+                <div className={`survey-level-icon ${selected ? 'active' : ''}`}>
+                  <Icon name="list_alt" size={32} />
                 </div>
-              )}
-              <div className={`survey-level-icon ${selected === level.id ? 'active' : ''}`}>
-                <Icon name={level.icon} size={32} />
+                <h3 className="survey-level-name">{test.title}</h3>
+                <div className={`survey-level-badge ${selected ? 'active' : ''}`}>{badge || 'Bài khảo sát'}</div>
+                <p className="survey-level-desc">Hệ thống sẽ tính kết quả và chẩn đoán lỗ hổng theo từng kỹ năng.</p>
               </div>
-              <h3 className="survey-level-name">{level.label}</h3>
-              <div className={`survey-level-badge ${selected === level.id ? 'active' : ''}`}>{level.cefr}</div>
-              <p className="survey-level-desc">{level.desc}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       <div className="survey-actions">
         <button className="survey-btn survey-btn-outline" onClick={onBack}>Quay lại</button>
-        <button className="survey-btn survey-btn-primary" onClick={onNext} disabled={!selected}>Tiếp tục</button>
+        <button className="survey-btn survey-btn-primary" onClick={onNext} disabled={!selectedTestId}>Tiếp tục</button>
       </div>
     </div>
   );
@@ -760,7 +786,7 @@ function ScreenResults({ result, onRestart, onTabChange }) {
               <div key={i} className={`survey-gap-item ${g.severity}`}>
                 <Icon name="error" size={18} />
                 <div>
-                  <span className="survey-gap-skill">{SKILL_LABELS[g.skill_id] || g.skill_id}</span>
+                  <span className="survey-gap-skill">{g.skill_name || SKILL_LABELS[g.skill_id] || g.skill_id}</span>
                   <span className="survey-gap-reason">{g.reason}</span>
                 </div>
                 <span className={`survey-gap-severity ${g.severity}`}>{g.severity === 'high' ? 'Mức cao' : 'Mức trung bình'}</span>
@@ -808,12 +834,14 @@ function ScreenResults({ result, onRestart, onTabChange }) {
 
 export default function StudentSurvey({ user, onTabChange }) {
   const [screen, setScreen] = useState('landing');
-  const [selectedLevel, setSelectedLevel] = useState(null);
+  const { tests, loading: testsLoading } = usePlacementTests();
+  const [selectedTest, setSelectedTest] = useState(null);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState({});
   const [marked, setMarked] = useState(new Set());
   const [result, setResult] = useState(null);
-  const { questions, loading } = useQuestions();
+  const { questions, loading: questionsLoading } = useTestQuestions(selectedTest?.id);
+  const loading = testsLoading || (selectedTest?.id && questionsLoading);
 
   const handleStart = () => setScreen('level-select');
   const handleLevelNext = () => setScreen('instructions');
@@ -822,49 +850,43 @@ export default function StudentSurvey({ user, onTabChange }) {
   const handleReviewBack = () => setScreen('testing');
 
   const handleSubmit = useCallback(async () => {
+    if (!selectedTest?.id) return;
     const res = computeResult(answers, questions);
     setResult(res);
     setScreen('results');
 
     try {
-      const placementTestRes = await apiFetch('/api/placement-tests');
-      if (placementTestRes.ok) {
-        const tests = await placementTestRes.json();
-        const test = tests[0];
-        if (test) {
-          const submitRes = await apiFetch(`/api/placement-tests/${test.id}/submit`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              answers: res.answers,
-              score: res.score,
-              max_score: res.max_score,
-              percentage: res.percentage,
-              result_level: res.result_level,
-              cefr: res.cefr,
-              time_total_sec: res.time_total_sec,
-              mastery: res.mastery,
-              gaps: res.gaps,
-              recommendations: res.recommendations,
-              test_date: res.test_date,
-            }),
-          });
-          if (submitRes.ok) {
-            const saved = await submitRes.json();
-            if (saved && saved.training_plan) {
-              setResult(prev => ({ ...prev, training_plan: saved.training_plan }));
-            }
-          }
+      const submitRes = await apiFetch(`/api/placement-tests/${selectedTest.id}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          answers: res.answers,
+          score: res.score,
+          max_score: res.max_score,
+          percentage: res.percentage,
+          result_level: res.result_level,
+          cefr: res.cefr,
+          time_total_sec: res.time_total_sec,
+          mastery: res.mastery,
+          gaps: res.gaps,
+          recommendations: res.recommendations,
+          test_date: res.test_date,
+        }),
+      });
+      if (submitRes.ok) {
+        const saved = await submitRes.json();
+        if (saved && saved.training_plan) {
+          setResult(prev => ({ ...prev, training_plan: saved.training_plan }));
         }
       }
     } catch (e) {
       console.error('Failed to submit result:', e);
     }
-  }, [answers, questions]);
+  }, [answers, questions, selectedTest]);
 
   const handleRestart = () => {
     setScreen('landing');
-    setSelectedLevel(null);
+    setSelectedTest(null);
     setCurrentIdx(0);
     setAnswers({});
     setMarked(new Set());
@@ -885,8 +907,9 @@ export default function StudentSurvey({ user, onTabChange }) {
       {screen === 'landing' && <ScreenLanding onStart={handleStart} />}
       {screen === 'level-select' && (
         <ScreenLevelSelect
-          selected={selectedLevel}
-          onSelect={setSelectedLevel}
+          tests={tests}
+          selectedTestId={selectedTest?.id || null}
+          onSelectTest={setSelectedTest}
           onNext={handleLevelNext}
           onBack={() => setScreen('landing')}
         />
