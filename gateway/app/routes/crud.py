@@ -49,7 +49,7 @@ class RankingUpdate(BaseModel):
 
 class RankingResponse(RankingBase):
     id: int
-    user_id: int
+    user_id: Optional[int] = None
     updated_at: datetime
     class Config:
         from_attributes = True
@@ -195,10 +195,10 @@ class TestResultResponse(BaseModel):
     gaps: Optional[list] = None
     recommendations: Optional[list] = None
     training_plan: Optional[str] = None
-    is_roadmap_approved: bool = False
-    roadmap_completed: bool = False
-    quick_check_passed: bool = False
-    test_date: datetime
+    is_roadmap_approved: Optional[bool] = False
+    roadmap_completed: Optional[bool] = False
+    quick_check_passed: Optional[bool] = False
+    test_date: Optional[datetime] = None
     created_at: datetime
     class Config:
         from_attributes = True
