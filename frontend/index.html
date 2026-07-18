@@ -1,147 +1,15 @@
 <!doctype html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block"
-    rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script id="tailwind-config">
-    try {
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            "colors": {
-              "outline": "#787584",
-              "surface-container-lowest": "#ffffff",
-              "primary": "#35299d",
-              "inverse-on-surface": "#f0efff",
-              "on-primary-fixed-variant": "#3e34a6",
-              "inverse-surface": "#222b64",
-              "on-primary": "#ffffff",
-              "on-secondary": "#ffffff",
-              "on-surface": "#0a144e",
-              "outline-variant": "#c8c4d5",
-              "surface-variant": "#dee0ff",
-              "error-container": "#ffdad6",
-              "surface-container": "#edecff",
-              "secondary": "#a43c20",
-              "surface-bright": "#fbf8ff",
-              "surface": "#fbf8ff",
-              "on-primary-container": "#c8c4ff",
-              "on-secondary-fixed-variant": "#83250a",
-              "error": "#ba1a1a",
-              "tertiary": "#004822",
-              "on-secondary-fixed": "#3c0800",
-              "surface-container-high": "#e6e6ff",
-              "primary-fixed-dim": "#c5c0ff",
-              "secondary-container": "#fd7e5c",
-              "secondary-fixed-dim": "#ffb5a1",
-              "on-tertiary-container": "#53e389",
-              "primary-container": "#4d44b5",
-              "primary-fixed": "#e3dfff",
-              "on-surface-variant": "#474553",
-              "surface-dim": "#d4d7ff",
-              "surface-tint": "#574ebf",
-              "on-error-container": "#93000a",
-              "on-tertiary-fixed": "#00210d",
-              "on-tertiary": "#ffffff",
-              "on-primary-fixed": "#130068",
-              "surface-container-low": "#f4f2ff",
-              "tertiary-fixed-dim": "#4fe086",
-              "inverse-primary": "#c5c0ff",
-              "surface-container-highest": "#dee0ff",
-              "tertiary-container": "#006231",
-              "on-secondary-container": "#701800",
-              "secondary-fixed": "#ffdbd1",
-              "on-error": "#ffffff",
-              "on-tertiary-fixed-variant": "#005228",
-              "tertiary-fixed": "#6ffda0",
-              "on-background": "#0a144e",
-              "background": "#fbf8ff"
-            },
-            "borderRadius": {
-              "DEFAULT": "0.25rem",
-              "lg": "0.5rem",
-              "xl": "0.75rem",
-              "full": "9999px",
-              "2xl": "20px"
-            },
-            "spacing": {
-              "lg": "24px",
-              "container-margin-mobile": "16px",
-              "container-margin-desktop": "40px",
-              "base": "8px",
-              "sm": "12px",
-              "xl": "32px",
-              "xs": "4px",
-              "gutter": "24px",
-              "md": "16px"
-            },
-            "fontFamily": {
-              "headline-page-mobile": ["Outfit"],
-              "body-lg": ["Outfit"],
-              "display-lg": ["Outfit"],
-              "headline-page": ["Outfit"],
-              "body-md": ["Outfit"],
-              "label-md": ["Outfit"],
-              "kpi-number": ["Outfit"],
-              "caption": ["Outfit"],
-              "headline-card": ["Outfit"],
-              "headline-card-sm": ["Outfit"]
-            },
-            "fontSize": {
-              "headline-page-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
-              "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
-              "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
-              "headline-page": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
-              "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
-              "label-md": ["14px", { "lineHeight": "18px", "fontWeight": "600" }],
-              "kpi-number": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
-              "caption": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
-              "headline-card": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
-              "headline-card-sm": ["20px", { "lineHeight": "28px", "fontWeight": "700" }]
-            }
-          }
-        }
-      }
-    } catch (_e) { }
-  </script>
-  <style>
-    .progress-bar-bg {
-      background-color: #dee0ff;
-    }
-
-    .progress-bar-fill-good {
-      background-color: #53e389;
-    }
-
-    .progress-bar-fill-warning {
-      background-color: #fd7e5c;
-    }
-
-    .progress-bar-fill-needs-work {
-      background-color: #ba1a1a;
-    }
-
-    .progress-bar-fill-purple {
-      background-color: #574ebf;
-    }
-
-    .progress-bar-fill-green {
-      background-color: #53e389;
-    }
-  </style>
-  <title>V-Nexus Tutor - Gia sư thích ứng</title>
-</head>
-
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
-</body>
-
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet" />
+    <title>V-Nexus Tutor - Gia sư thích ứng</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
