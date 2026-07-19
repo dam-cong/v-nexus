@@ -90,6 +90,12 @@ function DashboardApp({ user, logout }) {
   // Which grouped menu is expanded in the sidebar (null = none)
   const [openGroup, setOpenGroup] = useState(null);
 
+  // Admin evaluation & approval state
+  const [evalStudentId, setEvalStudentId] = useState('');
+  const [evalComment, setEvalComment] = useState('');
+  const [evalSubmitting, setEvalSubmitting] = useState(false);
+  const [approvingId, setApprovingId] = useState(null);
+
   // Student survey state
   const [studentActiveTab, setStudentActiveTab] = useState('survey');
   const [studentTestResults, setStudentTestResults] = useState([]);
@@ -392,6 +398,54 @@ function DashboardApp({ user, logout }) {
     setLoading(true);
     await Promise.all([fetchStudents(), fetchTeachers(), fetchRankings(), fetchTestResults()]);
     setLoading(false);
+  };
+
+  // Phê duyệt lộ trình (admin/teacher)
+  const approveRoadmap = async (resultId) => {
+    setApprovingId(resultId);
+    try {
+      const res = await apiFetch(`/api/test-results/${resultId}/approve`, { method: 'POST' });
+      if (res.ok) {
+        triggerNotification('Đã phê duyệt lộ trình thành công!');
+        fetchTestResults();
+        if (selectedResult && selectedResult.id === resultId) {
+          const updated = await res.json();
+          setSelectedResult(updated);
+        }
+      } else {
+        const err = await res.json().catch(() => ({}));
+        triggerNotification(err.detail || 'Phê duyệt thất bại', 'error');
+      }
+    } catch (e) {
+      triggerNotification('Lỗi kết nối', 'error');
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
+  // Gửi nhận xét học sinh (admin/teacher)
+  const submitEvaluation = async (e) => {
+    e.preventDefault();
+    if (!evalStudentId || !evalComment.trim()) return;
+    setEvalSubmitting(true);
+    try {
+      const res = await apiFetch(`/api/students/${evalStudentId}/evaluations`, {
+        method: 'POST',
+        body: JSON.stringify({ comment: evalComment.trim() })
+      });
+      if (res.ok) {
+        triggerNotification('Đã gửi nhận xét thành công!');
+        setEvalComment('');
+        setEvalStudentId('');
+      } else {
+        const err = await res.json().catch(() => ({}));
+        triggerNotification(err.detail || 'Gửi nhận xét thất bại', 'error');
+      }
+    } catch (e) {
+      triggerNotification('Lỗi kết nối', 'error');
+    } finally {
+      setEvalSubmitting(false);
+    }
   };
 
   // ── Seed IndexedDB from /data on mount (for offline use) ──────────────
@@ -792,10 +846,26 @@ function DashboardApp({ user, logout }) {
             <span>Bảng xếp hạng</span>
           </button>
 
-          {/* Assessment tab: visible to admin */}
+          {/* Khảo sát đầu vào: visible to admin */}
           {user?.role === 'admin' && (
             <button
-              className={`menu-item ${activeTab === 'assessment' ? 'active' : ''}`}
+              className={`menu-item ${activeTab === 'assessment' && assessmentSubTab === 'survey' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('assessment');
+                setAssessmentSubTab('survey');
+                fetchStudents();
+                setSidebarOpen(false);
+              }}
+            >
+              <BookOpen size={20} />
+              <span>Khảo sát đầu vào</span>
+            </button>
+          )}
+
+          {/* Assessment tab: visible to admin and teacher */}
+          {(user?.role === 'admin' || user?.role === 'giao_vien') && (
+            <button
+              className={`menu-item ${activeTab === 'assessment' && assessmentSubTab !== 'survey' ? 'active' : ''}`}
               onClick={() => { setActiveTab('assessment'); setAssessmentSubTab('test-results'); fetchTestResults(); fetchStudents(); setSidebarOpen(false); }}
             >
               <ClipboardCheck size={20} />
@@ -847,6 +917,7 @@ function DashboardApp({ user, logout }) {
                   {activeTab === 'assessment' && assessmentSubTab === 'survey' && 'Khảo sát đầu vào'}
                   {activeTab === 'assessment' && assessmentSubTab === 'test-results' && 'Kết quả kiểm tra trình độ'}
                   {activeTab === 'assessment' && assessmentSubTab === 'placement-tests' && 'Danh sách bài test'}
+                  {activeTab === 'assessment' && assessmentSubTab === 'evaluations' && 'Nhận xét học sinh'}
                   {activeTab === 'questions' && 'Ngân hàng câu hỏi'}
                 </>
               )}
@@ -1705,6 +1776,14 @@ function DashboardApp({ user, logout }) {
                   <FileText size={16} />
                   Bài test
                 </button>
+                {/* Nhận xét học sinh — visible to admin AND teacher */}
+                <button
+                  className={`subtab-btn ${assessmentSubTab === 'evaluations' ? 'active' : ''}`}
+                  onClick={() => { setAssessmentSubTab('evaluations'); fetchStudents(); }}
+                >
+                  <Edit3 size={16} />
+                  Nhận xét
+                </button>
               </div>
             </div>
           )}
@@ -1905,13 +1984,31 @@ function DashboardApp({ user, logout }) {
                                   </div>
                                 </td>
                                 <td style={{ textAlign: 'center' }}>
-                                  <button 
-                                    className="btn btn-primary btn-small"
-                                    onClick={() => setSelectedResult(result)}
-                                  >
-                                    <TrendingUp size={12} />
-                                    Chi tiết
-                                  </button>
+                                  <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                                    <button 
+                                      className="btn btn-primary btn-small"
+                                      onClick={() => setSelectedResult(result)}
+                                    >
+                                      <TrendingUp size={12} />
+                                      Chi tiết
+                                    </button>
+                                    {!result.is_roadmap_approved && (
+                                      <button
+                                        className="btn btn-small"
+                                        style={{ background: '#27c26c', color: 'white', border: 'none', cursor: approvingId === result.id ? 'not-allowed' : 'pointer', opacity: approvingId === result.id ? 0.7 : 1 }}
+                                        onClick={() => approveRoadmap(result.id)}
+                                        disabled={approvingId === result.id}
+                                        title="Phê duyệt lộ trình học tập"
+                                      >
+                                        {approvingId === result.id ? '...' : '✓ Duyệt'}
+                                      </button>
+                                    )}
+                                    {result.is_roadmap_approved && (
+                                      <span style={{ fontSize: '11px', fontWeight: '700', color: '#27c26c', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                        ✓ Đã duyệt
+                                      </span>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
                             );
@@ -2123,13 +2220,27 @@ function DashboardApp({ user, logout }) {
                     </div>
                   </div>
 
-                  {/* Training plan (AI) */}
+                  {/* Training plan (AI) + Approve button */}
                   {selectedResult.training_plan && (
                     <div style={{ padding: '0 32px 24px' }}>
-                      <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Lightbulb size={18} style={{ color: '#a43c20' }} />
-                        Kế hoạch đào tạo cá nhân hóa (AI)
-                      </h4>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <Lightbulb size={18} style={{ color: '#a43c20' }} />
+                          Kế hoạch đào tạo cá nhân hóa (AI)
+                        </h4>
+                        {!selectedResult.is_roadmap_approved ? (
+                          <button
+                            className="btn btn-small"
+                            style={{ background: 'linear-gradient(135deg, #27c26c, #22a85e)', color: 'white', border: 'none', cursor: approvingId === selectedResult.id ? 'not-allowed' : 'pointer', fontWeight: '700', padding: '8px 18px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                            onClick={() => approveRoadmap(selectedResult.id)}
+                            disabled={approvingId === selectedResult.id}
+                          >
+                            {approvingId === selectedResult.id ? 'Đang xử lý...' : '✓ Phê duyệt lộ trình này'}
+                          </button>
+                        ) : (
+                          <span style={{ fontSize: '13px', fontWeight: '700', color: '#27c26c', background: 'rgba(39,194,108,0.1)', padding: '6px 14px', borderRadius: '20px', border: '1px solid rgba(39,194,108,0.3)' }}>✓ Lộ trình đã được phê duyệt</span>
+                        )}
+                      </div>
                       <BeautifulRoadmap planText={selectedResult.training_plan} studentKey={`result_${selectedResult.id}`} readOnly={true} />
                     </div>
                   )}
@@ -2211,6 +2322,73 @@ function DashboardApp({ user, logout }) {
                   </div>
                 </>
               )}
+            </div>
+          )}
+
+          {/* ==========================================================
+              TAB: EVALUATIONS (Nhận xét học sinh) — admin & teacher
+              ========================================================== */}
+          {activeTab === 'assessment' && assessmentSubTab === 'evaluations' && (
+            <div className="animate-fade-in panel" style={{ padding: '32px' }}>
+              <div style={{ marginBottom: '28px' }}>
+                <h3 className="card-title" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                  <Edit3 size={20} style={{ color: 'var(--primary)' }} />
+                  Nhận xét & Đánh giá học sinh
+                </h3>
+                <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0 }}>Ghi nhận xét sư phạm cho học sinh. Phụ huynh có thể xem những nhận xét này.</p>
+              </div>
+
+              <form onSubmit={submitEvaluation} style={{ background: 'linear-gradient(135deg, rgba(77,68,181,0.04), rgba(77,68,181,0.01))', border: '1px solid rgba(77,68,181,0.12)', borderRadius: '16px', padding: '24px', marginBottom: '32px' }}>
+                <h4 style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Sparkles size={16} style={{ color: 'var(--primary)' }} />
+                  Ghi nhận xét mới
+                </h4>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '16px', marginBottom: '16px' }}>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>Chọn học sinh</label>
+                    <select
+                      value={evalStudentId}
+                      onChange={e => setEvalStudentId(e.target.value)}
+                      required
+                      style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid var(--border)', fontSize: '13px', fontWeight: '600', color: 'var(--text-color)', background: 'white' }}
+                    >
+                      <option value="">— Chọn học sinh —</option>
+                      {students.map(s => (
+                        <option key={s.id} value={s.id}>{s.name} ({s.grade || 'Lớp 6'})</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '8px' }}>Nội dung nhận xét</label>
+                    <textarea
+                      rows={3}
+                      placeholder="Ví dụ: Em học sinh có tiến bộ rõ rệt về kỹ năng nghe, cần luyện thêm về từ vựng..."
+                      value={evalComment}
+                      onChange={e => setEvalComment(e.target.value)}
+                      required
+                      style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid var(--border)', fontSize: '13px', color: 'var(--text-color)', resize: 'vertical', fontFamily: 'inherit' }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={evalSubmitting || !evalStudentId || !evalComment.trim()}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                  >
+                    <Mail size={16} />
+                    {evalSubmitting ? 'Đang gửi...' : 'Gửi nhận xét'}
+                  </button>
+                </div>
+              </form>
+
+              <div style={{ opacity: 0.6, textAlign: 'center', fontSize: '13px', color: 'var(--text-muted)' }}>
+                <ClipboardCheck size={32} style={{ marginBottom: '8px', display: 'block', margin: '0 auto 8px' }} />
+                Các nhận xét đã gửi sẽ hiển thị trong hồ sơ học sinh của phụ huynh.
+              </div>
             </div>
           )}
 

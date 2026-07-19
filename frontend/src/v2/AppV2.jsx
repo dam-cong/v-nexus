@@ -880,12 +880,20 @@ function DashboardApp({ user, logout }) {
   // Helper to resolve student/teacher details
   const getStudentName = (studentId) => {
     const student = students.find(s => s.id === studentId);
-    return student ? student.name : `Học sinh #${studentId}`;
+    if (student) return student.name;
+    const teacher = teachers.find(t => t.id === studentId);
+    if (teacher) return teacher.name;
+    if (user && user.id === studentId) return user.name;
+    return `Người dùng #${studentId}`;
   };
 
   const getStudentEmail = (studentId) => {
     const student = students.find(s => s.id === studentId);
-    return student ? student.email : '';
+    if (student) return student.email;
+    const teacher = teachers.find(t => t.id === studentId);
+    if (teacher) return teacher.email;
+    if (user && user.id === studentId) return user.email;
+    return '';
   };
 
   const getStudentGrade = (studentId) => {
@@ -1049,6 +1057,21 @@ function DashboardApp({ user, logout }) {
                 </button>
               )}
 
+              {/* Khảo sát đầu vào: visible to admin */}
+              {user?.role === 'admin' && (
+                <button
+                  className={`menu-item ${activeTab === 'assessment' && assessmentSubTab === 'survey' ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTab('assessment');
+                    setAssessmentSubTab('survey');
+                    setSidebarOpen(false);
+                  }}
+                >
+                  <BookOpen size={20} />
+                  <span>Khảo sát đầu vào</span>
+                </button>
+              )}
+
               <button
                 className={`menu-item ${activeTab === 'leaderboard' ? 'active' : ''}`}
                 onClick={() => { setActiveTab('leaderboard'); fetchRankings(); fetchStudents(); setSidebarOpen(false); }}
@@ -1060,7 +1083,7 @@ function DashboardApp({ user, logout }) {
               {/* Assessment tab: visible to admin and teacher */}
               {(user?.role === 'admin' || user?.role === 'giao_vien') && (
                 <button
-                  className={`menu-item ${activeTab === 'assessment' ? 'active' : ''}`}
+                  className={`menu-item ${activeTab === 'assessment' && assessmentSubTab !== 'survey' ? 'active' : ''}`}
                   onClick={() => { setActiveTab('assessment'); setAssessmentSubTab('test-results'); fetchTestResults(); fetchStudents(); setSidebarOpen(false); }}
                 >
                   <ClipboardCheck size={20} />
@@ -1106,15 +1129,15 @@ function DashboardApp({ user, logout }) {
               <LayoutDashboard size={16} />
               Đang xem Dashboard với tư cách là {viewingMode === 'parent' ? 'Phụ huynh' : 'Học sinh'} (ID Học sinh: {targetStudentId})
             </div>
-            <button 
-              onClick={exitViewingMode} 
+            <button
+              onClick={exitViewingMode}
               style={{ background: 'rgba(0,0,0,0.2)', color: 'white', border: 'none', padding: '6px 16px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               <LogOut size={14} /> Thoát chế độ xem
             </button>
           </div>
         )}
-        
+
         {/* Top Header */}
         <header className="top-header">
           <div className="header-title">
@@ -1137,6 +1160,7 @@ function DashboardApp({ user, logout }) {
                   {activeTab === 'users' && userSubTab === 'students' && 'Danh sách Học sinh'}
                   {activeTab === 'users' && userSubTab === 'teachers' && 'Danh sách Giáo viên'}
                   {activeTab === 'leaderboard' && 'Bảng xếp hạng'}
+                  {activeTab === 'assessment' && assessmentSubTab === 'survey' && 'Khảo sát đầu vào'}
                   {activeTab === 'assessment' && assessmentSubTab === 'test-results' && 'Kết quả kiểm tra trình độ'}
                   {activeTab === 'assessment' && assessmentSubTab === 'placement-tests' && 'Danh sách bài test'}
                   {activeTab === 'questions' && 'Ngân hàng câu hỏi'}
@@ -1212,8 +1236,8 @@ function DashboardApp({ user, logout }) {
                 <p className="user-name">{user?.name || 'Người dùng'}</p>
                 <p className="user-role">
                   {user?.role === 'admin' ? 'Quản trị viên' :
-                    user?.role === 'giao_vien' ? 'Giáo viên' : 
-                    user?.role === 'phu_huynh' ? 'Phụ huynh' : 'Học sinh'}
+                    user?.role === 'giao_vien' ? 'Giáo viên' :
+                      user?.role === 'phu_huynh' ? 'Phụ huynh' : 'Học sinh'}
                 </p>
               </div>
               <div
@@ -1781,8 +1805,8 @@ function DashboardApp({ user, logout }) {
                               </td>
                               <td>
                                 <div className="action-group">
-                                  <button 
-                                    className="action-btn action-btn-view" 
+                                  <button
+                                    className="action-btn action-btn-view"
                                     title="Xem Dashboard Học Sinh"
                                     onClick={() => startViewingDashboard(student.id, 'student')}
                                   >
@@ -2003,8 +2027,8 @@ function DashboardApp({ user, logout }) {
                               </td>
                               <td>
                                 <div className="action-group">
-                                  <button 
-                                    className="action-btn action-btn-view" 
+                                  <button
+                                    className="action-btn action-btn-view"
                                     title="Xem Dashboard"
                                     onClick={() => {
                                       if (parent.students && parent.students.length > 0) {
@@ -2181,6 +2205,13 @@ function DashboardApp({ user, logout }) {
                 <div className="animate-fade-in">
                   <div className="subtab-bar">
                     <button
+                      className={`subtab-btn ${assessmentSubTab === 'survey' ? 'active' : ''}`}
+                      onClick={() => setAssessmentSubTab('survey')}
+                    >
+                      <BookOpen size={16} />
+                      Khảo sát
+                    </button>
+                    <button
                       className={`subtab-btn ${assessmentSubTab === 'test-results' ? 'active' : ''}`}
                       onClick={() => { setAssessmentSubTab('test-results'); fetchTestResults(); fetchStudents(); }}
                     >
@@ -2199,113 +2230,18 @@ function DashboardApp({ user, logout }) {
               )}
 
               {activeTab === 'assessment' && assessmentSubTab === 'survey' && (
-                <div className="animate-fade-in panel survey-card">
-                  <div className="survey-top">
-                    <BookOpen size={48} />
-                    <h2>Khảo sát Năng lực Đầu vào</h2>
-                    <p>Cung cấp các thông tin cơ bản để AI cá nhân hóa lộ trình học tiếng Anh cho bạn</p>
-                  </div>
-
-                  {error && (
-                    <div style={{ background: 'var(--danger-bg)', border: '1px solid var(--danger)', color: 'var(--danger)', padding: '14px', borderRadius: '12px', marginBottom: '24px', fontSize: '14px', fontWeight: '600' }}>
-                      {error}
-                    </div>
-                  )}
-
-                  <form onSubmit={handleSurveySubmit} className="form-grid-layout">
-                    <div className="form-span-full">
-                      <label>Họ và Tên Học viên</label>
-                      <input
-                        type="text"
-                        placeholder="Ví dụ: Nguyễn Văn A"
-                        value={surveyForm.name}
-                        onChange={e => setSurveyForm({ ...surveyForm, name: e.target.value })}
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label>Địa chỉ Email</label>
-                      <input
-                        type="email"
-                        placeholder="student@example.com"
-                        value={surveyForm.email}
-                        onChange={e => setSurveyForm({ ...surveyForm, email: e.target.value })}
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label>Khối lớp</label>
-                      <select
-                        value={surveyForm.grade}
-                        onChange={e => setSurveyForm({ ...surveyForm, grade: e.target.value })}
-                      >
-                        <option value="Lớp 6">Lớp 6</option>
-                        <option value="Lớp 7">Lớp 7</option>
-                        <option value="Lớp 8">Lớp 8</option>
-                        <option value="Lớp 9">Lớp 9</option>
-                        <option value="Lớp 10">Lớp 10</option>
-                        <option value="Lớp 11">Lớp 11</option>
-                        <option value="Lớp 12">Lớp 12</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label>Số năm học Tiếng Anh</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={surveyForm.years_studying_english}
-                        onChange={e => setSurveyForm({ ...surveyForm, years_studying_english: e.target.value })}
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label>Môi trường học tập</label>
-                      <select
-                        value={surveyForm.learning_environment}
-                        onChange={e => setSurveyForm({ ...surveyForm, learning_environment: e.target.value })}
-                      >
-                        <option value="school">Chỉ học ở trường</option>
-                        <option value="center">Học ở trung tâm</option>
-                        <option value="self_study">Tự học qua mạng</option>
-                      </select>
-                    </div>
-
-                    <div className="form-span-full">
-                      <label>Tự đánh giá trình độ hiện tại</label>
-                      <select
-                        value={surveyForm.self_assessment_level}
-                        onChange={e => setSurveyForm({ ...surveyForm, self_assessment_level: e.target.value })}
-                      >
-                        <option value="A1">A1 (Mới bắt đầu - Beginner)</option>
-                        <option value="A2">A2 (Cơ bản - Elementary)</option>
-                        <option value="B1">B1 (Trung cấp - Intermediate)</option>
-                        <option value="B2">B2 (Trên trung cấp)</option>
-                        <option value="C1">C1 (Cao cấp - Advanced)</option>
-                      </select>
-                    </div>
-
-                    <div className="form-span-full">
-                      <label>Mục tiêu học tập của bạn</label>
-                      <textarea
-                        rows="3"
-                        placeholder="Ví dụ: Đạt điểm thi học kỳ tốt, rèn luyện kỹ năng nghe nói..."
-                        value={surveyForm.learning_goal}
-                        onChange={e => setSurveyForm({ ...surveyForm, learning_goal: e.target.value })}
-                      ></textarea>
-                    </div>
-
-                    <div className="form-span-full" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
-                      <button type="submit" className="btn btn-primary" style={{ padding: '14px 40px' }} disabled={loading}>
-                        {loading ? "Đang xử lý..." : "Nộp khảo sát & Bắt đầu"}
-                        <ArrowRight size={16} />
-                      </button>
-                    </div>
-                  </form>
-                </div>
+                <StudentSurvey
+                  user={user}
+                  onTabChange={(tab) => {
+                    if (user?.role === 'admin' || user?.role === 'giao_vien') {
+                      setActiveTab('roadmaps');
+                      fetchTestResults();
+                      fetchStudents();
+                    } else {
+                      setStudentActiveTab(tab);
+                    }
+                  }}
+                />
               )}
 
               {/* ==========================================================
@@ -2395,8 +2331,8 @@ function DashboardApp({ user, logout }) {
                                     </td>
                                     <td style={{ textAlign: 'center' }}>
                                       <div className="action-group" style={{ justifyContent: 'center' }}>
-                                        <button 
-                                          className="action-btn action-btn-view" 
+                                        <button
+                                          className="action-btn action-btn-view"
                                           title="Xem Dashboard Học Sinh"
                                           onClick={() => startViewingDashboard(result.user_id, 'student')}
                                         >
