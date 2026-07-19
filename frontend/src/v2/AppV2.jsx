@@ -2587,7 +2587,7 @@ function DashboardApp({ user, logout }) {
                       )}
 
                       {/* Teacher Evaluation Input */}
-                      {user?.role === 'giao_vien' && (
+                      {(
                         <div style={{ padding: '0 32px 24px' }}>
                           <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <MessageSquare size={18} style={{ color: '#4d44b5' }} />
