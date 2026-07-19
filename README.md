@@ -13,41 +13,41 @@ _(Đề 8 — Vbee lecture video — không còn theo đuổi, giữ lại ở
 
 ## Kiến trúc
 
-Nguyên tắc: khung này chạy được ngay bây giờ, và **khi có đề bài thật, chỉ cần thay
-`domain/` — không đổi gì ở Gateway, Planner Agent, Tool Registry hay MCP Server**.
+Sản phẩm thật (chẩn đoán → lộ trình → dashboard) chạy qua **FastAPI Gateway gọi thẳng
+domain logic** (`domain/bkt.py` cho chẩn đoán, `tools/plan_tool.py` cho lộ trình/LLM),
+không qua endpoint chat/agent.
 
 ```
 ┌─────────────┐      ┌──────────────────┐      ┌────────────────────────────┐
-│  Frontend   │─────▶│  FastAPI Gateway │─────▶│      Planner Agent         │
-│ (React +    │      │   (/chat, /health)│     │  (LLM + Tool Registry)      │
-│  Vite       │◀─────│                  │◀─────│                             │
-│  dashboard) │      └──────────────────┘      │  ├─ Domain Adapter ◀── đề bài│
-└─────────────┘               │                │  │   (system_prompt + tools)│
-                               ▼                │  ├─ Tool: MCP Server mẫu    │
-                        ┌─────────────┐         │  └─ Tool: echo (ví dụ)      │
-                        │ PostgreSQL  │         └────────────────────────────┘
+│  Frontend   │─────▶│  FastAPI Gateway │─────▶│   domain/bkt.py (chẩn đoán) │
+│ (React +    │      │   routes/crud.py │      │   tools/plan_tool.py (LLM)  │
+│  Vite       │◀─────│   routes/auth.py │◀─────│                            │
+│  dashboard) │      └──────────────────┘      └────────────────────────────┘
+└─────────────┘               │
+                               ▼
+                        ┌─────────────┐
+                        │ PostgreSQL  │
                         └─────────────┘
 ```
 
-- **Chỉ 1 Planner Agent** — không tạo thêm agent khác.
-- **Domain Adapter** (`domain/adapter.py`, `domain/sme_innovation_adapter.py`): nơi
-  DUY NHẤT chứa prompt + tool đặc thù đề bài. Khi có đề bài thật: tạo file
-  `domain/<ten_de_bai>_adapter.py` mới implement `DomainAdapter`, rồi trỏ
-  `gateway/app/routes/chat.py` sang adapter đó.
-- **Tool Registry** (`tools/registry.py`): đăng ký tool theo format Anthropic tool-use,
-  Planner Agent không cần biết tool đến từ đâu (hàm Python thường hay MCP server).
-- **MCP Server mẫu** (`mcp_server/`): 1 tool minh hoạ (`lookup_sme_fact`), thay bằng
-  nguồn dữ liệu/API thật khi cần.
+- **`agent/planner.py` + `tools/registry.py` + `domain/adapter.py`**: khung Planner
+  Agent/Tool Registry dựng ở ngày đầu (trước khi biết đề bài thật), theo mẫu Anthropic
+  tool-use. Vẫn còn trong repo làm tài liệu tham khảo kiến trúc và có test riêng
+  (`tests/test_tool_registry.py`), nhưng **flow thật của sản phẩm không đi qua đây** —
+  đã gỡ endpoint `/chat` (và domain adapter/tool minh hoạ đi kèm) vì không được dùng,
+  tránh gây hiểu nhầm khi đọc code.
+- **MCP Server mẫu** (`mcp_server/`): 1 tool minh hoạ, tương tự — thuộc khung ngày đầu,
+  không nằm trong flow chẩn đoán/lộ trình thật.
 
 ## Cấu trúc thư mục
 
 ```
 v-nexus/
-├── gateway/        FastAPI Gateway — entrypoint, routes /chat /health
-├── agent/          Planner Agent (LLM + vòng lặp tool-use)
-├── tools/          Tool Registry + tool mẫu + tool gọi MCP Server
-├── mcp_server/      MCP Server mẫu (1 tool minh hoạ)
-├── domain/         Domain Adapter — PHẦN CẦN THAY khi có đề bài
+├── gateway/        FastAPI Gateway — entrypoint, routes /health, crud, auth
+├── agent/          Planner Agent (khung tham khảo, không dùng trong flow thật)
+├── tools/          plan_tool.py (dùng thật) + Tool Registry/tool mẫu (khung tham khảo)
+├── mcp_server/      MCP Server mẫu (khung tham khảo, không dùng trong flow thật)
+├── domain/         bkt.py + knowledge_graph.py (chẩn đoán thật) + adapter.py (khung)
 ├── db/             PostgreSQL connector + model mẫu (SQLAlchemy async)
 ├── frontend/       Dashboard UI (React + Vite)
 ├── docs/           ai_log, PROJECT_DESCRIPTION, timeline, scoring-checklist

@@ -810,7 +810,125 @@ gọi LLM lúc runtime đi qua backend, không gọi trực tiếp từ client.*
   cấu trúc chương trình; câu hỏi và hình ảnh minh họa là nội dung gốc do AI hỗ trợ sinh và
   người duyệt kiểm tra.
 
-## 10. Expected Impact
+## 10. Business Case & Pilot Pathway
+
+### Quy mô thị trường (số liệu thật, có nguồn)
+
+- Năm học 2024–2025, cả nước có **11.559 trường tiểu học công lập** với hơn **8,8 triệu
+  học sinh tiểu học** — bậc học đông nhất trong giáo dục phổ thông
+  [[1]](https://www.vietnamplus.vn/nam-hoc-2023-2024-ca-nuoc-co-12166-truong-tieu-hoc-post971703.vnp)[[2]](https://plo.vn/bo-gddt-trung-binh-moi-lop-tieu-hoc-co-316-hoc-sinh-post805891.html).
+- Sĩ số bình quân **31,8 học sinh/lớp**; Điều lệ trường tiểu học (Thông tư
+  28/2020/TT-BGDĐT) quy định trần **35 học sinh/lớp**, nhưng trên thực tế nhiều địa
+  phương phải đẩy lên **40–50 học sinh/lớp** vì thiếu phòng học/giáo viên
+  [[3]](https://vnexpress.net/si-so-lop-o-truong-tieu-hoc-khong-qua-35-4777604.html)[[4]](https://vov1.vov.vn/bo-gddt-yeu-cau-si-so-cac-lop-tieu-hoc-toi-da-chi-35-emlop-hay-nhung-kho-thuc-hien-ngay-09082024-94363.vov).
+  Con số này khớp trực tiếp với "Gap" nêu trong đề bài gốc (lớp ~40 học sinh, năng lực
+  chênh lệch lớn) — không phải giả định, mà là thực trạng phổ biến có thống kê chính
+  thức đứng sau.
+
+### Ai trả tiền — và vì sao không thu trực tiếp từ phụ huynh
+
+V-NEXUS SCHOOL theo mô hình **B2B qua ngân sách nhà trường/Sở GD&ĐT**, **không** thiết
+kế thu phí trực tiếp từng học sinh/phụ huynh ở giai đoạn MVP. Đây không chỉ là lựa chọn
+kinh doanh mà còn là **ràng buộc pháp lý thực tế**: trường công lập tại Việt Nam bị kiểm
+soát chặt về các khoản thu để chống "lạm thu" — khoản thu chuyển đổi số chỉ phục vụ quản
+trị nhà trường **tuyệt đối không được thu xã hội hóa**; chỉ được thu nếu phục vụ trực
+tiếp việc học của học sinh, phải theo nguyên tắc tự nguyện – thỏa thuận – công khai, và
+mức tăng so với năm trước bị giới hạn tối đa 15%
+[[5]](https://dantri.com.vn/giao-duc/nhung-khoan-nao-nha-truong-duoc-phep-va-khong-duoc-phep-thu-cua-hoc-sinh-20221013231338180.htm)[[6]](https://tuoitre.vn/truong-phai-ro-rang-khoan-thu-cu-va-moi-chi-duoc-tang-toi-da-15-20250914115842145.htm).
+Thu phí trực tiếp từ phụ huynh vì vậy vừa rủi ro pháp lý vừa rủi ro hình ảnh (dễ bị quy
+là lạm thu). Mô hình an toàn hơn:
+
+- **Khách hàng trả phí chính: Nhà trường** (Ban giám hiệu quyết định mua từ ngân sách
+  chuyên môn/chuyển đổi số của trường, không lập khoản thu mới với phụ huynh) — theo gói
+  năm học, tính trên số học sinh hoặc số lớp sử dụng.
+- **Kênh tài trợ chính cho vùng khó khăn:** ngân sách chuyển đổi số của Sở/Phòng GD&ĐT.
+  Giai đoạn 2026–2030 là trọng tâm chuyển đổi số giáo dục theo Nghị quyết 57-NQ/TW, với
+  định hướng rõ: tăng đầu tư ngân sách nhà nước, **huy động nguồn lực qua xã hội hóa và
+  hợp tác công–tư**, và có chính sách hỗ trợ thiết bị/kết nối mạng cho học sinh vùng khó
+  khăn [[7]](https://tapchigiaoduc.edu.vn/article/90518/174/thuc-trang-chuyen-doi-so-trong-giao-duc-pho-thong-nghe-nghiep-va-dinh-huong-giai-doan-2026-2030/) —
+  đúng khe hở ngân sách mà V-NEXUS SCHOOL có thể khớp vào, thay vì đi qua phụ huynh.
+- **Kênh tài trợ CSR:** doanh nghiệp tài trợ theo hình thức "đỡ đầu" một cụm trường/huyện
+  — đúng mô hình hợp tác công–tư mà chính sách trên khuyến khích, tương tự các chương
+  trình giáo dục số mà các đơn vị đồng hành cuộc thi này (SHB, FPT, AI Singapore...) đang
+  vận hành tại Việt Nam.
+
+### Giả định về giá (neo theo giá thị trường thật, cần kiểm chứng khi pilot)
+
+> Mức giá cụ thể dưới đây vẫn là **giả định minh họa**, chưa đàm phán với khách hàng
+> thật — nhưng được neo theo mặt bằng giá thị trường thật (không phải số bịa) để có căn
+> cứ so sánh.
+
+- Học phí trung tâm Anh ngữ tư nhân cho trẻ em hiện dao động **75.000–300.000đ/buổi**
+  (giáo viên Việt Nam đến giáo viên bản ngữ), gói tháng **600.000–1.000.000đ**, một khóa
+  học đủ có thể tới **8,8–23,5 triệu đồng** (VUS, ILA)
+  [[8]](https://igems.com.vn/hoc-phi-tieng-anh-tre-em-2025-so-sanh-cac-trung-tam-lon-va-goi-y-lua-chon-toi-uu-cho-phu-huynh/)[[9]](https://langmaster.edu.vn/hoc-phi-cac-trung-tam-tieng-anh-cho-tre-em).
+- Đề xuất gói trường: **15.000–25.000đ/học sinh/học kỳ** — thấp hơn **cả một buổi học**
+  tại trung tâm tư nhân rẻ nhất, giúp dễ được nhà trường/Sở phê duyệt ngân sách so với
+  việc phải giải trình một khoản chi lớn.
+- Trường tiểu học công lập cỡ trung bình (~400–600 học sinh khối 3–4 dùng sản phẩm) →
+  chi phí ước tính khoảng **6–15 triệu đồng/học kỳ/trường** nếu ngân sách trường tự chi;
+  bằng 0 với trường thuộc diện tài trợ (Sở GD&ĐT/doanh nghiệp CSR trả thay).
+- Chi phí biến đổi chính là lượt gọi LLM runtime — đã tối ưu ở mục 9 (hầu hết nội dung
+  sinh trước runtime, LLM runtime chỉ dùng cho diễn giải/nhận xét/tóm tắt) nên chi phí
+  vận hành/học sinh thấp và có thể dự đoán được.
+
+### Lộ trình Pilot đề xuất
+
+1. **Giai đoạn 0 (sau hackathon, 1 tháng):** hoàn thiện Knowledge Graph + ngân hàng câu
+   hỏi cho đúng 1 mạch kỹ năng (Từ vựng → Mẫu câu → Đọc hiểu, lớp 3–4) đã demo, kiểm duyệt
+   sư phạm kỹ hơn bản 48h.
+2. **Giai đoạn 1 (1 học kỳ, 1 trường thí điểm):** triển khai thật với 2–4 lớp tình nguyện,
+   miễn phí đổi lấy dữ liệu và phản hồi giáo viên; đo trước/sau bằng bài kiểm tra chuẩn
+   hóa cùng bộ câu hỏi.
+3. **Giai đoạn 2 (học kỳ tiếp theo, mở rộng cụm trường):** mời 1 Phòng Giáo dục cấp huyện
+   tham gia, chuyển sang mô hình có tài trợ hoặc phí thấp; bổ sung workflow kiểm duyệt nội
+   dung trong app (hiện đang duyệt ngoài app, xem mục 8.3).
+4. **Giai đoạn 3 (năm học sau):** mở rộng sang khối lớp/môn học khác nếu tiêu chí thành
+   công ở Giai đoạn 1–2 đạt được; cân nhắc mô hình thu phí trực tiếp nhà trường ở quy mô
+   lớn hơn.
+
+### Tiêu chí thành công đo được (cho pilot Giai đoạn 1)
+
+- Tỷ lệ học sinh được xác định đúng lỗ hổng gốc (đối chiếu đánh giá của giáo viên chủ
+  nhiệm) đạt ngưỡng thống nhất trước khi công bố kết quả pilot.
+- Chênh lệch điểm kiểm tra kỹ năng mục tiêu trước/sau khi hoàn thành lộ trình cá nhân,
+  so với nhóm đối chứng không dùng hệ thống (nếu điều kiện lớp cho phép).
+- Thời gian giáo viên cần để chuẩn bị nhận xét/kế hoạch phụ đạo giảm so với cách làm thủ
+  công hiện tại (tự khảo sát trước/sau bằng phỏng vấn giáo viên tham gia pilot).
+- Tỷ lệ giáo viên duyệt thẳng nhận xét AI soạn sẵn mà không cần sửa nhiều — phản ánh chất
+  lượng gợi ý AI trong thực tế lớp học.
+
+### Lợi thế cạnh tranh & rủi ro cần theo dõi
+
+- **Lợi thế:** bám sát chương trình công lập thật (GDPT 2018/SGK Global Success) thay vì
+  giáo trình quốc tế/trung tâm tư nhân — dễ được nhà trường công lập phê duyệt hơn sản
+  phẩm ed-tech nhập ngoại; lõi chẩn đoán minh bạch, giải thích được, không phải "hộp đen"
+  nên dễ thuyết phục giáo viên tin dùng.
+- **Rủi ro:** (1) chu kỳ mua của trường công thường theo năm học/ngân sách nhà nước, chu
+  kỳ bán hàng dài hơn B2C; (2) chất lượng chẩn đoán phụ thuộc độ phủ Knowledge Graph và
+  ngân hàng câu hỏi — cần đầu tư nội dung sư phạm thật trước khi mở rộng, không thể chỉ
+  dựa vào nội dung LLM sinh chưa kiểm duyệt kỹ; (3) hạ tầng mạng ở vùng khó khăn (đối
+  tượng ưu tiên) là lý do PWA offline-first quan trọng về mặt kinh doanh, không chỉ kỹ
+  thuật — nếu offline không ổn định, đúng nhóm khách hàng mục tiêu sẽ rời bỏ trước tiên.
+
+### Nguồn tham khảo (mục 10)
+
+1. [VietnamPlus — Năm học 2023-2024: Cả nước có 12.166 trường tiểu học](https://www.vietnamplus.vn/nam-hoc-2023-2024-ca-nuoc-co-12166-truong-tieu-hoc-post971703.vnp)
+2. [Báo Pháp Luật TP.HCM — Bộ GD&ĐT: Trung bình mỗi lớp tiểu học có 31,6-31,8 học sinh (số liệu 2024-2025)](https://plo.vn/bo-gddt-trung-binh-moi-lop-tieu-hoc-co-316-hoc-sinh-post805891.html)
+3. [VnExpress — Sĩ số lớp ở trường tiểu học không quá 35](https://vnexpress.net/si-so-lop-o-truong-tieu-hoc-khong-qua-35-4777604.html)
+4. [VOV1 — Bộ GD&ĐT yêu cầu sĩ số các lớp tiểu học tối đa chỉ 35 em/lớp: hay nhưng khó thực hiện ngay](https://vov1.vov.vn/bo-gddt-yeu-cau-si-so-cac-lop-tieu-hoc-toi-da-chi-35-emlop-hay-nhung-kho-thuc-hien-ngay-09082024-94363.vov)
+5. [Dân trí — Những khoản nào nhà trường được phép và không được phép thu của học sinh](https://dantri.com.vn/giao-duc/nhung-khoan-nao-nha-truong-duoc-phep-va-khong-duoc-phep-thu-cua-hoc-sinh-20221013231338180.htm)
+6. [Tuổi Trẻ — Trường phải rõ ràng khoản thu cũ và mới, chỉ được tăng tối đa 15%](https://tuoitre.vn/truong-phai-ro-rang-khoan-thu-cu-va-moi-chi-duoc-tang-toi-da-15-20250914115842145.htm)
+7. [Tạp chí Giáo dục — Thực trạng chuyển đổi số trong giáo dục phổ thông, nghề nghiệp và định hướng giai đoạn 2026–2030 (Nghị quyết 57-NQ/TW)](https://tapchigiaoduc.edu.vn/article/90518/174/thuc-trang-chuyen-doi-so-trong-giao-duc-pho-thong-nghe-nghiep-va-dinh-huong-giai-doan-2026-2030/)
+8. [Igems — Học phí tiếng Anh trẻ em 2025: so sánh các trung tâm lớn](https://igems.com.vn/hoc-phi-tieng-anh-tre-em-2025-so-sanh-cac-trung-tam-lon-va-goi-y-lua-chon-toi-uu-cho-phu-huynh/)
+9. [Langmaster — Học phí các trung tâm tiếng Anh cho trẻ em: bảng giá mới nhất](https://langmaster.edu.vn/hoc-phi-cac-trung-tam-tieng-anh-cho-tre-em)
+
+*Lưu ý: các nguồn 1–9 là báo chí/trang tổng hợp, dùng để neo độ lớn thị trường và mặt
+bằng giá — không thay thế số liệu chính thức từ Bộ GD&ĐT (`moet.gov.vn/thong-ke`) hay văn
+bản pháp luật gốc (Thông tư 28/2020/TT-BGDĐT, Nghị quyết 57-NQ/TW) nếu cần trích dẫn
+trước giám khảo có chuyên môn pháp lý/thống kê.*
+
+## 11. Expected Impact
 
 - Phát hiện lỗ hổng cụ thể và nguyên nhân nền thay vì chỉ chấm điểm.
 - Giúp học sinh học đúng phần cần thiết và tránh học lại nội dung đã thành thạo.
@@ -826,7 +944,7 @@ gọi LLM lúc runtime đi qua backend, không gọi trực tiếp từ client.*
 Đây là kết quả mong muốn. Hiệu quả thực tế phải được xác nhận bằng pilot và tiêu chí đo
 lường trước/sau, không được coi là đã đạt ở trạng thái hiện tại.
 
-## 11. Limitations and Future Scope
+## 12. Limitations and Future Scope
 
 ### Giới hạn của MVP
 
