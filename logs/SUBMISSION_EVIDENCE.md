@@ -2,7 +2,8 @@
 
 Theo quy định BTC: *"For desktop tools, include session files such as ~/.claude/projects/<project>, ~/.codex/sessions/, or equivalent folders, plus screenshots."*
 
-Công cụ AI sử dụng: **OpenCode** (desktop agent) + **Claude Code** (CLI).
+Công cụ AI sử dụng: **OpenCode** (desktop agent) + **Claude Code** (CLI) + **Gemini** (qua Google
+Antigravity IDE, thư mục gốc `~/.gemini/antigravity/brain/<session-id>/`).
 
 ## 1. Session files (bằng chứng phiên làm việc)
 
@@ -12,6 +13,8 @@ Công cụ AI sử dụng: **OpenCode** (desktop agent) + **Claude Code** (CLI).
 | `opencode-session/vinc-opencode-2026-07-18.log` | **Session file ngày 18/07/2026** — transcript OpenCode lọc riêng cho ngày này (379 KB, 1996 dòng, 00:16→23:52 UTC). Chứa: sửa lỗi Nộp bài + obfuscator TDZ, tối ưu luồng làm bài (tự chấm + auto-next 1s), nút Quay lại xem lại nhận xét, progressive loading `PlanBuildingProgress`, và khắc phục DB container chết. |
 | `claude-session/vinc-claude-2026-07-17.log` | **Session file Claude Code ngày 17/07/2026** (11:30→19:09 giờ VN, UTC+7) — ghép từ 4 phiên Claude Code CLI thật (`~/.claude/projects/-home-hiendc-Documents-VAIC-2026/{7a6e71a2,8f42751a,51386eef,227d4c5c}...jsonl`), mỗi phiên chỉ lấy phần dòng có timestamp thuộc đúng ngày 17/07 giờ VN (lọc theo timestamp gốc, không copy nguyên file) — nối bằng marker `SESSION LOG`/`CONTINUED SESSION LOG` giống quy ước ở file OpenCode. Nội dung: phân tích đề bài, mở rộng phạm vi Tiếng Anh + BKT, đọc docx v2.2 và đồng bộ "chức năng chính" giữa `docs/PROJECT_DESCRIPTION.md`/`docs/PLAN.md`/`docs/timeline.md`. Phần đuôi của phiên `8f42751a` rơi sau nửa đêm (giờ VN) thuộc ngày 18/07 nên **không** đưa vào file này — đã tách sang `vinc-claude-2026-07-18.log` (xem dòng dưới). |
 | `claude-session/vinc-claude-2026-07-18.log` | **Session file Claude Code ngày 18/07/2026** (06:48→23:59 giờ VN, UTC+7) — ghép từ 2 phiên: phần đuôi của `8f42751a-3a73-4d9d-ba51-2b3a4b8cc705` (278 dòng, rơi sau nửa đêm 17→18/07) + phần đầu của `47856fd0-1868-432a-9abd-eede7c9c772e` (1902 dòng, phiên chạy xuyên sang cả 19/07 nên chỉ lấy phần thuộc 18/07). Lọc theo mốc UTC `2026-07-17T17:00:00Z` → `2026-07-18T17:00:00Z` (tương ứng 00:00→24:00 giờ VN ngày 18/07), nối bằng marker `SESSION LOG`/`CONTINUED SESSION LOG` giống file ngày 17/07. Nội dung: migrate curriculum Academy Stars → Global Success, đổi tên thương hiệu V-Nexus School + logo, kế hoạch offline-mode, tạo/triển khai ngân hàng câu hỏi + 6 bộ đề khảo sát, sửa hàng loạt bug (survey submit crash, race condition nút Quay lại, DB schema drift is_roadmap_approved/primary_teacher_id/parent_id, Pydantic NULL-safety), viết `deploy.sh`. |
+| `gemini-session/quyet-gemini-2026-07-17.log` | **Session file Gemini (Google Antigravity IDE) ngày 17/07/2026** (dev: `quyet`, ~11:34→17:48 giờ VN, UTC+7) — chuẩn hoá lại từ 2 file thô trong thư mục cũ `Gemini-session/` (tên gốc ghi nhầm tháng `17_6`, timestamp bên trong thực tế là 17/07): `quyet_file_logs_17_6_2026.txt` (3 dòng) nối với `quyet_file_logs_17_6_2026_v2.txt` (270 dòng) bằng marker `SESSION LOG`/`CONTINUED SESSION LOG`, đổi tên theo đúng chuẩn `<dev>-<tool>-YYYY-MM-DD.log` ở mục 4.7. Nội dung: đọc/phân tích dự án v-nexus, tạo `db.sql` + `connector.py` (kết nối PostgreSQL) + API CRUD ban đầu cho học sinh/giáo viên/xếp hạng/role/form khảo sát. |
+| `gemini-session/quyet-gemini-2026-07-18.log` | **Session file Gemini (Google Antigravity IDE) ngày 18/07/2026** (dev: `quyet`) — đổi tên từ `quyet_log_18_7.md` (thư mục cũ `Gemini-session/`) theo đúng chuẩn đặt tên; đây là transcript markdown xuất trực tiếp từ IDE (không có timestamp nội bộ từng dòng nên không xác minh được khung giờ VN chính xác, tin theo tên file gốc `18_7`), nội dung giữ nguyên. Nội dung: dashboard học sinh dạng bento grid, tính điểm BKT ở backend, trang kết quả + theo dõi tiến độ, tích hợp routing/auto-redirect vào `App.jsx`. |
 | `20260717.md` | Bản export nhật ký cộng tác theo ngày (trích từ `docs/ai_log.md`). |
 | `20260718.md` | Bản export nhật ký cộng tác theo ngày 18/07/2026 — tóm tắt các đầu việc khảo sát đầu vào + progressive loading. |
 | `../docs/ai_log.md` | Nhật ký cộng tác với AI (bắt buộc nộp cùng bài, xem `docs/RULES.md`). |
@@ -23,6 +26,10 @@ C:\Users\Admin\.local\share\opencode\
 ├── storage\session_diff\         <- session diff JSON
 ├── tool-output\                  <- output của tool calls
 └── snapshot\                      <- snapshot repo (không cần nộp)
+
+~/.gemini/antigravity/brain/<session-id>/     <- máy dev "quyet" (Linux, /home/pytathon/...)
+├── implementation_plan.md        <- kế hoạch AI tạo ra trước khi code
+└── walkthrough.md                <- tóm tắt thay đổi sau khi hoàn thành
 ```
 
 ## 2. Screenshots
@@ -55,7 +62,7 @@ trình duyệt (Playwright headless Chromium) qua toàn bộ các màn hình dư
 
 ## 3. Chat session links (online tools)
 
-Dự án dùng tool desktop (OpenCode/Claude Code CLI) nên không có link chat online.
+Dự án dùng tool desktop (OpenCode/Claude Code CLI/Gemini qua Google Antigravity IDE) nên không có link chat online.
 Nếu dùng thêm tool online nào, vui lòng bổ sung link tại đây:
 
 - (trống)

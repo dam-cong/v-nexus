@@ -24,6 +24,10 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // Ảnh minh hoạ trang landing (HS/PH/GV) nặng 2-4MB, không thuộc luồng luyện tập
+        // offline cốt lõi -> loại khỏi precache thay vì nâng maximumFileSizeToCacheInBytes,
+        // tránh service worker tải thêm ~9MB lúc cài đặt.
+        globIgnores: ['**/assets/HS-*.png', '**/assets/PH-*.png', '**/assets/GV-*.png'],
         cleanupOutdatedCaches: true,
         navigateFallback: 'index.html',
         navigateFallbackDenylist: [/^\/api\//, /\.[a-z]{2,}$/i],
