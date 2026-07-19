@@ -181,7 +181,7 @@ function RoadmapCard({ result, isLatest, onQuickCheck, onStartSurvey }) {
 
       {result.training_plan ? (
         result.is_roadmap_approved ? (
-          <BeautifulRoadmap planText={(() => { try { const p = typeof result.training_plan === 'string' ? JSON.parse(result.training_plan) : result.training_plan; return (p && typeof p === 'object' && p.student) ? JSON.stringify(p.student) : result.training_plan; } catch { return result.training_plan; } })()} studentKey={`result_${result.id}`} onCompleteChange={handleCompletionChange} />
+          <BeautifulRoadmap planText={result.training_plan} studentKey={`result_${result.id}`} onCompleteChange={handleCompletionChange} />
         ) : (
           <div className="roadmap-pending" style={{ padding: '24px', textAlign: 'center', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', marginTop: '16px' }}>
             <Sparkles size={32} style={{ color: '#f59e0b', margin: '0 auto 12px' }} />
