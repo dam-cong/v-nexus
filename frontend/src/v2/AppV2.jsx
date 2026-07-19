@@ -68,6 +68,7 @@ import { flushPendingResults } from '../offline/sync.js';
 import { WifiOff, Wifi } from 'lucide-react';
 import './index-v2.css';
 import './AppV2.css';
+import SettingsModal from './SettingsModal';
 
 // Legacy frontend modules still point to localhost:8000. In the V2 entry,
 // transparently route those calls through the current origin so Vite/ngrok
@@ -169,6 +170,7 @@ function DashboardApp({ user, logout }) {
   const [studentModal, setStudentModal] = useState({ open: false, mode: 'create', data: null });
   const [teacherModal, setTeacherModal] = useState({ open: false, mode: 'create', data: null });
   const [parentModal, setParentModal] = useState({ open: false, mode: 'create', data: null });
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   // Form states
   const [surveyForm, setSurveyForm] = useState({
@@ -1228,7 +1230,11 @@ function DashboardApp({ user, logout }) {
                 </span>
               )}
               <button className="icon-btn"><Bell size={18} /></button>
-              <button className="icon-btn"><Settings size={18} /></button>
+              {user?.role === 'admin' && (
+                <button className="icon-btn" onClick={() => setShowSettingsModal(true)} title="Cấu hình hệ thống">
+                  <Settings size={18} />
+                </button>
+              )}
             </div>
 
             <div className="user-profile">
@@ -3868,6 +3874,8 @@ function DashboardApp({ user, logout }) {
           </div>
         </div>
       )}
+
+      <SettingsModal open={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
 
     </div>
   );

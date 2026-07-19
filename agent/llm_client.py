@@ -30,7 +30,7 @@ def create_message_fpt(*, system: str, messages: list[dict], tools: list[dict] =
     """
     from openai import OpenAI
 
-    client = OpenAI(base_url=settings.llm_base_url, api_key=settings.api_key, timeout=30.0)
+    client = OpenAI(base_url=settings.llm_base_url, api_key=settings.llm_api_key, timeout=30.0)
     req_model = model or settings.llm_model
 
     openai_tools = None
@@ -119,10 +119,18 @@ def create_message_ollama(*, system: str, messages: list[dict], tools: list[dict
     return {"text": text, "tool_calls": tool_calls}
 
 
+_OPENAI_COMPATIBLE_MODES = {"fpt", "gemini", "openai"}
+
+
 def call_llm(*, system: str, messages: list[dict], tools: list[dict] = None, model: str = None):
-    """Bộ điều phối (dispatcher) cuộc gọi LLM dựa trên LLM_MODE."""
+    """Bộ điều phối (dispatcher) cuộc gọi LLM dựa trên LLM_MODE.
+
+    "fpt"/"gemini"/"openai" đều là nhà cung cấp OpenAI-compatible — dùng chung một
+    client, khác nhau ở `llm_base_url`/`llm_model`/`llm_api_key` cấu hình qua Settings
+    UI (`/api/settings/llm`), không hardcode riêng từng hãng trong code.
+    """
     mode = (settings.llm_mode or "offline").lower()
-    if mode == "fpt":
+    if mode in _OPENAI_COMPATIBLE_MODES:
         return create_message_fpt(system=system, messages=messages, tools=tools, model=model)
     elif mode == "ollama":
         return create_message_ollama(system=system, messages=messages, tools=tools, model=model)
@@ -140,12 +148,12 @@ def is_llm_available() -> bool:
 
     import requests
 
-    if mode == "fpt":
-        if not settings.api_key:
+    if mode in _OPENAI_COMPATIBLE_MODES:
+        if not settings.llm_api_key:
             return False
         try:
             url = f"{settings.llm_base_url.rstrip('/')}/models"
-            headers = {"Authorization": f"Bearer {settings.api_key}"}
+            headers = {"Authorization": f"Bearer {settings.llm_api_key}"}
             r = requests.get(url, headers=headers, timeout=3.0)
             return r.status_code == 200
         except Exception:

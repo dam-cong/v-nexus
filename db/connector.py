@@ -121,6 +121,22 @@ async def migrate_to_users() -> None:
         await session.commit()
 
 
+async def load_settings_from_db() -> None:
+    """Đọc app_settings từ DB và apply vào settings singleton."""
+    from app.config import settings
+    from db.models import AppSetting
+
+    try:
+        async with SessionLocal() as session:
+            result = await session.execute(select(AppSetting))
+            rows = result.scalars().all()
+            if rows:
+                kv = {row.key: row.value for row in rows}
+                settings.update(**{k: v for k, v in kv.items() if v is not None})
+    except Exception:
+        pass  # Bảng chưa tồn tại hoặc chưa có data — giữ env defaults
+
+
 async def init_db() -> None:
     """Khởi tạo cấu trúc bảng trong CSDL và thêm các vai trò mặc định."""
     # 1. Tạo tất cả các bảng
@@ -263,3 +279,6 @@ async def init_db() -> None:
     async with SessionLocal() as session:
         async with session.begin():
             await seed_test_results(session)
+
+    # 5. Load app settings từ DB vào settings singleton
+    await load_settings_from_db()
