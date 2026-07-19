@@ -2582,12 +2582,12 @@ function DashboardApp({ user, logout }) {
                               </span>
                             )}
                           </div>
-                          <BeautifulRoadmap planText={selectedResult.training_plan} studentKey={"result_" + selectedResult.id} />
+                          <BeautifulRoadmap planText={(() => { try { const p = typeof selectedResult.training_plan === 'string' ? JSON.parse(selectedResult.training_plan) : selectedResult.training_plan; if (p && typeof p === 'object') { const key = user?.role === 'giao_vien' ? 'teacher' : 'student'; return (p[key] ? JSON.stringify(p[key]) : selectedResult.training_plan); } return selectedResult.training_plan; } catch { return selectedResult.training_plan; } })()} studentKey={"result_" + selectedResult.id} />
                         </div>
                       )}
 
                       {/* Teacher Evaluation Input */}
-                      {user?.role === 'giao_vien' && (
+                      {(
                         <div style={{ padding: '0 32px 24px' }}>
                           <h4 className="detail-section-title" style={{ fontSize: '15px', fontWeight: '800', color: 'var(--text-color)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <MessageSquare size={18} style={{ color: '#4d44b5' }} />

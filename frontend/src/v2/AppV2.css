@@ -1459,10 +1459,14 @@
 .sidebar-footer p { color: #dbe4ed; font-size: 9px; font-weight: 700; }
 .sidebar-footer span { display: block; margin-top: 2px; color: #728aa2; font-size: 7px; }
 
-.main-wrapper { margin-left: 252px; background: transparent; }
+.main-wrapper { 
+  margin-left: 252px; 
+  background: transparent; 
+  width: calc(100% - 252px);
+}
 .top-header {
   min-height: 108px;
-  padding: 26px clamp(24px, 3.1vw, 46px) 22px;
+  padding: 26px 16px 22px;
   border-bottom: 1px solid rgba(214, 222, 232, .72);
   background: rgba(247, 249, 252, .72);
   backdrop-filter: blur(15px);
@@ -1481,7 +1485,7 @@
 .user-role { margin-top: 2px; color: #8c99aa; font-size: 8px; }
 .user-avatar { width: 39px; height: 39px; border: 3px solid white; border-radius: 12px; box-shadow: 0 8px 18px rgba(35,52,80,.12); font-size: 12px; }
 .user-profile > .icon-btn { width: 34px; height: 34px; margin-left: 1px !important; border: 0; background: transparent; }
-.content-area { padding: 30px clamp(24px, 3.1vw, 46px) 48px; }
+.content-area { padding: 20px 16px 30px; }
 .panel, .table-panel, .stat-card, .chart-placeholder {
   border: 1px solid #e7ebf1;
   box-shadow: 0 12px 35px rgba(31, 48, 75, .055);
