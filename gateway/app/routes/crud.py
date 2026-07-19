@@ -188,8 +188,8 @@ class TestResultResponse(BaseModel):
     mọi trường khác Optional với default an toàn — tránh 500 do response validation
     khi một hàng cũ thiếu giá trị ở cột được thêm/siết ràng buộc sau này."""
     id: int
-    user_id: int
-    test_id: int
+    user_id: Optional[int] = None
+    test_id: Optional[int] = None
     answers: Optional[list] = None
     score: Optional[int] = 0
     max_score: Optional[int] = 0
