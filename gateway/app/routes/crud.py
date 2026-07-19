@@ -184,24 +184,24 @@ class PlacementTestResponse(BaseModel):
 
 # Test Result Schemas
 class TestResultResponse(BaseModel):
+    """Resilient với dữ liệu cũ/legacy trong DB thật: chỉ khóa/created_at là bắt buộc,
+    mọi trường khác Optional với default an toàn — tránh 500 do response validation
+    khi một hàng cũ thiếu giá trị ở cột được thêm/siết ràng buộc sau này."""
     id: int
     user_id: int
     test_id: int
     answers: Optional[list] = None
-    score: int
-    max_score: int
-    percentage: float
-    result_level: str
-    cefr: str
-    time_total_sec: int
+    score: Optional[int] = 0
+    max_score: Optional[int] = 0
+    percentage: Optional[float] = 0
+    result_level: Optional[str] = None
+    cefr: Optional[str] = None
+    time_total_sec: Optional[int] = 0
     mastery: Optional[dict] = None
     gaps: Optional[list] = None
     recommendations: Optional[list] = None
     training_plan: Optional[str] = None
     alternative_plans: Optional[dict] = None
-    roadmap_completed: bool = False
-    quick_check_passed: bool = False
-    test_date: datetime
     is_roadmap_approved: Optional[bool] = False
     roadmap_completed: Optional[bool] = False
     quick_check_passed: Optional[bool] = False
