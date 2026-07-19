@@ -2241,7 +2241,7 @@ function DashboardApp({ user, logout }) {
                           <span style={{ fontSize: '13px', fontWeight: '700', color: '#27c26c', background: 'rgba(39,194,108,0.1)', padding: '6px 14px', borderRadius: '20px', border: '1px solid rgba(39,194,108,0.3)' }}>✓ Lộ trình đã được phê duyệt</span>
                         )}
                       </div>
-                      <BeautifulRoadmap planText={(() => { try { const p = typeof selectedResult.training_plan === 'string' ? JSON.parse(selectedResult.training_plan) : selectedResult.training_plan; return (p && typeof p === 'object' && p.teacher) ? JSON.stringify(p.teacher) : selectedResult.training_plan; } catch { return selectedResult.training_plan; } })()} studentKey={`result_${selectedResult.id}`} readOnly={true} />
+                      <BeautifulRoadmap planText={selectedResult.training_plan} studentKey={`result_${selectedResult.id}`} readOnly={true} />
                     </div>
                   )}
 
@@ -2948,8 +2948,7 @@ function DashboardApp({ user, logout }) {
                     const resultId = parseInt(selectedRoadmapTab.replace('result_', ''));
                     const resultObj = (student.test_results || []).find(r => r.id === resultId);
                     if (resultObj) {
-                      const planText = (() => { try { const p = typeof resultObj.training_plan === 'string' ? JSON.parse(resultObj.training_plan) : resultObj.training_plan; return (p && typeof p === 'object' && p.teacher) ? JSON.stringify(p.teacher) : resultObj.training_plan; } catch { return resultObj.training_plan; } })();
-                      return <BeautifulRoadmap planText={planText} studentKey={`result_${resultObj.id}`} readOnly={true} />;
+                      return <BeautifulRoadmap planText={resultObj.training_plan} studentKey={`result_${resultObj.id}`} readOnly={true} />;
                     }
                   }
                   return <p style={{ color: 'var(--text-muted)' }}>Không có lộ trình nào được chọn.</p>;

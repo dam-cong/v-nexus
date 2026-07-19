@@ -81,17 +81,7 @@ export default function StudentDashboard({ user, studentProfile, results, onTabC
   }, [results]);
 
   const planText = useMemo(() => {
-    const raw = latestResult?.training_plan || studentProfile?.training_plan || '';
-    if (!raw) return '';
-    try {
-      const p = typeof raw === 'string' ? JSON.parse(raw) : raw;
-      if (p && typeof p === 'object' && p.student) {
-        return typeof p.student === 'string' ? p.student : JSON.stringify(p.student);
-      }
-      return raw;
-    } catch {
-      return raw;
-    }
+    return latestResult?.training_plan || studentProfile?.training_plan || '';
   }, [latestResult, studentProfile]);
 
   const studentKey = useMemo(() => {
