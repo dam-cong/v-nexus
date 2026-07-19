@@ -34,31 +34,48 @@ C:\Users\Admin\.local\share\opencode\
 
 ## 2. Screenshots
 
-BTC yêu cầu kèm ảnh chụp màn hình. Đã chạy `docker-compose up -d --build` và tự động lái
-trình duyệt (Playwright headless Chromium) qua toàn bộ các màn hình dưới đây; ảnh nằm ở
-`logs/screenshots/`:
+BTC yêu cầu kèm ảnh chụp màn hình. Bộ ảnh dưới đây **chụp lại ngày 19/07/2026** (Claude
+Code + Playwright headless Chromium, chạy `--no-sandbox` trong môi trường không có
+quyền root) trên `docker-compose up -d --build` **từ database sạch** (`down -v` rồi
+`up` lại) — xác nhận login theo đúng seed mặc định (`db/seed.py`, mật khẩu `123456`)
+hoạt động thật, không cần biết mật khẩu tùy chỉnh nào khác. Ảnh nằm ở `logs/screenshots/`:
 
-- [x] Dashboard admin (`admin@vnexus.vn` / `123456`) → `01-admin-dashboard.png`
+- [x] Dashboard admin (`admin@vnexus.vn` / `123456`), layout đã sửa hết khoảng trống 2
+      bên → `01-admin-dashboard.png`
 - [x] Menu "Người dùng" → sub-tab Học sinh (`02-users-hocsinh.png`) / Giáo viên (`02b-users-giaovien.png`)
-- [x] Menu "Đánh giá" → sub-tab Khảo sát (`03a-assessment-khaosat.png`) / Kết quả (`03b-assessment-ketqua.png`) / Bài test (`03c-assessment-baitest.png`)
-- [x] Modal sửa học sinh có field "Mật khẩu" (`04-student-edit-modal.png`) + nút 🔑 Reset mật khẩu và toast xác nhận (`04b-reset-password-result.png`)
-- [x] Trang Khảo sát đầu vào của học sinh: landing (`05-survey-landing.png`) → chọn cấp độ (`06-survey-chon-capdo.png`) → hướng dẫn (`07-survey-huongdan.png`) → làm bài (`08-survey-lambai.png`) → soát lại (`09-survey-soatlai.png`, modal xác nhận `09b-survey-confirm-modal.png`) → kết quả (`10-survey-ketqua.png`)
+- [x] Menu "Đánh giá" → sub-tab Khảo sát (`03a-assessment-khaosat.png`) / Kết quả
+      (`03b-assessment-ketqua.png`) / Bài test (`03c-assessment-baitest.png`) / chi tiết
+      1 kết quả cụ thể (`03d-assessment-ketqua-chitiet.png`, xem kế hoạch AI dạng
+      timeline, không còn là JSON thô)
+- [x] Modal sửa học sinh có field "Mật khẩu" (`04-student-edit-modal.png`) + nút 🔑 Reset
+      mật khẩu và toast xác nhận (`04b-reset-password-result.png`) — **giữ nguyên từ lần
+      chụp 18/07**, tính năng chưa đổi nên không chụp lại.
+- [x] **Mới — Cấu hình LLM đa nhà cung cấp** (`11-settings-modal-llm.png`): modal admin
+      chọn Chế độ LLM, minh họa chọn "Google Gemini" tự điền gợi ý Base URL/Model —
+      trước đây chỉ có FPT AI cứng, giờ chọn được cả Gemini/OpenAI mà vẫn tự cấu hình
+      được (không hardcode).
+- [x] Trang Khảo sát đầu vào của học sinh: landing (`05-survey-landing.png`) → chọn cấp
+      độ (`06-survey-chon-capdo.png`, giữ nguyên 18/07) → hướng dẫn
+      (`07-survey-huongdan.png`, giữ nguyên 18/07) → làm bài (`08-survey-lambai.png`) →
+      soát lại (`09-survey-soatlai.png`, modal xác nhận `09b-survey-confirm-modal.png`,
+      giữ nguyên 18/07) → kết quả (`10-survey-ketqua.png`)
+- [x] **Mới — Lịch sử bài đánh giá** của học sinh: danh sách (`12-history-list.png`) →
+      chi tiết 1 bài (`13-history-detail-chitiet.png`) — vừa sửa xong bug hiển thị kế
+      hoạch AI dạng JSON thô + cột "Đáp án em chọn" bị trống, giờ hiện đúng.
 - [ ] File `opencode-session/opencode.log` đang mở trong editor (chứng minh session file) — **cần chụp thủ công**, ngoài khả năng của trình duyệt tự động (đây là cửa sổ editor, không phải trang web).
 
-⚠️ **Sai lệch phát hiện khi chạy thử — cần cập nhật thông tin trước khi nộp:**
-- Tài khoản `hiendc@gmail.com` / `default123` nêu trong checklist gốc **không tồn tại**
-  trong DB hiện tại (`Email hoặc mật khẩu không đúng`). Container `db` đã chạy liên tục
-  từ phiên trước (không bị tạo lại bởi `docker-compose up --build`), nên dữ liệu seed
-  thực tế trong volume khác với `db/seed.py` (đặt mật khẩu mặc định `123456`) — mật khẩu
-  hạt giống thực tế trong volume này cũng không phải `123456` (thử `hs01@vnexus.vn` /
-  `123456` cũng sai). Ảnh trên dùng `hs01@vnexus.vn` sau khi admin bấm reset mật khẩu về
-  mặc định `88888888` (tính năng ở mục 4). Nếu nộp bài trên một máy chủ/volume Postgres
-  **mới, sạch** (chạy đúng `db/seed.py`), thông tin đăng nhập sẽ theo đúng seed
-  (`123456`) — cần xác minh lại trên môi trường nộp bài thật, đừng lấy nguyên ảnh/thông
-  tin ở đây làm chuẩn nếu volume DB khác.
-- Nút "🔑 Reset mật khẩu" không nằm trong modal sửa học sinh như checklist mô tả, mà là
-  action riêng trên từng dòng bảng (cột "Thao tác") kèm `confirm()` của trình duyệt —
-  đã chụp cả hai để bao quát đủ ý "field Mật khẩu" + "nút Reset".
+⚠️ **Đã xác minh lại (19/07/2026), khác với ghi chú cũ ngày 18/07 ở trên:**
+- Trên **database sạch** (`docker-compose down -v && up -d --build`), tài khoản seed mặc
+  định hoạt động đúng như `db/seed.py`: `admin@vnexus.vn`/`hs0X@vnexus.vn`/
+  `teacherX@vnexus.vn` đều dùng mật khẩu `123456`. Ghi chú cũ về `hiendc@gmail.com`/
+  `default123` không tồn tại **chỉ đúng với volume DB cũ, đã qua nhiều lần seed/migrate
+  chồng lên nhau** — trên môi trường nộp bài thật (deploy mới hoàn toàn), cứ dùng seed
+  mặc định là chạy đúng, không cần trò reset mật khẩu thủ công như ghi chú cũ.
+- Trong lúc làm việc hôm nay, **production thật (`v-nexus.editech.vn`) từng bị lỗi 500**
+  ở `GET /api/test-results` do dữ liệu cũ có `user_id NULL` (5 dòng orphan từ migration
+  `student_id → user_id` không khớp hết) — đã sửa (`TestResultResponse` chịu được NULL)
+  và đã deploy lại. Nếu chụp ảnh trực tiếp trên server thật thay vì local, nhớ kiểm tra
+  lại tab "Đánh giá > Kết quả" không còn lỗi 500 trước khi coi ảnh là bằng chứng cuối.
 
 ## 3. Chat session links (online tools)
 
