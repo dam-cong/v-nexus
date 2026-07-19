@@ -1518,7 +1518,6 @@ async def submit_placement_test(
         training_plan = None
 
     # Query các lần làm bài trước đó của học sinh cho cùng test_id
-    from sqlalchemy import select
     previous_attempts_result = await db.execute(
         select(StudentTestResult)
         .where(StudentTestResult.user_id == student_id)
