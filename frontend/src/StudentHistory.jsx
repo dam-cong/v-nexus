@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ClipboardCheck, AlertTriangle, Lightbulb, ArrowLeft, Clock, BookOpen } from 'lucide-react';
+import BeautifulRoadmap from './BeautifulRoadmap';
 
 const SKILL_LABELS = {
   'as3.u1.l3': 'Present Simple vs Present Continuous',
@@ -134,7 +135,7 @@ function ResultDetail({ result, questions, onBack }) {
               </div>
             </div>
             {result.training_plan ? (
-              <div className="detail-plan-content">{result.training_plan}</div>
+              <BeautifulRoadmap planText={result.training_plan} studentKey={"history_" + result.id} />
             ) : (
               <div className="detail-highlight-empty">
                 <p>Chưa có kế hoạch. Hãy hoàn thành bài khảo sát để nhận kế hoạch từ AI.</p>
@@ -220,7 +221,7 @@ function ResultDetail({ result, questions, onBack }) {
                     <tr key={a.question_id || i} className={a.correct ? 'row-correct' : 'row-wrong'}>
                       <td>{i + 1}</td>
                       <td>{promptText}</td>
-                      <td>{selectedOpt?.label || (a.selected ?? '—')}</td>
+                      <td>{selectedOpt?.label || a.selected || '—'}</td>
                       <td>{correctOpt?.label || q?.correct_option_id || '—'}</td>
                       <td>
                         <span className={`history-answer-badge ${a.correct ? 'correct' : 'wrong'}`}>
