@@ -2582,7 +2582,7 @@ function DashboardApp({ user, logout }) {
                               </span>
                             )}
                           </div>
-                          <BeautifulRoadmap planText={selectedResult.training_plan} studentKey={"result_" + selectedResult.id} />
+                          <BeautifulRoadmap planText={(() => { try { const p = typeof selectedResult.training_plan === 'string' ? JSON.parse(selectedResult.training_plan) : selectedResult.training_plan; if (p && typeof p === 'object') { const key = user?.role === 'giao_vien' ? 'teacher' : 'student'; return (p[key] ? JSON.stringify(p[key]) : selectedResult.training_plan); } return selectedResult.training_plan; } catch { return selectedResult.training_plan; } })()} studentKey={"result_" + selectedResult.id} />
                         </div>
                       )}
 
