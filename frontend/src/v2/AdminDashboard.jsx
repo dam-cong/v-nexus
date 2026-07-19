@@ -1,16 +1,163 @@
 import React, { useState } from 'react';
 import { 
   Users, BookOpen, ClipboardCheck, GraduationCap, Award, 
-  Settings, Bell, AlertTriangle, CheckCircle, Clock
+  Settings, Bell, AlertTriangle, CheckCircle, Clock,
+  Flame, Target, TrendingUp, MessageSquare, Play, ArrowRight
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
-  LineChart, Line, CartesianGrid 
+  LineChart, Line, CartesianGrid,
+  Radar, RadarChart, PolarGrid, PolarAngleAxis
 } from 'recharts';
+import TeacherDashboard from './TeacherDashboard';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('tong-quan');
+
+
+  const renderStudentDashboard = () => (
+    <div className="student-home animate-fade-in" style={{ padding: '20px 0' }}>
+      <section className="student-welcome-hero" style={{ background: 'linear-gradient(135deg, #6c63ff 0%, #4d44b5 100%)', color: '#fff', padding: '32px', borderRadius: '16px', position: 'relative', overflow: 'hidden', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div style={{ flex: 1, zIndex: 2 }}>
+          <span style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}><Award size={14} /> Trình học của em</span>
+          <h2 style={{ fontSize: '24px', fontWeight: '800', margin: '0 0 8px', color: '#fff' }}>Chào Nguyễn Minh Anh, hôm nay mình cùng tiến thêm một bước nhé!</h2>
+          <p style={{ margin: '0 0 20px', opacity: 0.9, fontSize: '14px', color: '#fff' }}>Lộ trình cá nhân của em đã sẵn sàng. Chỉ cần một chút đều đặn mỗi ngày để em tiến gần hơn tới mục tiêu.</p>
+          <button style={{ background: '#fff', color: '#4d44b5', border: 'none', padding: '12px 24px', borderRadius: '8px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><Play size={16} fill="currentColor" /> Bắt đầu bài học tiếp theo</button>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', zIndex: 2, minWidth: '150px' }}>
+          <div style={{ width: '90px', height: '90px', borderRadius: '50%', border: '6px solid rgba(255,255,255,0.2)', borderTopColor: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+            <strong style={{ fontSize: '20px', fontWeight: '800', color: '#fff' }}>85%</strong>
+            <span style={{ fontSize: '10px', opacity: 0.8, color: '#fff' }}>Hoàn thành</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.15)', padding: '6px 12px', borderRadius: '20px', fontSize: '13px', color: '#fff' }}><Flame size={16} color="#ffa940" fill="#ffa940" /> <span><strong>5 ngày</strong> liên tục</span></div>
+        </div>
+      </section>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ background: '#e0e7ff', color: '#4f46e5', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ClipboardCheck size={24} /></div>
+          <div><h4 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: 'bold' }}>Đánh giá năng lực</h4><p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>Khám phá trình độ hiện tại</p></div>
+        </div>
+        <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ background: '#fef3c7', color: '#d97706', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Target size={24} /></div>
+          <div><h4 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: 'bold' }}>Lộ trình học tập</h4><p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>Học các bài cá nhân hóa</p></div>
+        </div>
+        <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ background: '#dcfce7', color: '#15803d', width: '48px', height: '48px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Award size={24} /></div>
+          <div><h4 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: 'bold' }}>Thành tích & XP</h4><p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>Nhìn lại quá trình tiến bộ</p></div>
+        </div>
+      </div>
+
+      <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+        <div>
+          <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: '8px' }}><GraduationCap size={20} color="#4d44b5" /> Hồ sơ năng lực</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px' }}><span style={{ fontSize: '12px', color: '#64748b' }}>Trình độ CEFR</span><strong style={{ display: 'block', fontSize: '18px', color: '#4d44b5' }}>A2</strong></div>
+            <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px' }}><span style={{ fontSize: '12px', color: '#64748b' }}>Điểm trung bình</span><strong style={{ display: 'block', fontSize: '18px', color: '#4d44b5' }}>88%</strong></div>
+            <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px' }}><span style={{ fontSize: '12px', color: '#64748b' }}>Tổng số XP</span><strong style={{ display: 'block', fontSize: '18px', color: '#4d44b5' }}>2,450 XP</strong></div>
+            <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px' }}><span style={{ fontSize: '12px', color: '#64748b' }}>Ưu tiên ôn tập</span><strong style={{ display: 'block', fontSize: '18px', color: '#ef4444' }}>Thì quá khứ đơn</strong></div>
+          </div>
+        </div>
+        <div style={{ height: '240px', background: '#f8fafc', borderRadius: '8px', padding: '12px' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart cx="50%" cy="50%" outerRadius="70%" data={[
+              { subject: 'Nghe', score: 85 },
+              { subject: 'Nói', score: 65 },
+              { subject: 'Đọc', score: 90 },
+              { subject: 'Viết', score: 75 }
+            ]}>
+              <PolarGrid stroke="#cbd5e1" />
+              <PolarAngleAxis dataKey="subject" tick={{ fill: '#475569', fontSize: 12, fontWeight: 600 }} />
+              <Radar name="Năng lực" dataKey="score" stroke="#4d44b5" fill="#4d44b5" fillOpacity={0.3} />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderParentDashboard = () => (
+    <div className="parent-home animate-fade-in" style={{ padding: '20px 0' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <section className="student-welcome-hero" style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)', color: '#fff', padding: '32px', borderRadius: '16px', position: 'relative', overflow: 'hidden', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ zIndex: 2 }}>
+              <span style={{ background: 'rgba(255,255,255,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}><Users size={14} /> Góc Phụ Huynh</span>
+              <h2 style={{ fontSize: '24px', fontWeight: '800', margin: '0 0 8px', color: '#fff' }}>Hành trình học tập của con</h2>
+              <p style={{ margin: 0, opacity: 0.9, fontSize: '14px', color: '#fff' }}>Theo dõi tiến độ, xem nhận xét trực tiếp từ giáo viên và hỗ trợ lộ trình học tập của con.</p>
+            </div>
+            <div style={{ minWidth: '120px', zIndex: 2, background: 'rgba(255,255,255,0.2)', padding: '16px', borderRadius: '12px', textAlign: 'center' }}>
+              <span style={{ fontSize: '12px', opacity: 0.8, color: '#fff', display: 'block' }}>Học sinh</span>
+              <strong style={{ fontSize: '16px', fontWeight: '800', color: '#fff' }}>Nguyễn Minh Anh</strong>
+            </div>
+          </section>
+
+          <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: '8px' }}><ClipboardCheck size={20} color="#0ea5e9" /> Nhận xét từ giáo viên (Độc quyền Phụ huynh)</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #0ea5e9' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '12px', color: '#64748b' }}>
+                  <strong style={{ color: '#0ea5e9' }}>Cô Hoa (Chủ nhiệm)</strong>
+                  <span>19/07/2026 14:30</span>
+                </div>
+                <p style={{ margin: 0, fontSize: '14px', color: '#1e293b', lineHeight: 1.5 }}>Học sinh Minh Anh có sự tập trung tốt trong giờ học nói. Khả năng phát âm cải thiện rõ rệt qua các bài tập tương tác AI.</p>
+              </div>
+              <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #cbd5e1' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '12px', color: '#64748b' }}>
+                  <strong>Thầy Minh (Trợ giảng)</strong>
+                  <span>15/07/2026 09:15</span>
+                </div>
+                <p style={{ margin: 0, fontSize: '14px', color: '#1e293b', lineHeight: 1.5 }}>Con cần chú ý làm đầy đủ các bài tập ngữ pháp về Thì quá khứ đơn để đạt kết quả tốt nhất ở bài kiểm tra tuần tới.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <h4 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: 'bold' }}>Trạng thái học tập của con</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
+                <span style={{ color: '#64748b', fontSize: '13px' }}>Trình độ hiện tại</span>
+                <strong style={{ color: '#0ea5e9' }}>A2 (Elementary)</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
+                <span style={{ color: '#64748b', fontSize: '13px' }}>Bài đã hoàn thành</span>
+                <strong>42 bài học</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '8px' }}>
+                <span style={{ color: '#64748b', fontSize: '13px' }}>Thời gian tự học</span>
+                <strong>12.5 giờ</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: '#64748b', fontSize: '13px' }}>Mục tiêu tuần</span>
+                <span style={{ color: '#22c55e', fontWeight: 'bold' }}>Đã đạt (150/100 XP)</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+            <h4 style={{ margin: '0 0 12px', fontSize: '15px', fontWeight: 'bold' }}>Tiên trình học 4 tuần qua</h4>
+            <div style={{ height: '150px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={[
+                  { week: 'W1', score: 70 },
+                  { week: 'W2', score: 75 },
+                  { week: 'W3', score: 82 },
+                  { week: 'W4', score: 88 }
+                ]}>
+                  <XAxis dataKey="week" tickLine={false} axisLine={false} />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="score" stroke="#0ea5e9" strokeWidth={3} dot={{ r: 4 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   // Fake data for charts and stats
   const stats = {
@@ -440,6 +587,9 @@ const AdminDashboard = () => {
           {activeTab === 'tong-quan' && 'Tổng quan Trường Tiểu học V-Nexus'}
           {activeTab === 'khoi-lop' && 'Phân tích theo khối và lớp'}
           {activeTab === 'vinh-danh' && 'Vinh danh nỗ lực học tập'}
+          {activeTab === 'hoc-sinh' && 'Dashboard Học sinh (Demo)'}
+          {activeTab === 'phu-huynh' && 'Dashboard Phụ huynh (Demo)'}
+          {activeTab === 'giao-vien' && 'Dashboard Giáo viên (Demo)'}
         </h2>
       </div>
 
@@ -449,6 +599,9 @@ const AdminDashboard = () => {
         <button className={`admin-tab-btn`} style={{opacity: 0.5, cursor: 'not-allowed'}}>Cảnh báo</button>
         <button className={`admin-tab-btn ${activeTab === 'vinh-danh' ? 'active' : ''}`} onClick={() => setActiveTab('vinh-danh')}>Vinh danh XP</button>
         <button className={`admin-tab-btn`} style={{opacity: 0.5, cursor: 'not-allowed'}}>Nguồn lực</button>
+        <button className={`admin-tab-btn ${activeTab === 'hoc-sinh' ? 'active' : ''}`} onClick={() => setActiveTab('hoc-sinh')}>Học sinh</button>
+        <button className={`admin-tab-btn ${activeTab === 'phu-huynh' ? 'active' : ''}`} onClick={() => setActiveTab('phu-huynh')}>Phụ huynh</button>
+        <button className={`admin-tab-btn ${activeTab === 'giao-vien' ? 'active' : ''}`} onClick={() => setActiveTab('giao-vien')}>Giáo viên</button>
 
         {activeTab === 'tong-quan' && (
           <div className="admin-tab-filters">
@@ -462,6 +615,9 @@ const AdminDashboard = () => {
       {activeTab === 'tong-quan' && renderOverview()}
       {activeTab === 'khoi-lop' && renderClassAnalysis()}
       {activeTab === 'vinh-danh' && renderLeaderboard()}
+      {activeTab === 'hoc-sinh' && renderStudentDashboard()}
+      {activeTab === 'phu-huynh' && renderParentDashboard()}
+      {activeTab === 'giao-vien' && <TeacherDashboard />}
     </div>
   );
 };

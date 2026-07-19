@@ -1518,7 +1518,6 @@ async def submit_placement_test(
         training_plan = None
 
     # Query các lần làm bài trước đó của học sinh cho cùng test_id
-    from sqlalchemy import select
     previous_attempts_result = await db.execute(
         select(StudentTestResult)
         .where(StudentTestResult.user_id == student_id)
@@ -1619,7 +1618,7 @@ async def submit_placement_test(
 async def approve_roadmap(
     result_id: int,
     db: AsyncSession = Depends(get_session),
-    user: dict = Depends(require_role("giao_vien")), # Only teachers (or admins) can approve
+    user: dict = Depends(require_role("giao_vien", "admin")), # Teachers and admins can approve
 ):
     result = await db.execute(select(StudentTestResult).where(StudentTestResult.id == result_id))
     test_result = result.scalar_one_or_none()
@@ -1691,26 +1690,28 @@ async def create_teacher_evaluation(
     user_id: int,
     payload: EvaluationCreate,
     db: AsyncSession = Depends(get_session),
-    user: dict = Depends(require_role("giao_vien")),
+    user: dict = Depends(require_role("giao_vien", "admin")),
 ):
+    # Lookup teacher profile — admin may not have one, so we handle gracefully
     t_res = await db.execute(select(Teacher).where(Teacher.user_id == user["id"]))
     teacher = t_res.scalar_one_or_none()
-    if not teacher:
-        raise HTTPException(status_code=404, detail="Teacher profile not found")
-        
+
+    # If admin without teacher profile, we still allow evaluation with teacher_id=None
+    teacher_id = teacher.id if teacher else None
+
     s_res = await db.execute(select(Student).where(Student.user_id == user_id))
     student = s_res.scalar_one_or_none()
     if not student:
         raise HTTPException(status_code=404, detail="Student profile not found")
-        
-    eval_entry = TeacherEvaluation(student_id=student.id, teacher_id=teacher.id, comment=payload.comment)
+
+    eval_entry = TeacherEvaluation(student_id=student.id, teacher_id=teacher_id, comment=payload.comment)
     db.add(eval_entry)
     await db.commit()
     await db.refresh(eval_entry)
-    
+
     t_user_res = await db.execute(select(User).where(User.id == user["id"]))
     t_user = t_user_res.scalar_one()
-    
+
     return {
         "id": eval_entry.id,
         "student_id": eval_entry.student_id,
