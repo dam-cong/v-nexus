@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from db.connector import init_db
 from .routes.crud import router as crud_router
 from .routes.auth import router as auth_router
+from .routes.settings import router as settings_router
 
 
 @asynccontextmanager
@@ -33,6 +34,7 @@ app.add_middleware(
 # Đăng ký các router
 app.include_router(auth_router)
 app.include_router(crud_router)
+app.include_router(settings_router)
 
 
 @app.get("/health")
