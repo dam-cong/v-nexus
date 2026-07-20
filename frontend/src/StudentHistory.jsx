@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ClipboardCheck, AlertTriangle, Lightbulb, ArrowLeft, Clock, BookOpen } from 'lucide-react';
 import BeautifulRoadmap from './BeautifulRoadmap';
+import { apiFetch } from './api';
 
 const SKILL_LABELS = {
   'as3.u1.l3': 'Present Simple vs Present Continuous',
@@ -47,7 +48,34 @@ function levelClass(level) {
   return 'beginner';
 }
 
-function ResultDetail({ result, questions, onBack }) {
+function ResultDetail({ result: initialResult, questions, onBack }) {
+  const [result, setResult] = useState(initialResult);
+  const [regenerating, setRegenerating] = useState(false);
+  const [regenError, setRegenError] = useState(null);
+
+  const handleRegenerate = useCallback(async () => {
+    if (!result?.id) return;
+    setRegenerating(true);
+    setRegenError(null);
+    try {
+      const res = await apiFetch(`/api/test-results/${result.id}/regenerate-plan`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setResult(updated);
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setRegenError(err.detail || 'Không thể tạo kế hoạch. Vui lòng thử lại.');
+      }
+    } catch (e) {
+      console.error('Regenerate plan failed:', e);
+      setRegenError('Lỗi kết nối. Vui lòng thử lại.');
+    } finally {
+      setRegenerating(false);
+    }
+  }, [result?.id]);
+
   if (!result) return null;
   const masteryArr = Array.isArray(result.mastery)
     ? result.mastery
@@ -136,9 +164,50 @@ function ResultDetail({ result, questions, onBack }) {
             </div>
             {result.training_plan ? (
               <BeautifulRoadmap planText={result.training_plan} studentKey={"history_" + result.id} />
+              <div className="detail-plan-content">
+                {(() => {
+                  try {
+                    const parsed = typeof result.training_plan === 'string' ? JSON.parse(result.training_plan) : result.training_plan;
+                    if (parsed && typeof parsed === 'object' && parsed.student) {
+                      const sp = typeof parsed.student === 'string' ? JSON.parse(parsed.student) : parsed.student;
+                      return (
+                        <>
+                          {sp.summary && <div style={{ marginBottom: 12, lineHeight: 1.7 }}>{sp.summary}</div>}
+                          {sp.steps?.map((step, i) => (
+                            <div key={i} style={{ marginBottom: 10, padding: '10px 14px', background: 'rgba(79,91,207,0.06)', borderRadius: 10 }}>
+                              <div style={{ fontWeight: 700, marginBottom: 4, color: 'var(--primary)' }}>
+                                Bước {step.step_order}: {step.skill_name}
+                              </div>
+                              {step.encouragement && <div style={{ marginBottom: 3, fontStyle: 'italic', color: '#27c26c' }}>{step.encouragement}</div>}
+                              {step.practice_tip && <div style={{ marginBottom: 3 }}>{step.practice_tip}</div>}
+                              {step.home_tip && <div style={{ color: '#666', fontSize: '0.92em' }}>{step.home_tip}</div>}
+                            </div>
+                          ))}
+                          {sp.closing && <div style={{ marginTop: 10, fontWeight: 600, color: 'var(--primary)' }}>{sp.closing}</div>}
+                        </>
+                      );
+                    }
+                    return <>{result.training_plan}</>;
+                  } catch {
+                    return <>{result.training_plan}</>;
+                  }
+                })()}
+              </div>
             ) : (
               <div className="detail-highlight-empty">
-                <p>Chưa có kế hoạch. Hãy hoàn thành bài khảo sát để nhận kế hoạch từ AI.</p>
+                <p>Chưa có kế hoạch đào tạo.</p>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleRegenerate}
+                  disabled={regenerating}
+                  style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                >
+                  <RefreshCw size={16} className={regenerating ? 'spin' : ''} />
+                  {regenerating ? 'Đang tạo kế hoạch...' : 'Tạo kế hoạch từ AI'}
+                </button>
+                {regenError && (
+                  <p style={{ color: '#ba1a1a', marginTop: 8, fontSize: '0.9em' }}>{regenError}</p>
+                )}
               </div>
             )}
           </div>
