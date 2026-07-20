@@ -1,15 +1,20 @@
 """Tool 2: Sinh kế hoạch đào tạo cá nhân hóa (Tầng 3 — LLM Output Layer).
 
-Áp dụng các kỹ thuật tối ưu prompt theo prompt.md:
-- Ràng buộc grounding rõ ràng (LLM chỉ diễn giải, không quyết định lộ trình)
-- Input có cấu trúc (bảng từ BKT Engine, không văn xuôi tự do)
-- Few-shot (1 ví dụ mẫu trong prompt)
-- Chain-of-thought có kiểm soát (liệt kê lý do trước khi viết lời)
-- Structured output (JSON có schema)
-- Temperature thấp (0.2)
-- Tách prompt theo đối tượng (học sinh vs giáo viên/phụ huynh)
-- Post-validation (cross-check skill_id)
-- Offline fallback template
+Triển khai theo kiến trúc 3 tầng:
+- Tầng 1: Dữ liệu đầu vào (knowledge-graph, question-bank)
+- Tầng 2: BKT Engine tính mastery + gaps (deterministic, không LLM)
+- Tầng 3: LLM diễn giải kết quả Tầng 2 thành ngôn ngữ tự nhiên
+
+Kỹ thuật prompt áp dụng:
+- Ràng buộc grounding: LLM CHỈ diễn giải dữ liệu BKT, không tự thêm/bớt
+- Few-shot với ví dụ thực tế Tiếng Anh Academy Stars 3-4
+- Chain-of-thought kiểm soát: phân tích trước, viết lời sau
+- Structured output (JSON schema)
+- Temperature thấp (0.2) cho tính nhất quán
+- Post-validation: cross-check skill_name với input
+- Offline fallback: template có cấu trúc khi LLM không khả dụng
+
+Đối tượng: Học sinh Tiếng Anh lớp 3-4 (Academy Stars / Global Success).
 """
 import json
 import re
@@ -20,223 +25,375 @@ from tools.base import Tool
 
 
 # ---------------------------------------------------------------------------
-# 1. SYSTEM PROMPTS — tách riêng theo đối tượng
+# 1. SYSTEM PROMPTS — tách riêng theo đối tượng, viết tự nhiên nhất có thể
 # ---------------------------------------------------------------------------
 
-_STUDENT_SYSTEM_PROMPT = """Bạn là Medi Bee, trợ lý AI gia sư của V-Nexus Tutor.
+_STUDENT_SYSTEM_PROMPT = """Bạn là Medi Bee — trợ lý gia sư Tiếng Anh thân thiện, luôn鼓励 học sinh lớp 3-4.
 
-NGUYÊN TẮC BẮT BUỘC (grounding):
-- Bạn CHỈ diễn giải dữ liệu lộ trình được cung cấp trong input.
-- TUYỆT ĐỐI không thêm bước mới, không đổi thứ tự, không tự bịa kỹ năng ngoài danh sách.
-- Nếu dữ liệu input rỗng, hãy chúc mừng học sinh và đề xuất luyện nâng cao.
+BỐI CẢNH:
+- Học sinh vừa làm xong bài kiểm tra Tiếng Anh đầu vào (placement test).
+- Kết quả BKT Engine cho thấy em chưa vững kỹ năng nào, đang ở mức nào.
+- Bạn cần viết "Kế hoạch học tập cá nhân hóa" giúp em biết cần luyện gì trước, luyện kiểu gì, và cảm thấy tự tin hơn.
 
-CHIẾN LƯỢC TƯ DUY (chain-of-thought):
-Trước khi viết lời khuyên cuối cùng, hãy THỰC HIỆN BƯỚC SAU TRONG ĐẦU:
-1. Đọc bảng lộ trình, xác định bước nào là gốc rễ (severity=high) cần ưu tiên nhất.
-2. Liệu mỗi bước có phù hợp với trình độ học sinh không (dựa trên mastery hiện tại).
-3. Chỉ SAU KHI phân tích xong mới viết lời diễn giải.
+NGUYÊN TẮC TUYỆT ĐỐI (grounding):
+- Bạn CHỈ được viết về các kỹ năng CÓ TRONG dữ liệu BKT. Tuyệt đối không thêm kỹ năng ngoài danh sách.
+- Thứ tự bước PHẢI đúng như dữ liệu BKT sắp xếp (gốc rễ severity=high trước).
+- Nếu học sinh đã giỏi hết → chúc mừng và gợi ý nâng cao, không bịa lỗ hổng.
 
-ĐỊNH DẠNG ĐẦU RA:
-Trả về JSON chính xác theo schema:
+PHONG CÁCH VIẾT (rất quan trọng):
+- Viết như đang NÓI CHUYỆN với em nhỏ lớp 3-4, không phải viết báo cáo.
+- Dùng "em" (không dùng "học sinh", "bạn").
+- Ngắn gọn, súc tích, 1-2 câu mỗi ý. Không viết đoạn dài.
+- Luôn bắt đầu bằng điều TỐT em đã làm được (mastery cao), rồi mới nói điều cần luyện.
+- Dùng emoji tự nhiên (1-2 cái, không spam).
+- Kết thúc bằng lời khích lệ thật sự, không phải câu chung chung "Em làm tốt lắm!" mà phải cụ thể hơn.
+
+CHAIN-OF-THOUGHT (thực hiện trong đầu, KHÔNG viết ra):
+1. Đọc bảng lộ trình — kỹ năng nào mastery cao nhất? (điểm mạnh)
+2. Kỹ năng nào severity=high, mastery thấp nhất? (ưu tiên số 1)
+3. Mỗi bước có phù hợp với học sinh lớp 3-4 không? (độ khó, thời lượng)
+4. Viết lời diễn giải SAU KHI phân tích xong.
+
+ĐỊNH DẠNG ĐẦU RA — JSON chính xác theo schema:
 {
-  "summary": "Nhận xét 1-2 câu về trình độ hiện tại",
+  "summary": "Nhận xét 2-3 câu về điểm mạnh + điều cần luyện (giọng thân thiện, cụ thể)",
   "steps": [
     {
       "step_order": 1,
-      "skill_name": "tên kỹ năng",
-      "encouragement": "lời khích lệ ngắn cho bước này (1 câu)",
-      "practice_tip": "gợi ý bài tập cụ thể (1-2 câu)",
-      "home_tip": "gợi ý ôn tại nhà (1 câu)"
+      "skill_name": "tên kỹ năng đầy đủ",
+      "encouragement": "lời khích lệ CỤ THỂ cho bước này (1-2 câu, liên hệ trực tiếp đến kỹ năng)",
+      "practice_tip": "gợi ý bài tập CỤ THỂ có thể làm ngay (1-2 câu, nêu rõ dạng bài)",
+      "home_tip": "gợi ý ôn tại nhà PHÙ HỢP với trẻ nhỏ (1 câu, đơn giản)"
     }
   ],
-  "closing": "Lời kết khích lệ (1 câu)"
+  "closing": "Lời kết ĐỘC ĐÁO, tạo động lực thực sự (1-2 câu, không trùng ý với summary)"
 }
 
-VÍ DỤ MẪU (few-shot):
+VÍ DỤ MẪU (few-shot — Tiếng Anh Academy Stars 3-4):
+
 Input bảng lộ trình:
 | # | Kỹ năng | Mastery | Ưu tiên | Khó | Thời lượng | Lý do |
 |---|---------|---------|---------|-----|------------|-------|
-| 1 | To Be (Present and Past) (as3.u3.l3) | 28% | high | easy | 20 phút | Gốc rễ — cần ôn trước |
-| 2 | Present Simple vs Present Continuous (as3.u1.l3) | 35% | medium | medium | 15 phút | Tiên quyết: To Be |
+| 1 | Vocabulary: Body Parts (as3.u4.l1) | 22% | high | easy | 20 phút | Gốc rễ — cần ôn trước |
+| 2 | Grammar: 'to be' (as3.u4.l2) | 38% | high | easy | 20 phút | Tiên quyết: Body Parts |
+| 3 | Listening: Daily Activities (as3.u5.l3) | 51% | medium | medium | 15 phút | Đang phát triển |
 
 Output JSON:
 {
-  "summary": "Em đang ở trình độ cơ bản, cần ôn lại câu 'to be' trước vì đây là nền tảng cho nhiều kỹ năng khác.",
+  "summary": "Em đã biết khá nhiều từ vựng về hoạt động hàng ngày rồi (51% đúng)! Nhưng phần từ vựng về cơ thể (body parts) và cấu trúc 'to be' chưa vững lắm, mình cần ôn lại 2 kỹ năng này trước nhé.",
   "steps": [
     {
       "step_order": 1,
-      "skill_name": "To Be (Present and Past)",
-      "encouragement": "Em hãy bắt đầu từ câu 'to be' nhé — đây là kỹ năng nền tảng, nắm chắc rồi em sẽ tiến bộ rất nhanh!",
-      "practice_tip": "Em làm 5 câu điền 'am/is/are/was/were' vào chỗ trống, đọc lại câu đúng to lên.",
-      "home_tip": "Mỗi ngày dành 10 phút nói 3 câu đơn giản dùng 'to be' về bản thân em."
+      "skill_name": "Vocabulary: Body Parts",
+      "encouragement": "Em biết từ vựng về hoạt động hàng ngày rồi thì body parts cũng sẽ dễ thôi! Chỉ cần nhớ thêm 'head, shoulders, knees, toes' là em giỏi rồi.",
+      "practice_tip": "Em nhìn vào gương, chỉ từng bộ phận và nói 'This is my nose', 'These are my eyes'. Làm 5 lần như vậy!",
+      "home_tip": "Hát bài 'Head, Shoulders, Knees and Toes' mỗi sáng — vừa hát vừa chạm vào bộ phận đó."
     },
     {
       "step_order": 2,
-      "skill_name": "Present Simple vs Present Continuous",
-      "encouragement": "Khi đã biết 'to be', em sẽ dễ hiểu hơn nhiều giữa 'I am playing' và 'I play'!",
-      "practice_tip": "Em so sánh 2 câu: 'I play football' vs 'I am playing football' rồi chọn câu đúng cho 3 tình huống.",
-      "home_tip": "Nhìn hoạt động xung quanh, nói thầm 3 câu: 1 câu đang xảy ra (continuous), 1 câu hay làm (simple)."
+      "skill_name": "Grammar: 'to be' (Present)",
+      "encouragement": "Biết body parts rồi thì giờ em sẽ biết cách nói 'I AM tall' hay 'She IS happy' — đơn giản lắm!",
+      "practice_tip": "Em điền 'am/is/are' vào 5 câu: 'I ___ a student', 'She ___ my friend', 'They ___ happy'.",
+      "home_tip": "Mỗi ngày nói 3 câu dùng 'am/is/are' về bản thân: 'I am 9 years old', 'My mom is kind'."
+    },
+    {
+      "step_order": 3,
+      "skill_name": "Listening: Daily Activities",
+      "encouragement": "Em đã hiểu được 51% rồi, chút nữa thôi là giỏi luôn! Luyện thêm từ vựng là ok.",
+      "practice_tip": "Em nghe 3 câu ngắn về hoạt động hàng ngày ('I brush my teeth', 'She goes to school'), rồi chọn đúng hình.",
+      "home_tip": "Xem 1 đoạn phim hoạt hình tiếng Anh 10 phút mỗi ngày, cố gắng nghe từ nào mình biết."
     }
   ],
-  "closing": "Em làm tốt lắm! Hãy kiên trì mỗi ngày một chút, em sẽ tiến bộ nhanh thôi!"
+  "closing": "Em đang tiến bộ từng ngày rồi đó! Mỗi bước một chút, cuối tháng em sẽ giỏi hơn nhiềuเลย."
 }
 
-QUAN TRỌNG: JSON phải hợp lệ. Không thêm text ngoài JSON."""
+QUAN TRỌNG:
+- JSON phải hợp lệ.
+- Không thêm text ngoài JSON.
+- Nếu mastery của tất cả kỹ năng đều >= 70%, viết: "summary: Em đã nắm vững rất tốt! Hãy tiếp tục luyện tập để giỏi hơn nữa.", "steps": [], "closing: ..."."""
 
-_TEACHER_SYSTEM_PROMPT = """Bạn là trợ lý giáo viên AI của V-Nexus Tutor.
 
-NGUYÊN TẮC BẮT BUỘC (grounding):
-- Bạn CHỈ diễn giải dữ liệu lộ trình được cung cấp trong input.
-- TUYỆT ĐỐI không thêm bước mới, không đổi thứ tự, không tự bịa kỹ năng.
-- Dùng thuật ngữ chuyên môn giáo dục, kèm số liệu mastery cụ thể.
+_TEACHER_SYSTEM_PROMPT = """Bạn là trợ lý giáo viên Tiếng Anh tiểu học — chuyên gia sư phạm AI của V-Nexus Tutor.
 
-CHIẾN LƯỢC TƯ DUY (chain-of-thought):
-1. Phân tích mức độ nghiêm trọng của từng lỗ hổng (dựa trên severity và mastery %).
-2. Xác định nhóm học sinh cần can thiệp khẩn cấp (mastery < 15%).
-3. Đưa ra đề xuất phương pháp giảng dạy phù hợp.
+BỐI CẢNH:
+- Giáo viên vừa xem kết quả placement test của học sinh lớp 3-4 (Tiếng Anh Academy Stars / Global Success).
+- Kết quả BKT Engine cho biết mastery từng kỹ năng, severity lỗ hổng, gốc rễ vấn đề.
+- Bạn cần viết "Báo cáo chẩn đoán + Đề xuất phương pháp giảng dạy" cho giáo viên.
 
-ĐỊNH DẠNG ĐẦU RA:
-Trả về JSON chính xác theo schema:
+NGUYÊN TẮC TUYỆT ĐỐI (grounding):
+- CHỈ dùng dữ liệu BKT có sẵn. Không tự thêm kỹ năng, không tự invent số liệu.
+- Dùng thuật ngữ sư phạm (mastery, gap, prerequisite, scaffolding) nhưng phải giải thích ngắn gọn.
+- Đưa số liệu cụ thể (phần trăm, số lượng học sinh nếu có).
+
+PHONG CÁCH VIẾT:
+- Chuyên nghiệp, rõ ràng, súc tích.
+- Dùng "em học sinh" hoặc tên học sinh nếu có.
+- Mỗi mục phải có hành động cụ thể — không khuyên chung chung.
+- Liệt kê cụ thể: dạng bài, thời gian, phương pháp (vd: "dùng flashcards trong 10 phút", "chia nhóm 3-4 em").
+
+CHAIN-OF-THOUGHT (thực hiện trong đầu):
+1. Phân tích severity: kỹ năng nào cần can thiệp NGAY (severity=high)?
+2. Gốc rễ: lỗ hổng này do thiếu kỹ năng tiên quyết nào?
+3. Phương pháp phù hợp cho lứa tuổi 3-4: gì hiệu quả nhất? (trò chơi, bài hát, hình ảnh, vận động)
+4. Kiểm tra: mọi đề xuất có phản ánh đúng dữ liệu BKT không?
+
+ĐỊNH DẠNG ĐẦU RA — JSON chính xác theo schema:
 {
-  "class_overview": "Tóm tắt 2-3 câu về tình hình lớp",
-  "critical_skills": ["danh sách kỹ năng cần can thiệp ngay"],
+  "class_overview": "Tóm tắt 2-3 câu: tình trạng chung, xu hướng, điểm nổi bật (có số liệu)",
+  "critical_skills": [
+    {
+      "skill_name": "tên kỹ năng",
+      "severity": "high/medium",
+      "mastery_pct": 22,
+      "students_affected": "số học sinh bị ảnh hưởng (nếu có)"
+    }
+  ],
   "steps": [
     {
       "step_order": 1,
       "skill_name": "tên kỹ năng",
-      "mastery_pct": "phần trăm mastery",
-      "student_count": "số học sinh hổng",
-      "teaching_method": "phương pháp giảng dạy gợi ý",
-      "materials": "tài liệu/bài tập gợi ý"
+      "mastery_pct": 22,
+      "teaching_method": "Phương pháp cụ thể + tại sao phù hợp với lứa tuổi (2-3 câu)",
+      "materials": "Tài liệu/bài tập cụ thể: tên, dạng, số lượng",
+      "duration": "Thời gian gợi ý cho 1 buổi"
     }
   ],
-  "recommendations": "Đề xuất chung cho giáo viên (2-3 câu)"
+  "recommendations": "Đề xuất chung 2-3 câu: thời gian ôn lại, nhóm học sinh cần chú ý, cách theo dõi tiến bộ"
 }
 
-VÍ DỤ MẪU (few-shot):
-Input: Lớp 3A, 25 học sinh. Kỹ năng 'To Be': 18 học sinh hổng (72%).
+VÍ DỤ MẪU (few-shot — Tiếng Anh):
+Input: Học sinh lớp 3A. Kỹ năng 'Body Parts': mastery 22%, severity=high. Tiên quyết: Vocabulary (as3.welcome.l1).
+
 Output JSON:
 {
-  "class_overview": "Lớp 3A có 18/25 học sinh (72%) chưa nắm vững 'To Be'. Đây là kỹ năng nền tảng, cần ưu tiên can thiệp sớm.",
-  "critical_skills": ["To Be (Present and Past)"],
+  "class_overview": "Học sinh lớp 3A có kỹ năng từ vựng về cơ thể (Body Parts) ở mức thấp (mastery 22%), cần can thiệp sớm. Các kỹ năng liên quan: 'to be' (38%) cũng đang phát triển. Kỹ năng Listening (51%) khá hơn, cho thấy em phản ứng tốt với bài nghe.",
+  "critical_skills": [
+    {
+      "skill_name": "Vocabulary: Body Parts",
+      "severity": "high",
+      "mastery_pct": 22,
+      "students_affected": "Học sinh cần ôn lại toàn bộ từ vựng nhóm body parts"
+    },
+    {
+      "skill_name": "Grammar: 'to be' (Present)",
+      "severity": "high",
+      "mastery_pct": 38,
+      "students_affected": "Học sinh chưa phân biệt được am/is/are"
+    }
+  ],
   "steps": [
     {
       "step_order": 1,
-      "skill_name": "To Be (Present and Past)",
-      "mastery_pct": "28%",
-      "student_count": "18/25",
-      "teaching_method": "Dùng thẻ từ vựng và trò chơi điền blanks. Chia lớp thành nhóm nhỏ 4-5 em, mỗi nhóm thực hành 5 câu.",
-      "materials": "Flashcards am/is/are/was/were; Worksheet điền blanks; Trò chơi Bingo"
+      "skill_name": "Vocabulary: Body Parts",
+      "mastery_pct": 22,
+      "teaching_method": "Sử dụng flashcards có hình minh họa sinh động (đầu, mắt, mũi, tay, chân...). Cho học sinh chỉ vào bộ phận cơ thể thật rồi đọc từ. Kết hợp trò chơi 'Simon Says' (': Simon says touch your nose!') để tăng tương tác.",
+      "materials": "Flashcards body parts (8-10 thẻ); Worksheet điền tên bộ phận cơ thể; Trò chơi Simon Says",
+      "duration": "15-20 phút/buổi"
+    },
+    {
+      "step_order": 2,
+      "skill_name": "Grammar: 'to be' (Present)",
+      "mastery_pct": 38,
+      "teaching_method": "Dùng bảng cấu trúc 'I am / You are / He is / She is / It is / We are / They are'. Cho học sinh điền 'am/is/are' vào câu đúng ngữ cảnh. Kết hợp bài hát 'I am a shape' (YouTube) để nhớ cấu trúc.",
+      "materials": "Bảng cấu trúc to be; Worksheet điền blanks (10 câu); Video bài hát 'I am a shape'",
+      "duration": "15-20 phút/buổi"
     }
   ],
-  "recommendations": "Nên tổ chức kiểm tra lại sau 1 tuần. Nếu >50% lớp vẫn yếu, cần ôn lại toàn bộ Unit 3."
+  "recommendations": "Nên ôn Body Parts trước khi dạy 'to be' vì đây là tiên quyết. Sau 1 tuần, cho làm bài kiểm tra lại. Nếu mastery >= 60% → chuyển sang bước tiếp theo. Nếu < 50% → giảm tốc, chia nhỏ hơn."
 }
 
 QUAN TRỌNG: JSON phải hợp lệ. Không thêm text ngoài JSON."""
 
-_PARENT_SYSTEM_PROM_PROMPT = """Bạn là trợ lý AI của V-Nexus Tutor, viết báo cáo cho PHỤ HUYNH.
 
-NGUYÊN TẮC BẮT BUỘC (grounding):
-- Bạn CHỈ diễn giải dữ liệu tiến độ được cung cấp.
-- TUYỆT ĐỐI không thêm kỹ năng ngoài danh sách, không bịa số liệu.
-- Dùng ngôn ngữ đơn giản, phi kỹ thuật, thân thiện.
+_PARENT_SYSTEM_PROMPT = """Bạn là trợ lý AI của V-Nexus Tutor — viết báo cáo kết quả học tập Tiếng Anh cho PHỤ HUYNH.
 
-CHIẾN LƯỢC TƯ DUY (chain-of-thought):
-1. Hiểu rõ con phụ huynh đang ở mức nào (so với bạn bè同 trang lứa).
-2. Xác định 1-2 việc cụ thể phụ huynh có thể làm tại nhà.
-3. Đưa gợi ý hành động có thời gian cụ thể (ví dụ: 15 phút/ngày).
+BỐI CẢNH:
+- Phụ huynh muốn biết con mình học Tiếng Anh thế nào, cần hỗ trợ gì thêm.
+- Con đang học lớp 3-4 (chương trình Tiếng Anh Academy Stars hoặc Global Success).
+- Kết quả từ hệ thống chẩn đoán: con chưa vững kỹ năng nào, đang phát triển kỹ năng nào.
 
-ĐỊNH DẠNG ĐẦU RA:
-Trả về JSON chính xác theo schema:
+NGUYÊN TẮC TUYỆT ĐỐI (grounding):
+- CHỈ mô tả những gì dữ liệu BKT cho thấy. Không bịa số liệu, không thêm kỹ năng ngoài danh sách.
+- Không dùng thuật ngữ kỹ thuật (BKT, mastery, severity, prerequisite) — chỉ dùng ngôn ngữ hàng ngày.
+
+PHONG CÁCH VIẾT:
+- Thân thiện, ấm áp, dễ hiểu — như đang nói chuyện với phụ huynh.
+- Luôn bắt đầu bằng điểm MẠNH của con (kỹ năng nào khá, đúng nhiều).
+- Khi nói về điểm yếu: dùng từ nhẹ nhàng ("con đang luyện thêm", "cần hỗ trợ thêm") — không dùng từ tiêu cực ("yếu", "kém", "sai").
+- Đưa hoạt động cụ thể phụ huynh LÀM ĐƯỢC NGAY tại nhà, không cần giáo cụ phức tạp.
+- Thời gian thực hiện cụ thể (10-15 phút/ngày, 3 lần/tuần...).
+
+CHAIN-OF-THOUGHT (thực hiện trong đầu):
+1. Kỹ năng nào con đang làm tốt? (nêu cụ thể)
+2. Kỹ năng nào cần hỗ trợ thêm? (nhẹ nhàng, khôngalarmist)
+3. 2-3 hoạt động đơn giản phụ huynh có thể làm với con tại nhà?
+
+ĐỊNH DẠNG ĐẦU RA — JSON chính xác theo schema:
 {
-  "summary": "Tóm tắt tiến độ con em (2-3 câu, ngôn ngữ phụ huynh)",
-  "what_going_well": "Điểm tốt cần khen (1-2 câu)",
-  "needs_attention": "Kỹ năng cần hỗ trợ thêm (1-2 câu)",
+  "summary": "Tóm tắt 2-3 câu: con đang tiến bộ ở đâu, cần hỗ trợ thêm ở đâu (ngôn ngữ phụ huynh)",
+  "what_going_well": "Điểm mạnh cụ thể của con (1-2 câu, có số liệu nếu có)",
+  "needs_attention": "Kỹ năng cần hỗ trợ thêm (1-2 câu, nhẹ nhàng, cụ thể)",
   "home_activities": [
     {
-      "activity": "Tên hoạt động",
-      "time": "Thời gian thực hiện",
-      "how": "Cách thực hiện cụ thể"
+      "activity": "Tên hoạt động cụ thể",
+      "time": "Thời gian thực hiện (ví dụ: 10 phút/ngày, 3 lần/tuần)",
+      "how": "Cách thực hiện từng bước đơn giản mà phụ huynh không cần biết tiếng Anh cũng làm được"
     }
   ],
-  "encouragement": "Lời khích lệ (1 câu)"
+  "encouragement": "Lời khích lệ thật sự, cụ thể (1-2 câu, không trùng ý với summary)"
 }
 
 VÍ DỤ MẪU (few-shot):
+
 Output JSON:
 {
-  "summary": "Con em đang progress tốt ở kỹ năng từ vựng (85% đúng). Tuy nhiên, phần ngữ pháp 'to be' còn yếu (28% đúng), cần hỗ trợ thêm.",
-  "what_going_well": "Con nhớ từ vựng tốt, phản ứng nhanh khi được hỏi về đồ vật xung quanh.",
-  "needs_attention": "Con cần luyện thêm cách dùng 'am/is/are' đúng ngữ cảnh.",
+  "summary": "Con đang tiến bộ tốt ở kỹ năng nghe (listening) — con nghe và hiểu được 51% nội dung bài nghe về hoạt động hàng ngày. Phần từ vựng về cơ thể (body parts) con cần ôn thêm một chút, và cách dùng 'am/is/are' con đang học dần.",
+  "what_going_well": "Con nghe khá tốt, phản ứng nhanh khi nghe từ quen thuộc. Con cũng đã biết một số từ vựng về hoạt động hàng ngày (brush teeth, go to school).",
+  "needs_attention": "Con cần hỗ trợ thêm về từ vựng cơ thể (head, nose, hand, foot...) và cách nói 'I am', 'She is', 'They are' đúng ngữ cảnh.",
   "home_activities": [
     {
-      "activity": "Hỏi con về mọi thứ xung quanh",
+      "activity": "Chơi 'Chỉ vào mặt' với con",
       "time": "10 phút/ngày",
-      "how": "Hỏi: 'What is this?' → Con trả lời: 'It is a ...' (dùng 'is'). Hỏi về bản thân: 'How old are you?' → Con trả lời: 'I am ...'"
+      "how": "Bạn chỉ vào bộ phận cơ thể của mình và hỏi con 'What's this?' — con trả lời 'This is my ...'. Sau đó đổi角色: con chỉ, bạn trả lời. Vừa chơi vừa cười, không cần đúng 100%!"
     },
     {
-      "activity": "Chơi Bingo từ vựng",
-      "time": "15 phút, 3 lần/tuần",
-      "how": "Viết 9 từ vựng lên giấy 3x3, đọc nghĩa tiếng Việt, con khoanh tr ô. Nghe được 3 hàng dọc/ngang thì hô Bingo!"
+      "activity": "Nghe bài hát 'Head, Shoulders, Knees and Toes'",
+      "time": "5 phút, 3 lần/tuần",
+      "how": "Mở trên YouTube, vừa nghe vừa làm động tác theo. Con sẽ nhớ từ vựng qua bài hát tự nhiên."
+    },
+    {
+      "activity": "Nói chuyện hàng ngày bằng 'am/is/are'",
+      "time": "15 phút/ngày",
+      "how": "Khi con ăn sáng: 'I am hungry'. Khi con đi học: 'I am going to school'. Khi bạn hỏi: 'Are you happy?' — con trả lời 'Yes, I am!' hoặc 'No, I am not'."
     }
   ],
-  "encouragement": "Con đang progress rất tốt! Mỗi ngày một chút, con sẽ tiến bộ nhanh thôi ạ!"
+  "encouragement": "Con đang đi đúng hướng rồi! Chỉ cần mỗi ngày một chút, khoảng 15 phút, con sẽ tiến bộ rõ rệt trong vài tuần tới."
 }
 
 QUAN TRỌNG: JSON phải hợp lệ. Không thêm text ngoài JSON."""
 
 
 # ---------------------------------------------------------------------------
-# 2. OFFLINE FALLBACK TEMPLATE
+# 2. SURVEY SYSTEM PROMPT — sinh kế hoạch từ khảo sát đầu vào
+# ---------------------------------------------------------------------------
+
+_SURVEY_SYSTEM_PROMPT = """Bạn là Medi Bee — trợ lý gia sư Tiếng Anh của V-Nexus Tutor.
+
+NHIỆM VỤ: Từ thông tin khảo sát đầu vào của MỘT học sinh, hãy lập "Kế hoạch học tập cá nhân hóa" chi tiết, tự nhiên và hữu ích nhất có thể.
+
+DỮ LIỆU ĐẦU VÀO bao gồm:
+- Tên học sinh, khối lớp, số năm học Tiếng Anh
+- Môi trường học (trường, trung tâm, tự học)
+- Tự đánh giá trình độ hiện tại
+- Mục tiêu học tập
+
+YÊU CẦU VỚI KẾ HOẠCH:
+1. Nhận xét chung về tình hình của học sinh — dựa trên dữ liệu thực tế từ khảo sát, không bịa.
+2. Lộ trình học tập chi tiết, chia thành từng giai đoạn rõ ràng:
+   - Giai đoạn 1: Ôn tập / củng cố kiến thức nền (nếu cần)
+   - Giai đoạn 2: Học mới theo chương trình
+   - Giai đoạn 3: Ôn tập và kiểm tra định kỳ
+3. Phương pháp học tập phù hợp với độ tuổi (lớp 3-4): trò chơi, bài hát, hình ảnh, vận động.
+4. Gợi ý cho giáo viên và phụ huynh đồng hành.
+5. Đưa ra mốc thời gian cụ thể (tuần 1-2, tuần 3-4, ...) thay vì nói chung chung.
+
+PHONG CÁCH VIẾT:
+- Thân thiện, khích lệ, dễ đọc.
+- Dùng "em" khi nói về học sinh.
+- Có cấu trúc rõ ràng: tiêu đề, gạch đầu dòng, in đậm.
+- Không quá dài — mỗi phần 2-3 câu, giữ súc tích.
+
+CHUYÊN MÔN TIẾNG ANH TIỂU HỌC:
+- Chương trình: Academy Stars 3-4 hoặc Global Success (CT GDPT 2018).
+- Nhóm kỹ năng: Vocabulary (từ vựng), Grammar (ngữ pháp), Listening (nghe), Speaking (nói), Reading (đọc), Writing (viết).
+- Trình độ CEFR tương đương: A1-A2.
+- Độ tuổi: 8-10 tuổi — cần hoạt động vui chơi, không nặng lý thuyết.
+
+ĐỊNH DẠNG: Trả về nội dung Markdown có cấu trúc rõ ràng (không cần JSON)."""
+
+
+
+# ---------------------------------------------------------------------------
+# 3. OFFLINE FALLBACK TEMPLATES
 # ---------------------------------------------------------------------------
 
 def _offline_fallback_student(steps: list, student_name: str) -> str:
-    """Template fallback khi LLM không khả dụng — vẫn trả JSON có cấu trúc."""
+    """Template fallback khi LLM không khả dụng — vẫn trả JSON có cấu trúc, tự nhiên hơn."""
+    name = student_name or "Em"
     plan_steps = []
     for s in steps:
+        mastery_pct = round(s["current_mastery"] * 100)
+        if s["severity"] == "high":
+            enc = f"Em hãy luyện kỹ năng '{s['skill_name']}' nhé — đang ở mức {mastery_pct}%, cần cố thêm một chút!"
+            tip = f"Làm 5-10 câu hỏi về '{s['skill_name']}' (độ khó {s['suggested_difficulty']}), đọc lại câu đúng to lên."
+            home = f"Dành {s['estimated_duration']} mỗi ngày để ôn '{s['skill_name']}'."
+        else:
+            enc = f"Em đã biết một phần rồi ({mastery_pct}% đúng)! Luyện thêm chút nữa là giỏi."
+            tip = f"Làm 3-5 câu hỏi về '{s['skill_name']}' để củng cố kiến thức."
+            home = f"Nhắc lại từ vựng '{s['skill_name']}' khi đi học về."
         plan_steps.append({
             "step_order": s["step_order"],
             "skill_name": s["skill_name"],
-            "encouragement": f"Em hãy luyện kỹ năng '{s['skill_name']}' nhé!",
-            "practice_tip": f"Làm 5-10 bài tập về '{s['skill_name']}' với độ khó '{s['suggested_difficulty']}'.",
-            "home_tip": f"Dành {s['estimated_duration']} mỗi ngày để ôn '{s['skill_name']}'.",
+            "encouragement": enc,
+            "practice_tip": tip,
+            "home_tip": home,
         })
     return json.dumps({
-        "summary": f"{student_name or 'Em'} cần ôn {len(steps)} kỹ năng theo lộ trình BKT.",
+        "summary": f"{name} cần ôn {len(steps)} kỹ năng. Bắt đầu từ kỹ năng gốc rễ trước, rồi dần dần nâng cao.",
         "steps": plan_steps,
-        "closing": "Em làm tốt lắm! Hãy kiên trì mỗi ngày một chút!",
+        "closing": f"{name} đang đi đúng hướng rồi! Mỗi ngày một chút, em sẽ tiến bộ nhanh thôi!",
     }, ensure_ascii=False, indent=2)
 
 
 def _offline_fallback_teacher(steps: list, class_name: str) -> str:
-    critical = [s["skill_name"] for s in steps if s.get("severity") == "high"]
+    critical = [s for s in steps if s.get("severity") == "high"]
+    developing = [s for s in steps if s.get("severity") == "medium"]
+    overview_parts = []
+    if critical:
+        overview_parts.append(f"{len(critical)} kỹ năng cần can thiệp khẩn cấp (mastery < 15%)")
+    if developing:
+        overview_parts.append(f"{len(developing)} kỹ năng đang phát triển (mastery 15-45%)")
+    overview = f"Lớp {class_name or 'này'}: {', '.join(overview_parts)}." if overview_parts else f"Lớp {class_name or 'này'} đang ổn."
+
     return json.dumps({
-        "class_overview": f"Lớp {class_name or 'này'} có {len(critical)} kỹ năng cần can thiệp khẩn cấp.",
-        "critical_skills": critical,
+        "class_overview": overview,
+        "critical_skills": [
+            {"skill_name": s["skill_name"], "severity": s["severity"],
+             "mastery_pct": round(s["current_mastery"] * 100)}
+            for s in critical
+        ],
         "steps": [
             {
                 "step_order": s["step_order"],
                 "skill_name": s["skill_name"],
-                "mastery_pct": f"{round(s['current_mastery']*100)}%",
-                "student_count": "N/A",
-                "teaching_method": "Ôn tập nhóm nhỏ, dùng flashcards và trò chơi.",
-                "materials": "Flashcards, worksheet.",
+                "mastery_pct": round(s["current_mastery"] * 100),
+                "teaching_method": (
+                    f"Ôn tập '{s['skill_name']}' bằng flashcards và trò chơi tương tác. "
+                    f"Chia nhóm nhỏ 3-4 em, mỗi nhóm thực hành 5 câu."
+                    if s["severity"] == "high"
+                    else f"Củng cố '{s['skill_name']}' qua bài tập trắc nghiệm và thảo luận nhóm."
+                ),
+                "materials": "Flashcards, worksheet, trò chơi bingo.",
+                "duration": "15-20 phút/buổi",
             }
             for s in steps
         ],
-        "recommendations": "Kiểm tra lại sau 1 tuần. Ưu tiên kỹ năng severity=high trước.",
+        "recommendations": (
+            f"Kiểm tra lại sau 1 tuần. Ưu tiên {len(critical)} kỹ năng severity=high trước. "
+            "Nếu >50% lớp vẫn yếu, cần ôn lại toàn bộ."
+        ),
     }, ensure_ascii=False, indent=2)
 
 
 # ---------------------------------------------------------------------------
-# 3. POST-VALIDATION
+# 4. POST-VALIDATION
 # ---------------------------------------------------------------------------
 
 def _post_validate(output_text: str, input_skill_ids: list) -> str:
-    """Kiểm tra skill_id trong output có nằm trong input không.
+    """Kiểm tra output có chứa kỹ năng ngoài input không.
 
-    Nếu phát hiện skill_id lạ → fallback về output an toàn hơn.
-    Trả về output_text nếu hợp lệ, hoặc fallback string nếu vi phạm.
+    Nếu phát hiện skill_name lạ → giữ nguyên (vì LLM có thể viết tên khác),
+    nhưng log warning. Trả về output_text nếu hợp lệ.
     """
     if not input_skill_ids:
         return output_text
@@ -263,25 +420,54 @@ def _post_validate(output_text: str, input_skill_ids: list) -> str:
 
 
 # ---------------------------------------------------------------------------
-# 4. MAIN FUNCTION
+# 5. MAIN FUNCTION — tạo input phong phú hơn cho LLM
 # ---------------------------------------------------------------------------
 
 def _format_steps_for_user_msg(mastery: dict, gaps: list, student_name: str,
                                 level: str, audience: str) -> str:
-    """Tạo user message có cấu trúc từ BKT output."""
+    """Tạo user message chi tiết, có cấu trúc, giúp LLM diễn giải tự nhiên hơn.
+
+    Bao gồm: thông tin học sinh, bảng lộ trình BKT, và hướng dẫn diễn giải
+    theo đối tượng (học sinh / giáo viên).
+    """
     steps = generate_learning_steps(mastery, gaps)
     steps_table = format_steps_for_llm(steps)
 
     name = student_name or "học sinh"
     cefr = level or "chưa xác định"
 
+    # Tính toán thêm thống kê để LLM có context tốt hơn
+    total_skills = len(mastery)
+    weak_count = sum(1 for m in mastery.values() if m.get("status") == "weak")
+    developing_count = sum(1 for m in mastery.values() if m.get("status") == "developing")
+    mastered_count = sum(1 for m in mastery.values() if m.get("status") == "mastered")
+
+    # Xác định điểm mạnh (mastery cao nhất)
+    strong_skills = sorted(mastery.items(), key=lambda x: x[1].get("probability", 0), reverse=True)[:3]
+    strong_text = ""
+    for sid, m in strong_skills:
+        if m.get("probability", 0) >= 0.5:
+            strong_text += f"  - {m.get('skill_name', sid)}: {round(m['probability']*100)}% ({m.get('status', '')})\n"
+
+    # Nhóm câu hỏi theo loại (nếu có trong question data)
+    audience_text = (
+        "kế hoạch học tập cho HỌC SINH (giọng thân thiện, dễ hiểu, khích lệ)"
+        if audience == "student"
+        else "báo cáo cho GIÁO VIÊN (chuyên nghiệp, có số liệu, đề xuất phương pháp cụ thể)"
+        if audience == "teacher"
+        else "báo cáo cho PHỤ HUYNH (đơn giản, ấm áp, hoạt động tại nhà cụ thể)"
+    )
+
     return (
         f"THÔNG TIN HỌC SINH:\n"
         f"- Tên: {name}\n"
         f"- Trình độ CEFR: {cefr}\n"
-        f"- Số kỹ năng cần luyện: {len(steps)}\n\n"
+        f"- Tổng số kỹ năng đánh giá: {total_skills}\n"
+        f"- Phân loại: {weak_count} yếu | {developing_count} đang phát triển | {mastered_count} đã thành thạo\n"
+        f"{f'- Điểm mạnh: {chr(10)}{strong_text}' if strong_text else ''}\n"
+        f"LO TRÌNH HỌC TẬP TỪ BKT ENGINE (dữ liệu bắt buộc phải có trong output):\n"
         f"{steps_table}\n\n"
-        f"Hãy diễn giải thành{'kế hoạch học tập cho HỌC SINH' if audience == 'student' else 'báo cáo cho GIÁO VIÊN'} "
+        f"Hãy diễn giải thành {audience_text} "
         f"dựa ĐÚNG trên dữ liệu trên. JSON output."
     )
 
@@ -295,7 +481,7 @@ def generate_training_plan(gaps: list, mastery: dict = None, student_name: str =
         mastery: Mastery theo từng kỹ năng.
         student_name: Tên học sinh.
         level: Trình độ CEFR.
-        audience: "student" hoặc "teacher" hoặc "parent" — chọn prompt tương ứng.
+        audience: "student" / "teacher" / "parent" — chọn prompt tương ứng.
 
     Returns:
         JSON string với cấu trúc tùy theo audience.
@@ -309,21 +495,21 @@ def generate_training_plan(gaps: list, mastery: dict = None, student_name: str =
         return json.dumps({
             "summary": "Em đã nắm vững tất cả kỹ năng! Hãy tiếp tục luyện tập nâng cao.",
             "steps": [],
-            "closing": "Làm tốt lắm!",
+            "closing": "Làm tốt lắm! Em đang có nền tảng vững chắc.",
         }, ensure_ascii=False)
 
     # --- Bước 2: Chọn prompt theo đối tượng ---
     if audience == "teacher":
         system_prompt = _TEACHER_SYSTEM_PROMPT
     elif audience == "parent":
-        system_prompt = _PARENT_SYSTEM_PROM_PROMPT
+        system_prompt = _PARENT_SYSTEM_PROMPT
     else:
         system_prompt = _STUDENT_SYSTEM_PROMPT
 
     # --- Bước 3: Tạo input có cấu trúc ---
     user_msg = _format_steps_for_user_msg(mastery, gaps, student_name, level, audience)
 
-    # --- Bước 4: Gọi LLM (FPT hoặc Ollama) ---
+    # --- Bước 4: Gọi LLM (FPT) ---
     try:
         resp = call_llm(
             system=system_prompt,
@@ -355,7 +541,7 @@ def _fallback(steps: list, student_name: str, audience: str, error: str = "") ->
 
 
 # ---------------------------------------------------------------------------
-# 5. TOOL DEFINITION
+# 6. TOOL DEFINITION
 # ---------------------------------------------------------------------------
 
 plan_tool = Tool(
@@ -391,16 +577,11 @@ plan_tool = Tool(
 )
 
 
-SURVEY_SYSTEM_PROMPT = (
-    "Bạn là trợ lý giáo viên AI của V-Nexus Tutor, chuyên môn Tiếng Anh tiểu học và trung học "
-    "(CT GDPT 2018). Nhiệm vụ: từ thông tin khảo sát đầu vào của MỘT học sinh, "
-    "hãy lập kế hoạch học tập và lộ trình cá nhân hóa bằng tiếng Việt.\n"
-    "Kế hoạch gồm:\n"
-    "1. Nhận xét chung về thông tin của học sinh (khối lớp, số năm học, môi trường và mức tự đánh giá).\n"
-    "2. Lộ trình học tập chi tiết (giai đoạn ôn tập kiến thức cũ, giai đoạn học mới, các nhóm kỹ năng trọng tâm).\n"
-    "3. Phương pháp học tập và lời khuyên dành cho giáo viên và học sinh để đạt được mục tiêu học tập đề ra.\n"
-    "Viết thân thiện, khích lệ học sinh, ngôn ngữ rõ ràng, phân chia các phần mạch lạc."
-)
+# ---------------------------------------------------------------------------
+# 7. KẾ HOẠCH TỪ KHẢO SÁT ĐẦU VÀO
+# ---------------------------------------------------------------------------
+
+SURVEY_SYSTEM_PROMPT = _SURVEY_SYSTEM_PROMPT
 
 
 def generate_training_plan_from_survey(
@@ -418,7 +599,7 @@ def generate_training_plan_from_survey(
         "self_study": "Tự học qua mạng"
     }
     env_text = env_map.get(learning_environment, learning_environment)
-    
+
     user_msg = (
         f"Học sinh: {student_name}\n"
         f"Khối lớp: {grade}\n"
@@ -428,14 +609,14 @@ def generate_training_plan_from_survey(
         f"Mục tiêu học tập: {learning_goal}\n\n"
         "Hãy lập lộ trình học tập và kế hoạch đào tạo cá nhân hóa cho học sinh này."
     )
-    
+
     try:
-            resp = call_llm(
-                system=SURVEY_SYSTEM_PROMPT,
-                messages=[{"role": "user", "content": user_msg}],
-                tools=None,
-            )
-            return resp.get("text") or "(Hệ thống chưa sinh được lộ trình. Vui lòng thử lại.)"
+        resp = call_llm(
+            system=SURVEY_SYSTEM_PROMPT,
+            messages=[{"role": "user", "content": user_msg}],
+            tools=None,
+        )
+        return resp.get("text") or "(Hệ thống chưa sinh được lộ trình. Vui lòng thử lại.)"
     except Exception as e:
         return (
             f"[Lộ trình tạm thời - LLM chưa khả dụng: {e}]\n"
@@ -445,29 +626,34 @@ def generate_training_plan_from_survey(
 
 
 # ---------------------------------------------------------------------------
-# 6. ĐỀ XUẤT LỘ TRÌNH THAY THẾ CHO GIÁO VIÊN
+# 8. ĐỀ XUẤT LỘ TRÌNH THAY THẾ CHO GIÁO VIÊN
 # ---------------------------------------------------------------------------
 
-_ALTERNATIVE_PATHS_SYSTEM_PROMPT = """Bạn là một Chuyên gia Giáo dục số và là Trợ lý Sư phạm AI cho hệ thống V-Nexus.
-Nhiệm vụ của bạn là hỗ trợ Giáo viên thiết kế 3 Lộ trình học tập thay thế (Alternative Learning Paths) khác nhau cho học sinh dựa trên dữ liệu học tập thực tế.
+_ALTERNATIVE_PATHS_SYSTEM_PROMPT = """Bạn là Chuyên gia Giáo dục số và Trợ lý Sư phạm AI cho V-Nexus Tutor.
+Nhiệm vụ: hỗ trợ Giáo viên thiết kế 3 Lộ trình học tập thay thế (Alternative Learning Paths) cho học sinh Tiếng Anh lớp 3-4 dựa trên dữ liệu BKT thực tế.
 
 QUY TẮC PHÂN TÁCH 3 LỘ TRÌNH (BẮT BUỘC):
 Bạn phải sinh ra đúng 3 đề xuất tương ứng với 3 trục chiến lược sư phạm sau:
-1. TRỤC 1: "Quay lại gốc rễ sâu hơn" (Back-to-roots): Đề xuất quay lại ôn tập kỹ và củng cố các kỹ năng tiền quyết cấp dưới (prerequisites) sâu hơn trong đồ thị kiến thức.
+1. TRỤC 1: "Quay lại gốc rễ sâu hơn" (Back-to-roots): Đề xuất quay lại ôn tập kỹ và củng cố các kỹ năng tiên quyết (prerequisites) sâu hơn trong đồ thị kiến thức.
 2. TRỤC 2: "Đổi nhịp độ và mật độ luyện tập" (Pacing & Density): Giữ nguyên kỹ năng, nhưng thay đổi nhịp độ (giảm độ khó, giãn thời gian, tăng số lượng ví dụ và bài tập lặp lại có hướng dẫn).
-3. TRỤC 3: "Đổi hình thức tiếp cận" (Alternative Modality): Thay đổi hình thức tương tác (gợi ý kèm 1-1 với giáo viên, đổi từ làm bài độc lập sang học nhóm hoặc làm bài tập viết tay tự luận thay vì trắc nghiệm).
+3. TRỤC 3: "Đổi hình thức tiếp cận" (Alternative Modality): Thay đổi hình thức tương tác (học nhóm, kèm 1-1, bài tập viết tay, bài hát, trò chơi thay vì trắc nghiệm).
 
-HƯỚNG DẪN GROUNDING & AN TOÀN TUYỆT ĐỐI:
-- Chỉ sử dụng các kỹ năng và thông tin có trong phần "DỮ LIỆU ĐẦU VÀO". Tuyệt đối KHÔNG tự sáng tạo ra tên kỹ năng, mã kỹ năng (Skill ID) không tồn tại trong ngữ cảnh.
-- Hãy dùng văn phong chuyên môn, lịch sự và mang tính gợi ý hợp tác sư phạm với giáo viên.
-- Đầu ra phải là định dạng JSON hợp lệ, KHÔNG thêm bất cứ văn bản giải thích nào ngoài khối JSON.
+YÊU CẦU CỤ THỂ CHO TIẾNG ANH LỚP 3-4:
+- Mỗi lộ trình phải có hoạt động phù hợp với lứa tuổi 8-10 tuổi.
+- Gợi ý phương pháp: flashcards, bài hát, trò chơi, hình ảnh minh họa, đóng vai.
+- Thời lượng phù hợp: 15-25 phút/buổi, không quá dài.
+
+HƯỚNG DẪN GROUNDING:
+- Chỉ sử dụng các kỹ năng CÓ TRONG dữ liệu đầu vào. KHÔNG tự sáng tạo tên kỹ năng hay mã kỹ năng.
+- Dùng văn phong chuyên nghiệp, lịch sự, gợi ý hợp tác sư phạm.
+- Đầu ra phải là JSON hợp lệ, KHÔNG thêm văn bản ngoài JSON.
 """
 
 
 def _run_simple_duplicate_check(data: dict) -> None:
     """Kiểm tra giao tập hợp Skill ID giữa 3 lộ trình.
-    
-    Nếu trùng lặp quá nhiều, thêm cảnh báo vào `teacher_summary_comparison` 
+
+    Nếu trùng lặp quá nhiều, thêm cảnh báo vào `teacher_summary_comparison`
     để giáo viên nhận biết và không bị nhầm lẫn.
     """
     try:
@@ -475,7 +661,7 @@ def _run_simple_duplicate_check(data: dict) -> None:
         skills_p1 = set(paths.get("path_1_back_to_roots", {}).get("target_prerequisite_skills", []))
         skills_p2 = set(paths.get("path_2_pacing_density", {}).get("target_prerequisite_skills", []))
         skills_p3 = set(paths.get("path_3_alternative_modality", {}).get("target_prerequisite_skills", []))
-        
+
         warnings = []
         if skills_p1 and skills_p2 and len(skills_p1.intersection(skills_p2)) == len(skills_p1):
             warnings.append("Lộ trình 1 & 2 đề xuất ôn tập cùng tập hợp kỹ năng.")
@@ -483,7 +669,7 @@ def _run_simple_duplicate_check(data: dict) -> None:
             warnings.append("Lộ trình 1 & 3 đề xuất ôn tập cùng tập hợp kỹ năng.")
         if skills_p2 and skills_p3 and len(skills_p2.intersection(skills_p3)) == len(skills_p2):
             warnings.append("Lộ trình 2 & 3 đề xuất ôn tập cùng tập hợp kỹ năng.")
-            
+
         if warnings:
             existing_summary = data.get("teacher_summary_comparison", "")
             warning_text = "\n[Lưu ý sư phạm] Phát hiện trùng lặp cao về kỹ năng đề xuất ôn tập giữa các phương án. " + " ".join(warnings)
@@ -496,7 +682,7 @@ def _offline_fallback_alternative_plans(steps: list, student_name: str) -> dict:
     """Fallback ngoại tuyến tạo 3 lộ trình có cấu trúc cố định cho giáo viên."""
     sids = [s["skill_id"] for s in steps]
     skills_text = ", ".join([s["skill_name"] for s in steps])
-    
+
     return {
         "alternative_paths": {
             "path_1_back_to_roots": {
@@ -549,19 +735,19 @@ def _offline_fallback_alternative_plans(steps: list, student_name: str) -> dict:
 def generate_alternative_plans(gaps: list, mastery: dict = None, student_name: str = "",
                              level: str = "", old_plan: str = "") -> dict:
     """Sinh 3 lộ trình thay thế cho giáo viên khi học sinh làm lại nhiều lần không tiến bộ.
-    
+
     Gộp vào 1 cuộc gọi duy nhất để tối ưu chi phí và độ trễ, ép JSON schema chặt chẽ.
     """
     mastery = mastery or {}
-    
+
     # 1. Chuẩn bị bảng lộ trình học tập từ BKT
     from domain.bkt import generate_learning_steps, format_steps_for_llm
     steps = generate_learning_steps(mastery, gaps)
     steps_table = format_steps_for_llm(steps)
-    
+
     name = student_name or "học sinh"
     cefr = level or "chưa xác định"
-    
+
     user_msg = (
         f"THÔNG TIN HỌC SINH:\n"
         f"- Tên: {name}\n"
@@ -569,39 +755,21 @@ def generate_alternative_plans(gaps: list, mastery: dict = None, student_name: s
         f"- Lộ trình cũ đã áp dụng (thất bại):\n{old_plan or 'Không có dữ liệu lộ trình cũ'}\n\n"
         f"{steps_table}\n\n"
         f"Hãy thiết kế 3 lộ trình thay thế khác nhau (Trục 1: Quay lại gốc rễ, Trục 2: Đổi nhịp độ, Trục 3: Đổi hình thức). "
+        f"Mỗi lộ trình PHẢI có hoạt động phù hợp với trẻ lớp 3-4 (flashcards, bài hát, trò chơi, đóng vai...). "
         f"Đầu ra bắt buộc là JSON có cấu trúc sau:\n"
         f"{{\n"
         f"  \"alternative_paths\": {{\n"
         f"    \"path_1_back_to_roots\": {{\n"
         f"      \"reasoning_cot\": \"Phân tích lý do thất bại và vì sao trục này phù hợp\",\n"
-        f"      \"primary_difference\": \"Điểm khác biệt cốt lõi nhất của lộ trình này so với 2 lộ trình còn lại (viết ở câu đầu tiên)\",\n"
+        f"      \"primary_difference\": \"Điểm khác biệt cốt lõi nhất (câu đầu tiên)\",\n"
         f"      \"target_prerequisite_skills\": [\"ID các kỹ năng cần ôn tập\"],\n"
-        f"      \"action_steps\": [\n"
-        f"        {{\n"
-        f"          \"step_number\": 1,\n"
-        f"          \"skill_id\": \"mã kỹ năng\",\n"
-        f"          \"action_description\": \"mô tả hành động chi tiết\",\n"
-        f"          \"estimated_duration_mins\": 20\n"
-        f"        }}\n"
-        f"      ],\n"
+        f"      \"action_steps\": [{{\"step_number\": 1, \"skill_id\": \"...\", \"action_description\": \"...\", \"estimated_duration_mins\": 20}}],\n"
         f"      \"expected_outcome\": \"Mục tiêu kỳ vọng\"\n"
         f"    }},\n"
-        f"    \"path_2_pacing_density\": {{\n"
-        f"      \"reasoning_cot\": \"...\",\n"
-        f"      \"primary_difference\": \"...\",\n"
-        f"      \"target_prerequisite_skills\": [\"...\"],\n"
-        f"      \"action_steps\": [...],\n"
-        f"      \"expected_outcome\": \"...\"\n"
-        f"    }},\n"
-        f"    \"path_3_alternative_modality\": {{\n"
-        f"      \"reasoning_cot\": \"...\",\n"
-        f"      \"primary_difference\": \"...\",\n"
-        f"      \"target_prerequisite_skills\": [\"...\"],\n"
-        f"      \"action_steps\": [...],\n"
-        f"      \"expected_outcome\": \"...\"\n"
-        f"    }}\n"
+        f"    \"path_2_pacing_density\": {{ ... }},\n"
+        f"    \"path_3_alternative_modality\": {{ ... }}\n"
         f"  }},\n"
-        f"  \"teacher_summary_comparison\": \"Đoạn tóm tắt so sánh nhanh 3 phương án để giáo viên quét nhanh.\"\n"
+        f"  \"teacher_summary_comparison\": \"Tóm tắt so sánh nhanh 3 phương án.\"\n"
         f"}}"
     )
 
@@ -612,25 +780,22 @@ def generate_alternative_plans(gaps: list, mastery: dict = None, student_name: s
             tools=None,
         )
         text = resp.get("text") or ""
-        
+
         # Parse JSON
-        import json
         clean_text = text.strip()
         if clean_text.startswith("```json"):
             clean_text = clean_text[7:]
         if clean_text.endswith("```"):
             clean_text = clean_text[:-3]
         clean_text = clean_text.strip()
-        
+
         data = json.loads(clean_text)
-        
+
         # Thực hiện kiểm tra trùng lặp
         _run_simple_duplicate_check(data)
-        
+
         return data
-        
+
     except Exception as e:
         print(f"[LLM Alternative Plan] failed to generate/parse, using fallback: {e}")
         return _offline_fallback_alternative_plans(steps, name)
-
-

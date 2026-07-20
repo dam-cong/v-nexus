@@ -1,4 +1,5 @@
 """CRUD routes for Roles, Students, Teachers, Rankings, Questions, Placement Tests, and Test Results."""
+import json
 from datetime import datetime
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -1299,6 +1300,66 @@ async def mark_test_result_complete(
     return test_result
 
 
+@router.post("/test-results/{result_id}/regenerate-plan", response_model=TestResultResponse)
+async def regenerate_training_plan(
+    result_id: int,
+    db: AsyncSession = Depends(get_session),
+    user: dict = Depends(get_current_user),
+):
+    """Tạo lại kế hoạch đào tạo cá nhân hóa bằng LLM khi plan trước đó bị null."""
+    result = await db.execute(select(StudentTestResult).where(StudentTestResult.id == result_id))
+    test_result = result.scalar_one_or_none()
+    if not test_result:
+        raise HTTPException(status_code=404, detail="Test result not found")
+
+    if user.get("role") == "hoc_sinh" and test_result.user_id != user["id"]:
+        raise HTTPException(status_code=403, detail="Không có quyền")
+
+    # Lấy thông tin học sinh để có tên
+    student_result = await db.execute(select(User).where(User.id == test_result.user_id))
+    student_user = student_result.scalar_one_or_none()
+    student_name = student_user.name if student_user else ""
+
+    training_plan = None
+    try:
+        from tools.plan_tool import generate_training_plan
+
+        student_plan = generate_training_plan(
+            gaps=test_result.gaps or [],
+            mastery=test_result.mastery or {},
+            student_name=student_name,
+            level=test_result.cefr or "",
+            audience="student",
+        )
+        teacher_plan = generate_training_plan(
+            gaps=test_result.gaps or [],
+            mastery=test_result.mastery or {},
+            student_name=student_name,
+            level=test_result.cefr or "",
+            audience="teacher",
+        )
+        parent_plan = generate_training_plan(
+            gaps=test_result.gaps or [],
+            mastery=test_result.mastery or {},
+            student_name=student_name,
+            level=test_result.cefr or "",
+            audience="parent",
+        )
+        training_plan = json.dumps({
+            "student": json.loads(student_plan) if isinstance(student_plan, str) else student_plan,
+            "teacher": json.loads(teacher_plan) if isinstance(teacher_plan, str) else teacher_plan,
+            "parent": json.loads(parent_plan) if isinstance(parent_plan, str) else parent_plan,
+        }, ensure_ascii=False)
+    except Exception as e:
+        print(f"[LLM] training plan regeneration failed: {e}")
+        raise HTTPException(status_code=500, detail="Không thể tạo kế hoạch đào tạo. Vui lòng thử lại.")
+
+    test_result.training_plan = training_plan
+    await db.commit()
+    await db.refresh(test_result)
+    return test_result
+
+
 class SelectAlternativePathSubmit(BaseModel):
     path_key: str  # "path_1_back_to_roots", "path_2_pacing_density", or "path_3_alternative_modality"
 
@@ -1501,18 +1562,37 @@ async def submit_placement_test(
     except Exception as e:
         print(f"[BKT] assessment failed, using client values: {e}")
 
-    # --- Tầng 3: LLM sinh kế hoạch đào tạo cá nhân hóa (FPT / DeepSeek) ---
+    # --- Tầng 3: LLM sinh kế hoạch đào tạo cá nhân hóa cho 3 đối tượng ---
     training_plan = body.training_plan
     try:
         from tools.plan_tool import generate_training_plan
 
-        training_plan = generate_training_plan(
+        student_plan = generate_training_plan(
             gaps=gaps or [],
             mastery=mastery or {},
             student_name=user.get("name", ""),
             level=body.cefr,
             audience="student",
         )
+        teacher_plan = generate_training_plan(
+            gaps=gaps or [],
+            mastery=mastery or {},
+            student_name=user.get("name", ""),
+            level=body.cefr,
+            audience="teacher",
+        )
+        parent_plan = generate_training_plan(
+            gaps=gaps or [],
+            mastery=mastery or {},
+            student_name=user.get("name", ""),
+            level=body.cefr,
+            audience="parent",
+        )
+        training_plan = json.dumps({
+            "student": json.loads(student_plan) if isinstance(student_plan, str) else student_plan,
+            "teacher": json.loads(teacher_plan) if isinstance(teacher_plan, str) else teacher_plan,
+            "parent": json.loads(parent_plan) if isinstance(parent_plan, str) else parent_plan,
+        }, ensure_ascii=False)
     except Exception as e:
         print(f"[LLM] training plan generation failed: {e}")
         training_plan = None
