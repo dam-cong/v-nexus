@@ -317,31 +317,119 @@ CHUYÊN MÔN TIẾNG ANH TIỂU HỌC:
 # 3. OFFLINE FALLBACK TEMPLATES
 # ---------------------------------------------------------------------------
 
+import random
+
 def _offline_fallback_student(steps: list, student_name: str) -> str:
     """Template fallback khi LLM không khả dụng — vẫn trả JSON có cấu trúc, tự nhiên hơn."""
     name = student_name or "Em"
+
+    # --- Từ vựng đa dạng hóa cho từng loại severity ---
+    _enc_high = [
+        "{name} ơi, kỹ năng này em chưa vững lắm ({pct}% đúng) — nhưng yên tâm, mình sẽ ôn lại từ đầu nhé!",
+        "Kỹ năng '{skill}' em đang gặp khó ({pct}%) — đây là phần quan trọng, mình cần luyện thêm.",
+        "Em thấy chưa quen với '{skill}' đúng không? ({pct}% thôi). Mình sẽ cùng ôn từ dễ đến khó nhé!",
+        "Phần '{skill}' em cần cố thêm ({pct}% thôi) — nhưng em đã có nền tảng rồi, chỉ cần ôn thêm chút!",
+    ]
+    _enc_medium = [
+        "Em đã hiểu được phần nào rồi ({pct}% đúng) — cố thêm chút nữa là giỏi!",
+        "Em đang đi đúng hướng với '{skill}' ({pct}%) — luyện thêm vài lần là em nhớ liền!",
+        "Kỹ năng '{skill}' em đang tiến bộ ({pct}%) — tốt lắm! Giờ mình củng cố thêm nhé.",
+        "Em biết được {pct}% rồi — khá tốt! Chỉ cần ôn thêm để chắc chắn hơn thôi.",
+    ]
+    _enc_easy = [
+        "Em đã làm tốt {pct}% rồi — sắp thành thạo luôn!",
+        "Kỹ năng '{skill}' em đang khá ổn ({pct}%) — thêm chút nữa là hoàn hảo!",
+    ]
+
+    _tip_high = [
+        "Em hãy làm 5-7 câu hỏi về '{skill}', đọc lại câu đúng to lên để nhớ lâu hơn.",
+        "Em xem hình minh họa rồi nói to tên từng cái — '{skill}' sẽ dễ nhớ hơn khi liên kết với hình ảnh.",
+        "Em viết 3 câu dùng '{skill}', sau đó đọc lại cho cô (hoặc bố mẹ) nghe.",
+    ]
+    _tip_medium = [
+        "Em làm 3-5 câu hỏi về '{skill}', cố gắng nhớ cách làm trước khi xem đáp án.",
+        "Em tự đặt 3 câu đơn giản dùng '{skill}', rồi đọc lại to lên.",
+        "Em chơi trò 'nói nhanh': đọc to các từ/câu liên quan đến '{skill}' trong 1 phút!",
+    ]
+    _tip_easy = [
+        "Em chỉ cần làm 2-3 câu để ôn nhớ '{skill}' nhé!",
+        "Em ôn lại vài từ liên quan đến '{skill}' là được!",
+    ]
+
+    _home_high = [
+        "Mỗi ngày em dành {dur} để ôn '{skill}' — xem lại sách giáo khoa hoặc nghe audio bài học.",
+        "Em nhờ bố mẹ hỏi nhanh về '{skill}' khi ăn cơm — vừa ăn vừa học, vui lắm!",
+    ]
+    _home_medium = [
+        "Khi đi học về, em kể lại 1 câu về '{skill}' cho bố mẹ nghe nhé!",
+        "Em dành {dur} mỗi ngày để nhắc lại từ vựng liên quan đến '{skill}'.",
+    ]
+    _home_easy = [
+        "Em nhắc lại '{skill}' khi đi chơi hoặc khi rảnh rỗi là nhớ liền!",
+        "Thỉnh thoảng em tự hỏi bản thân về '{skill}' rồi tự trả lời — rất hữu ích!",
+    ]
+
+    # --- Tóm tắt theo level ---
+    weak = [s for s in steps if s["severity"] == "high"]
+    medium = [s for s in steps if s["severity"] == "medium"]
+    easy = [s for s in steps if s["severity"] == "low"]
+
+    summary_parts = []
+    if weak:
+        weak_names = " và ".join(f"'{s['skill_name']}'" for s in weak[:2])
+        summary_parts.append(f"Em cần ôn lại kỹ năng {weak_names} trước — đây là nền tảng để học tiếp")
+    if medium:
+        med_names = " và ".join(f"'{s['skill_name']}'" for s in medium[:2])
+        summary_parts.append(f"Em đang phát triển kỹ năng {med_names} — chỉ cần luyện thêm chút nữa")
+    if easy:
+        easy_names = " và ".join(f"'{s['skill_name']}'" for s in easy[:2])
+        summary_parts.append(f"Em đã khá ổn với {easy_names}")
+
+    summary = f"{name} ơi, mình có {len(steps)} kỹ năng cần luyện nhé!"
+    if summary_parts:
+        summary += " " + ". ".join(summary_parts) + "."
+    summary += f" Bắt đầu từ kỹ năng nền tảng trước, rồi dần dần nâng cao."
+
+    # --- Tạo steps đa dạng ---
     plan_steps = []
     for s in steps:
         mastery_pct = round(s["current_mastery"] * 100)
+        skill = s["skill_name"]
+        dur = s.get("estimated_duration", "10-15 phút")
+
         if s["severity"] == "high":
-            enc = f"Em hãy luyện kỹ năng '{s['skill_name']}' nhé — đang ở mức {mastery_pct}%, cần cố thêm một chút!"
-            tip = f"Làm 5-10 câu hỏi về '{s['skill_name']}' (độ khó {s['suggested_difficulty']}), đọc lại câu đúng to lên."
-            home = f"Dành {s['estimated_duration']} mỗi ngày để ôn '{s['skill_name']}'."
+            enc = random.choice(_enc_high).format(name=name, skill=skill, pct=mastery_pct)
+            tip = random.choice(_tip_high).format(skill=skill)
+            home = random.choice(_home_high).format(dur=dur, skill=skill)
+        elif s["severity"] == "medium":
+            enc = random.choice(_enc_medium).format(name=name, skill=skill, pct=mastery_pct)
+            tip = random.choice(_tip_medium).format(skill=skill)
+            home = random.choice(_home_medium).format(dur=dur, skill=skill)
         else:
-            enc = f"Em đã biết một phần rồi ({mastery_pct}% đúng)! Luyện thêm chút nữa là giỏi."
-            tip = f"Làm 3-5 câu hỏi về '{s['skill_name']}' để củng cố kiến thức."
-            home = f"Nhắc lại từ vựng '{s['skill_name']}' khi đi học về."
+            enc = random.choice(_enc_easy).format(name=name, skill=skill, pct=mastery_pct)
+            tip = random.choice(_tip_easy).format(skill=skill)
+            home = random.choice(_home_easy).format(skill=skill)
+
         plan_steps.append({
             "step_order": s["step_order"],
-            "skill_name": s["skill_name"],
+            "skill_name": skill,
             "encouragement": enc,
             "practice_tip": tip,
             "home_tip": home,
         })
+
+    # --- Closing đa dạng ---
+    closings = [
+        f"{name} ơi, em đang đi đúng hướng rồi! Mỗi ngày một chút, em sẽ tiến bộ nhanh thôi!",
+        f"{name} cố lên nhé! Học không khó, chỉ cần kiên trì mỗi ngày là em sẽ giỏi ngay!",
+        f"{name} đang làm tốt lắm rồi! Tiếp tục cố gắng, em sẽ bất ngờ với kết quả của mình!",
+        f"Chỉ cần mỗi ngày {name} bỏ ra 15 phút là em sẽ tiến bộ rõ rệt trong vài tuần tới!",
+    ]
+
     return json.dumps({
-        "summary": f"{name} cần ôn {len(steps)} kỹ năng. Bắt đầu từ kỹ năng gốc rễ trước, rồi dần dần nâng cao.",
+        "summary": summary,
         "steps": plan_steps,
-        "closing": f"{name} đang đi đúng hướng rồi! Mỗi ngày một chút, em sẽ tiến bộ nhanh thôi!",
+        "closing": random.choice(closings),
     }, ensure_ascii=False, indent=2)
 
 

@@ -163,6 +163,7 @@ function ResultDetail({ result: initialResult, questions, onBack }) {
               </div>
             </div>
             {result.training_plan ? (
+              <>
               <BeautifulRoadmap planText={result.training_plan} studentKey={"history_" + result.id} />
               <div className="detail-plan-content">
                 {(() => {
@@ -193,6 +194,7 @@ function ResultDetail({ result: initialResult, questions, onBack }) {
                   }
                 })()}
               </div>
+              </>
             ) : (
               <div className="detail-highlight-empty">
                 <p>Chưa có kế hoạch đào tạo.</p>
